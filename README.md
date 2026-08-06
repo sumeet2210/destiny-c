@@ -1,36 +1,140 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Destiny
 
-## Getting Started
+Destiny is a mobile-first campus food discovery platform for students around
+NIT Warangal. It is designed to help students find nearby restaurants, dishes,
+live offers, and events while giving restaurant owners a lightweight way to
+keep their information current.
 
-First, run the development server:
+The product is intentionally focused on discovery and booking notices. It is
+not an ordering, payment, delivery, or guaranteed table-reservation system.
+
+## Project status
+
+The repository is currently in the foundation phase. The Next.js application,
+design tokens, development dependencies, environment template, and product
+documentation exist. Database migrations, application routes, shared
+components, Supabase clients, and product features have not been implemented
+yet.
+
+See [the build plan](docs/build-plan.md) for the intended delivery sequence.
+
+## Technology
+
+- Next.js 16 with the App Router
+- React 19 and TypeScript
+- Tailwind CSS 4
+- Supabase for Postgres, authentication, storage, and scheduled backend work
+- Vitest for unit tests
+- ESLint and Prettier for code quality
+- Netlify as the planned deployment platform
+
+## Requirements
+
+- Node.js 22
+- npm
+- A Supabase development project when working on database-backed features
+
+The repository includes an `.nvmrc`. With a compatible Node version manager,
+run:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+nvm use
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Confirm that `node --version` reports Node 22 before installing dependencies.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Install dependencies:
 
-## Learn More
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Copy the environment template:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   cp .env.example .env.local
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   On PowerShell:
 
-## Deploy on Vercel
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Populate the required values in `.env.local`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   | Variable                               | Purpose                                         |
+   | -------------------------------------- | ----------------------------------------------- |
+   | `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL                            |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase key                       |
+   | `SUPABASE_SECRET_KEY`                  | Server-only key that bypasses RLS               |
+   | `RESEND_API_KEY`                       | Email delivery for authentication and reminders |
+   | `CRON_SECRET`                          | Authentication for scheduled-job endpoints      |
+
+   Never expose `SUPABASE_SECRET_KEY` or `CRON_SECRET` in client components or
+   commit `.env.local`.
+
+4. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open <http://localhost:3000>.
+
+## Commands
+
+| Command                | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| `npm run dev`          | Start the development server            |
+| `npm run build`        | Create a production build               |
+| `npm run start`        | Serve the production build              |
+| `npm run lint`         | Run ESLint                              |
+| `npm run test`         | Run the Vitest suite once               |
+| `npm run typecheck`    | Check TypeScript without emitting files |
+| `npm run format`       | Format the repository with Prettier     |
+| `npm run format:check` | Check formatting without changing files |
+
+## Intended structure
+
+```text
+app/                    Routes, layouts, and route handlers
+components/ui/          Reusable design-system primitives
+components/features/    Product-specific components
+config/                 Product values and filter definitions
+lib/supabase/           Browser and server Supabase clients
+lib/queries/            Typed data-access functions
+lib/domain/             Pure, unit-tested business rules
+supabase/migrations/    Database schema, constraints, and RLS policies
+types/db.ts             Generated Supabase database types
+docs/                   Product, architecture, design, and delivery documents
+```
+
+## Architecture rules
+
+- Components do not import Supabase directly.
+- Database access is isolated in `lib/queries`.
+- Business rules remain pure and independent of React and network calls.
+- Server Components are the default; Client Components should be small,
+  interactive leaves.
+- RLS policies, constraints, indexes, and tests ship with their corresponding
+  database migrations.
+- Browsing remains public; authentication is required only for actions such as
+  booking, saving, reviewing, and social features.
+
+The active ESLint configuration enforces the component-to-Supabase import
+boundary.
+
+## Documentation
+
+- [Product requirements](docs/prd.md)
+- [Architecture](docs/architecture.md)
+- [Build plan](docs/build-plan.md)
+- [Design system](docs/design.md)
+- [Detailed setup guide](docs/SETUP.md)
+
+Read the relevant documents before implementing a feature. Product or
+architecture decisions that change these documents should be recorded rather
+than left only in code or pull-request discussion.

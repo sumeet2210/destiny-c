@@ -44,7 +44,8 @@ jobs:
         run: npm run typecheck
 
       - name: Test
-        run: npm test
+        # Remove --passWithNoTests when the first test is added.
+        run: npm test -- --passWithNoTests
 
       - name: Build
         run: npm run build

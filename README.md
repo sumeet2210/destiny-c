@@ -10,13 +10,23 @@ not an ordering, payment, delivery, or guaranteed table-reservation system.
 
 ## Project status
 
-The repository is currently in the foundation phase. The Next.js application,
-design tokens, development dependencies, environment template, and product
-documentation exist. Database migrations, application routes, shared
-components, Supabase clients, and product features have not been implemented
-yet.
+All build-plan phases (0–9) are implemented: the public browsing surface
+(homepage ticker, craving card stack, search with dish-level results, events,
+quiz), auth (student OTP + owner accounts with manual approval), owner tools
+(profile, hours, menu, offers, events, photos, bookings, analytics), the
+booking flow with reminder/resolution sweeps, reviews gated to verified
+visits, and the consent-gated social layer (saved, friends, RSVPs).
 
-See [the build plan](docs/build-plan.md) for the intended delivery sequence.
+**The app runs without Supabase.** When the env vars are absent, the read
+layer serves typed seed data (`lib/data/seed.ts`) so the whole public surface
+is browsable; auth and writes need a live project. To go live, create the
+Supabase projects per [docs/SETUP.md](docs/SETUP.md), push
+`supabase/migrations/`, seed with `supabase/seed.sql` (regenerate via
+`npm run gen:seed`), and run `scripts/rls-test.sql` before enabling the social
+layer. Regenerate `types/db.ts` after linking (see docs/decisions.md).
+
+Remaining before soft launch: Phase 10 ops (Netlify setup, Sentry, keep-alive
+scheduling, storage audit) and a real-device QA pass.
 
 ## Technology
 

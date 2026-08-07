@@ -12,6 +12,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
+    "gen:seed": "tsx scripts/generate-seed-sql.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -20,7 +21,8 @@
     "@supabase/supabase-js": "^2.112.1",
     "next": "16.3.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -33,6 +35,7 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "supabase": "^2.111.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.10",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

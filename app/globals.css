@@ -11,10 +11,16 @@
   --color-accent-secondary: #6fbf8b;
   --color-accent-urgent: #e8432b;
   --color-accent-urgent-text: #f2604b;
+  /* Ink colors for text sitting ON an accent fill (design.md §1 accents table). */
+  --color-ink-on-primary: #14110f;
+  --color-ink-on-secondary: #0f1f17;
+  /* Non-veg marker. Semantic indicator, never decorative — pairs with the
+     triangle glyph so it survives greyscale (design.md §6). */
+  --color-nonveg: #c25749;
 
-  --font-display: 'Roboto Slab', Georgia, serif;
-  --font-body: 'Inter', ui-sans-serif, system-ui;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: var(--font-roboto-slab), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   --radius-chip: 999px;
   --radius-card: 14px;
@@ -24,4 +30,47 @@
 html {
   background: var(--color-canvas);
   color-scheme: dark;
+}
+
+/* Horizontal rails (ticker, chip rows) scroll without a visible bar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Approved motion (design.md §5): hero entrance and chip-tap stack reveal. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hero-entrance {
+  animation: fade-up 500ms ease-out;
+}
+.craving-reveal {
+  animation: fade-up 220ms ease-out;
+}
+
+/* Design system: every interactive element gets a visible focus state. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,0 +1,135 @@
+// Owner-side reads (rule 0.1). All rows come back under the owner's own RLS.
+import 'server-only';
+import { cache } from 'react';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
+import type { Tables } from '@/types/db';
+
+export type OwnerBundle = {
+  restaurant: Tables<'restaurants'>;
+  menu: Tables<'menu_items'>[];
+  offers: Tables<'offers'>[];
+  events: Tables<'events'>[];
+  photos: Tables<'restaurant_photos'>[];
+};
+
+/** Everything the dashboard needs, one round of parallel queries per request. */
+export const getOwnerBundle = cache(async (): Promise<OwnerBundle | null> => {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: restaurant } = await supabase
+    .from('restaurants')
+    .select('*')
+    .eq('owner_id', user.id)
+    .maybeSingle();
+  if (!restaurant) return null;
+
+  const [menu, offers, events, photos] = await Promise.all([
+    supabase
+      .from('menu_items')
+      .select('*')
+      .eq('restaurant_id', restaurant.id)
+      .order('name'),
+    supabase
+      .from('offers')
+      .select('*')
+      .eq('restaurant_id', restaurant.id)
+      .order('expires_at', { ascending: false }),
+    supabase
+      .from('events')
+      .select('*')
+      .eq('restaurant_id', restaurant.id)
+      .order('starts_at', { ascending: false }),
+    supabase
+      .from('restaurant_photos')
+      .select('*')
+      .eq('restaurant_id', restaurant.id)
+      .order('sort_order'),
+  ]);
+
+  return {
+    restaurant,
+    menu: menu.data ?? [],
+    offers: offers.data ?? [],
+    events: events.data ?? [],
+    photos: photos.data ?? [],
+  };
+});
+
+export type OwnerBooking = Tables<'bookings'> & {
+  studentName: string | null;
+  studentNoShows: number;
+};
+
+export async function listOwnerBookings(): Promise<OwnerBooking[]> {
+  if (!isSupabaseConfigured()) return [];
+  const bundle = await getOwnerBundle();
+  if (!bundle) return [];
+  const supabase = await createClient();
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('restaurant_id', bundle.restaurant.id)
+    .order('booking_time', { ascending: false });
+  if (!bookings || bookings.length === 0) return [];
+
+  const studentIds = [...new Set(bookings.map((b) => b.student_id))];
+  const { data: students } = await supabase
+    .from('users')
+    .select('id, full_name, no_show_count')
+    .in('id', studentIds);
+  const byId = new Map((students ?? []).map((s) => [s.id, s]));
+
+  return bookings.map((b) => ({
+    ...b,
+    studentName: byId.get(b.student_id)?.full_name ?? null,
+    studentNoShows: byId.get(b.student_id)?.no_show_count ?? 0,
+  }));
+}
+
+export type AnalyticsBundle = {
+  totals: { last7: number; last30: number };
+  byDay: { day: string; views: number }[];
+  bySource: { source_filter: string; views: number }[];
+};
+
+export async function getOwnerAnalytics(): Promise<AnalyticsBundle | null> {
+  if (!isSupabaseConfigured()) return null;
+  const bundle = await getOwnerBundle();
+  if (!bundle) return null;
+  const supabase = await createClient();
+
+  const [byDay, bySource] = await Promise.all([
+    supabase
+      .from('restaurant_views_by_day')
+      .select('day, views')
+      .eq('restaurant_id', bundle.restaurant.id)
+      .order('day', { ascending: false })
+      .limit(30),
+    supabase
+      .from('restaurant_views_by_source')
+      .select('source_filter, views')
+      .eq('restaurant_id', bundle.restaurant.id)
+      .order('views', { ascending: false }),
+  ]);
+
+  const days = byDay.data ?? [];
+  const cutoff7 = Date.now() - 7 * 86_400_000;
+  return {
+    totals: {
+      last7: days
+        .filter((d) => new Date(d.day).getTime() >= cutoff7)
+        .reduce((a, d) => a + Number(d.views), 0),
+      last30: days.reduce((a, d) => a + Number(d.views), 0),
+    },
+    byDay: days.map((d) => ({ day: d.day, views: Number(d.views) })),
+    bySource: (bySource.data ?? []).map((s) => ({
+      source_filter: s.source_filter,
+      views: Number(s.views),
+    })),
+  };
+}

@@ -15,8 +15,9 @@
     "gen:seed": "tsx scripts/generate-seed-sql.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "seed:remote": "tsx scripts/seed-remote.ts",
-    "rls:test": "tsx scripts/rls-test-remote.ts"
+    "seed:remote": "node --experimental-websocket --import tsx scripts/seed-remote.ts",
+    "rls:test": "node --experimental-websocket --import tsx scripts/rls-test-remote.ts",
+    "dev:login": "node --experimental-websocket --import tsx scripts/dev-login.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

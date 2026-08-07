@@ -77,6 +77,18 @@ function LoginForm() {
             <Button type="submit" className="w-full" disabled={pending}>
               {pending ? 'Sending…' : 'Send code'}
             </Button>
+            {/* A student who closed the tab still has a code in their inbox,
+                and a failed send shouldn't strand them on this step. */}
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setStep('code');
+              }}
+              className="text-text-muted hover:text-paper w-full text-center text-[13px] underline-offset-2 hover:underline"
+            >
+              I already have a code
+            </button>
           </form>
         ) : (
           <form
@@ -87,10 +99,10 @@ function LoginForm() {
             className="space-y-4"
           >
             <p className="text-text-muted text-sm">
-              Code sent to <span className="text-paper">{email}</span>.
+              Enter the code sent to <span className="text-paper">{email}</span>.
             </p>
             <div>
-              <Label htmlFor="code">6-digit code</Label>
+              <Label htmlFor="code">Login code</Label>
               <Input
                 id="code"
                 inputMode="numeric"

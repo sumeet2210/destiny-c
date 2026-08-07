@@ -16,6 +16,33 @@ const NOT_CONFIGURED: AuthResult = {
     'Auth needs a Supabase project. Add the env vars from .env.example to log in.',
 };
 
+/**
+ * Supabase's raw auth errors are written for developers — "email rate limit
+ * exceeded" reads to a student like they did something wrong. Translate the
+ * ones a student can actually hit; log the rest and stay vague rather than
+ * leaking internals.
+ */
+function friendlyAuthError(error: { message: string; code?: string }): string {
+  const code = error.code ?? '';
+  const raw = error.message.toLowerCase();
+
+  if (code === 'over_email_send_rate_limit' || raw.includes('rate limit')) {
+    return "We can't send codes right now — give it a few minutes and try again.";
+  }
+  if (raw.includes('token has expired') || raw.includes('expired')) {
+    return 'That code has expired. Request a new one.';
+  }
+  if (raw.includes('invalid') && raw.includes('token')) {
+    return "That code didn't match. Check it and try again.";
+  }
+  if (raw.includes('email address') && raw.includes('invalid')) {
+    return 'That email address looks wrong.';
+  }
+
+  console.error('[auth]', error.code ?? '', error.message);
+  return 'Something went wrong on our side. Try again in a moment.';
+}
+
 export async function requestStudentOtp(email: string): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   if (!isStudentEmail(email)) {
@@ -30,7 +57,7 @@ export async function requestStudentOtp(email: string): Promise<AuthResult> {
     email,
     options: { shouldCreateUser: true, data: { role: 'student' } },
   });
-  if (error) return { ok: false, message: error.message };
+  if (error) return { ok: false, message: friendlyAuthError(error) };
   return { ok: true };
 }
 
@@ -45,7 +72,7 @@ export async function verifyStudentOtp(
     token,
     type: 'email',
   });
-  if (error) return { ok: false, message: error.message };
+  if (error) return { ok: false, message: friendlyAuthError(error) };
   // OTP over the institute domain is the verification (architecture.md §3).
   const {
     data: { user },

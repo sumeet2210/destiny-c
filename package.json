@@ -14,7 +14,9 @@
     "typecheck": "next typegen && tsc --noEmit",
     "gen:seed": "tsx scripts/generate-seed-sql.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "seed:remote": "tsx scripts/seed-remote.ts",
+    "rls:test": "tsx scripts/rls-test-remote.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

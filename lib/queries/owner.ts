@@ -117,19 +117,24 @@ export async function getOwnerAnalytics(): Promise<AnalyticsBundle | null> {
       .order('views', { ascending: false }),
   ]);
 
-  const days = byDay.data ?? [];
+  // View columns are nullable in the generated types (Postgres views drop
+  // NOT NULL), but the underlying columns never are — filter defensively.
+  const days = (byDay.data ?? []).flatMap((d) =>
+    d.day === null ? [] : [{ day: d.day, views: Number(d.views) }],
+  );
   const cutoff7 = Date.now() - 7 * 86_400_000;
   return {
     totals: {
       last7: days
         .filter((d) => new Date(d.day).getTime() >= cutoff7)
-        .reduce((a, d) => a + Number(d.views), 0),
-      last30: days.reduce((a, d) => a + Number(d.views), 0),
+        .reduce((a, d) => a + d.views, 0),
+      last30: days.reduce((a, d) => a + d.views, 0),
     },
-    byDay: days.map((d) => ({ day: d.day, views: Number(d.views) })),
-    bySource: (bySource.data ?? []).map((s) => ({
-      source_filter: s.source_filter,
-      views: Number(s.views),
-    })),
+    byDay: days,
+    bySource: (bySource.data ?? []).flatMap((s) =>
+      s.source_filter === null
+        ? []
+        : [{ source_filter: s.source_filter, views: Number(s.views) }],
+    ),
   };
 }

@@ -50,16 +50,20 @@ export function RestaurantCard({
   className?: string;
 }) {
   return (
-    <Card className={cn('relative flex flex-col', className)}>
-      <CardMedia className="relative">
-        <PhotoCarousel photos={r.photos} alt={r.name} />
+    <Card className={cn('restaurant-card relative flex flex-col', className)}>
+      <CardMedia className="restaurant-card-media relative">
+        <PhotoCarousel
+          photos={r.photos}
+          alt={r.name}
+          aspect="restaurant-card-image aspect-[8/5]"
+        />
         {saveSlot && (
           <div className="absolute top-2 right-2 z-10">{saveSlot}</div>
         )}
       </CardMedia>
 
       {r.liveOffer && (
-        <div className="mb-2">
+        <div className="restaurant-card-offer mb-2">
           <OfferBadge
             title={r.liveOffer.title}
             discountText={r.liveOffer.discount_text}
@@ -70,12 +74,12 @@ export function RestaurantCard({
 
       <Link
         href={`/restaurant/${r.id}?from=${encodeURIComponent(source)}`}
-        className="font-display text-paper text-[17px] font-bold after:absolute after:inset-0 after:content-['']"
+        className="restaurant-card-title font-display text-paper text-[17px] font-bold after:absolute after:inset-0 after:content-['']"
       >
         {r.name}
       </Link>
 
-      <p className="text-text-muted mt-0.5 flex flex-wrap items-center gap-x-2 text-[13px]">
+      <p className="restaurant-card-meta text-text-muted mt-0.5 flex flex-wrap items-center gap-x-2 text-[13px]">
         <span>{r.area}</span>
         {typeof distanceKm === 'number' && (
           <>
@@ -109,7 +113,7 @@ export function RestaurantCard({
       </p>
 
       {(r.vibe_tags.length > 0 || r.is_veg_only || r.student_discount) && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="restaurant-card-tags mt-2 flex flex-wrap gap-1.5">
           {r.is_veg_only && (
             <span className="rounded-chip border-accent-secondary text-accent-secondary border px-2 py-0.5 text-[11px]">
               Pure veg
@@ -131,7 +135,7 @@ export function RestaurantCard({
         </div>
       )}
 
-      <CardFooter className="mt-auto flex items-center justify-between text-[13px]">
+      <CardFooter className="restaurant-card-footer mt-auto flex items-center justify-between text-[13px]">
         <span className="text-text-muted">
           {friendNote ?? (r.price_per_head ? 'per head, roughly' : '')}
         </span>

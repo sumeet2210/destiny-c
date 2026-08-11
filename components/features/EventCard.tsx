@@ -50,7 +50,7 @@ export function EventCard({
   const { day, month, weekday, time } = dateParts(startsAt);
 
   return (
-    <Card className={cn('flex gap-4', className)}>
+    <Card className={cn('event-card flex gap-4', className)}>
       {/* Tear-off calendar date block, carried over from the prototype. */}
       <div className="rounded-control border-border-hairline bg-surface-raised flex h-fit shrink-0 flex-col items-center border px-3 py-2">
         <span className="text-text-muted text-[11px] tracking-wide uppercase">
@@ -61,7 +61,9 @@ export function EventCard({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-text-muted text-[12px]">
-          <span aria-hidden>{meta.emoji} </span>
+          <span aria-hidden className="event-type-icon">
+            {meta.emoji}{' '}
+          </span>
           {meta.label}
           <span aria-hidden> · </span>
           <span className="font-mono">{time}</span>

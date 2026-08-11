@@ -20,7 +20,9 @@ export function CravingExplorer({
   restaurants: RestaurantSummary[];
 }) {
   const router = useRouter();
-  const [craving, setCraving] = useState<string | null>(null);
+  const [craving, setCraving] = useState<string | null>(
+    CRAVINGS[0]?.tag ?? null,
+  );
   const [cursor, setCursor] = useState(0);
   const [dx, setDx] = useState(0);
   const dragStart = useRef<number | null>(null);
@@ -58,7 +60,7 @@ export function CravingExplorer({
   };
 
   return (
-    <section aria-label="Craving picker" className="space-y-3">
+    <section aria-label="Craving picker" className="craving-explorer space-y-3">
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
         {CRAVINGS.map((c) => (
           <Chip
@@ -66,7 +68,10 @@ export function CravingExplorer({
             active={craving === c.tag}
             onClick={() => pick(c.tag)}
           >
-            <span aria-hidden>{c.emoji}</span> {c.label}
+            <span aria-hidden className="craving-emoji">
+              {c.emoji}
+            </span>{' '}
+            {c.label}
           </Chip>
         ))}
       </div>
@@ -91,7 +96,10 @@ export function CravingExplorer({
               </Button>
             </div>
           ) : (
-            <div className="relative h-[420px] select-none" aria-live="polite">
+            <div
+              className="craving-stack relative h-[420px] select-none"
+              aria-live="polite"
+            >
               {stack.map((r, i) => {
                 const isTop = i === 0;
                 const offset = isTop ? dx : 0;
@@ -100,7 +108,7 @@ export function CravingExplorer({
                   <div
                     key={r.id}
                     className={cn(
-                      'rounded-card border-border-hairline bg-surface-muted absolute inset-x-0 top-0 mx-auto max-w-sm touch-pan-y border p-4',
+                      'craving-stack-card rounded-card border-border-hairline bg-surface-muted absolute inset-x-0 top-0 mx-auto max-w-sm touch-pan-y border p-4',
                       isTop &&
                         leaving === 'left' &&
                         'transition-transform duration-150',
@@ -137,44 +145,50 @@ export function CravingExplorer({
                       src={r.photos[0] ?? ''}
                       alt=""
                       draggable={false}
-                      className="rounded-control aspect-[8/5] w-full object-cover"
+                      className="craving-stack-media rounded-control aspect-[8/5] w-full object-cover"
                     />
-                    <h3 className="font-display text-paper mt-3 text-lg font-bold">
-                      {r.name}
-                    </h3>
-                    <p className="text-text-muted text-[13px]">
-                      {r.area}
-                      <span aria-hidden> · </span>
-                      {r.isOpen ? (
-                        <span className="text-accent-secondary">Open now</span>
-                      ) : (
-                        'Closed'
+                    <div className="craving-stack-copy">
+                      <h3 className="font-display text-paper mt-3 text-lg font-bold">
+                        {r.name}
+                      </h3>
+                      <p className="text-text-muted text-[13px]">
+                        {r.area}
+                        <span aria-hidden> · </span>
+                        {r.isOpen ? (
+                          <span className="text-accent-secondary">
+                            Open now
+                          </span>
+                        ) : (
+                          'Closed'
+                        )}
+                        {r.price_per_head && (
+                          <>
+                            <span aria-hidden> · </span>
+                            <span className="font-mono">
+                              ₹{r.price_per_head}
+                            </span>
+                            /head
+                          </>
+                        )}
+                      </p>
+                      {isTop && (
+                        <div className="craving-stack-actions mt-4 flex justify-between gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => advance('left')}
+                          >
+                            Pass
+                          </Button>
+                          <span className="text-text-muted self-center font-mono text-[11px]">
+                            {cursor + 1}/{matches.length}
+                          </span>
+                          <Button size="sm" onClick={() => advance('right')}>
+                            Take me there
+                          </Button>
+                        </div>
                       )}
-                      {r.price_per_head && (
-                        <>
-                          <span aria-hidden> · </span>
-                          <span className="font-mono">₹{r.price_per_head}</span>
-                          /head
-                        </>
-                      )}
-                    </p>
-                    {isTop && (
-                      <div className="mt-4 flex justify-between gap-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => advance('left')}
-                        >
-                          Pass
-                        </Button>
-                        <span className="text-text-muted self-center font-mono text-[11px]">
-                          {cursor + 1}/{matches.length}
-                        </span>
-                        <Button size="sm" onClick={() => advance('right')}>
-                          Take me there
-                        </Button>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}

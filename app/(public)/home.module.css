@@ -1,0 +1,1037 @@
+/*
+THESIS: Destiny turns a vague dinner debate into a short, credible campus choice; it refuses the endless delivery-app feed.
+OWN-WORLD: Soft Off-White canvas, decisive black fields, Destiny Teal actions, Manrope typography, cinematic food crops, and compact rounded surfaces.
+STORY: Search or choose a craving, see only current offers and useful signals, then open one real place without losing the existing product paths.
+FIRST VIEWPORT: An editorial decision statement and existing search/quiz routes sit beside one food image; current offers, cravings, events, social signals, and popular places follow in compact bands.
+FORM: Approved final prototype, code-led translation of the established Destiny visual system.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+*/
+
+.home {
+  --color-canvas: #f8fafa;
+  --color-surface-muted: #000000;
+  --color-surface-raised: #008f7a;
+  --color-border-hairline: rgb(255 255 255 / 18%);
+  --color-paper: #ffffff;
+  --color-text-muted: #e6faf6;
+  --color-accent-primary: #00b89c;
+  --color-accent-secondary: #25cbb5;
+  --color-accent-urgent: #008f7a;
+  --color-accent-urgent-text: #25cbb5;
+  --color-ink-on-primary: #000000;
+  --font-display: var(--font-destiny-home), Manrope, sans-serif;
+  --font-body: var(--font-destiny-home), Manrope, sans-serif;
+  min-height: 100vh;
+  margin-bottom: -4rem;
+  padding-bottom: 4rem;
+  overflow: clip;
+  background: #f8fafa;
+  color: #000000;
+  font-family: var(--font-destiny-home), Manrope, sans-serif;
+  font-feature-settings:
+    'ss01' 1,
+    'cv11' 1;
+}
+
+.home ::selection {
+  background: #00b89c;
+  color: #000000;
+}
+
+.home :where(a, button) {
+  text-underline-offset: 0.22em;
+}
+
+.home :where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px #000000;
+}
+
+.lineIcon {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shell {
+  width: min(100%, 100rem);
+  margin-inline: auto;
+  padding: 2rem clamp(1rem, 3vw, 3.25rem) 4rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(22rem, 0.82fr) minmax(30rem, 1.18fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 7rem);
+  min-height: min(48rem, calc(100vh - 6.5rem));
+  padding: clamp(2rem, 6vw, 6.5rem) clamp(0.5rem, 2vw, 2rem);
+}
+
+.heroCopy {
+  max-width: 36rem;
+}
+
+.heroCopy h1 {
+  max-width: 8.6ch;
+  margin: 0;
+  font-size: clamp(3.55rem, 6.2vw, 6rem);
+  font-weight: 540;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.heroCopy > p {
+  max-width: 35rem;
+  margin: 2rem 0 1.25rem;
+  color: #4b5563;
+  font-size: clamp(1rem, 1.25vw, 1.18rem);
+  line-height: 1.55;
+}
+
+.searchPrompt {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 4rem;
+  padding: 0.4rem 0.45rem 0.4rem 1.2rem;
+  border: 1px solid rgb(0 0 0 / 18%);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #4b5563;
+  text-decoration: none;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.searchPrompt:hover {
+  border-color: #000000;
+  color: #000000;
+}
+
+.searchPrompt > svg {
+  color: #000000;
+}
+
+.searchArrow {
+  display: grid;
+  width: 3.15rem;
+  height: 3.15rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #00b89c;
+  color: #000000;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  margin-top: 1rem;
+}
+
+.primaryAction,
+.secondaryAction,
+.sectionHeading a,
+.sectionHeadingOnDark a,
+.popularHeading a,
+.eventAction {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border-radius: 999px;
+  font-size: 0.87rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.primaryAction {
+  padding: 0.75rem 1.2rem;
+  background: #000000;
+  color: #ffffff;
+}
+
+.primaryAction:hover {
+  background: #00b89c;
+  color: #000000;
+}
+
+.secondaryAction {
+  padding: 0.75rem 0;
+  color: #000000;
+}
+
+.secondaryAction:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+
+.heroMedia {
+  position: relative;
+  min-height: clamp(34rem, 47vw, 47rem);
+  overflow: hidden;
+  border-radius: 2.25rem;
+  background: #000000;
+  isolation: isolate;
+}
+
+.heroMedia > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 54% center;
+}
+
+.locationBadge {
+  position: absolute;
+  z-index: 1;
+  top: 1.35rem;
+  left: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 78%);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.heroPanel {
+  position: absolute;
+  z-index: 1;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  left: 1.1rem;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.45rem 1.5rem;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 1.65rem;
+  background: rgb(0 0 0 / 86%);
+  color: #ffffff;
+}
+
+.heroPanel span,
+.heroPanel p {
+  color: #e6faf6;
+  font-size: 0.72rem;
+}
+
+.heroPanel h2 {
+  max-width: 16ch;
+  margin: 0.25rem 0;
+  font-size: clamp(1.55rem, 2.5vw, 2.5rem);
+  font-weight: 580;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+
+.heroPanel a {
+  display: grid;
+  width: 3.6rem;
+  height: 3.6rem;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #00b89c;
+  color: #000000;
+}
+
+.specialsSection,
+.popularSection {
+  scroll-margin-top: 6rem;
+  border-radius: 2.25rem;
+  background: #000000;
+  color: #ffffff;
+}
+
+.specialsSection {
+  padding: clamp(2rem, 4vw, 4rem);
+}
+
+.sectionHeadingOnDark,
+.sectionHeading,
+.popularHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeadingOnDark h2,
+.sectionHeading h2,
+.popularHeading h2,
+.eventIntro h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 4.2rem);
+  font-weight: 540;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.sectionHeadingOnDark p,
+.sectionHeading p,
+.popularHeading p,
+.eventIntro p {
+  max-width: 40rem;
+  margin-top: 0.75rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.sectionHeadingOnDark p,
+.popularHeading p {
+  color: #e6faf6;
+}
+
+.sectionHeadingOnDark a,
+.popularHeading a {
+  padding: 0.7rem 1rem;
+  border: 1px solid rgb(255 255 255 / 28%);
+  color: #ffffff;
+}
+
+.sectionHeadingOnDark a:hover,
+.popularHeading a:hover {
+  border-color: #00b89c;
+  background: #00b89c;
+  color: #000000;
+}
+
+.specialsSection :global(.specials-ticker) {
+  padding: 0.75rem 0 0;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0;
+  background: transparent;
+}
+
+.specialsSection :global(.specials-card) {
+  --color-paper: #000000;
+  --color-text-muted: #000000;
+  --color-accent-primary: #000000;
+  --color-accent-urgent-text: #000000;
+  min-width: min(22rem, 78vw);
+  padding: 1.2rem;
+  border-color: #000000;
+  border-radius: 1.2rem;
+  background: #00b89c;
+}
+
+.cravingSection,
+.squadSection {
+  scroll-margin-top: 6rem;
+  padding: clamp(4.5rem, 8vw, 8rem) clamp(0.5rem, 3vw, 3rem);
+  --color-surface-muted: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-border-hairline: rgb(0 0 0 / 18%);
+  --color-paper: #000000;
+  --color-text-muted: #4b5563;
+}
+
+.sectionHeading a {
+  padding: 0.7rem 1rem;
+  border: 1px solid rgb(0 0 0 / 18%);
+  color: #000000;
+}
+
+.sectionHeading a:hover {
+  border-color: #000000;
+  background: #000000;
+  color: #ffffff;
+}
+
+.cravingSection :global(.craving-explorer) {
+  padding-top: 0.5rem;
+}
+
+.cravingSection :global(.craving-explorer button) {
+  min-height: 2.75rem;
+}
+
+.cravingSection :global(.craving-emoji) {
+  display: none;
+}
+
+.cravingSection :global(.craving-stack) {
+  height: 23rem;
+  margin-top: 1.25rem;
+}
+
+.cravingSection :global(.craving-stack-card) {
+  --color-paper: #ffffff;
+  --color-text-muted: #e6faf6;
+  --color-border-hairline: rgb(255 255 255 / 40%);
+  display: grid;
+  max-width: 46rem;
+  grid-template-columns: minmax(15rem, 1.1fr) minmax(15rem, 0.9fr);
+  gap: 1.2rem;
+  padding: 0.8rem;
+  border-radius: 1.65rem;
+  background: #000000;
+  color: #ffffff;
+}
+
+.cravingSection :global(.craving-stack-media) {
+  width: 100%;
+  height: 21.25rem;
+  border-radius: 1.1rem;
+  object-fit: cover;
+}
+
+.cravingSection :global(.craving-stack-copy) {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem 1rem 1rem 0;
+}
+
+.cravingSection :global(.craving-stack-copy h3) {
+  color: #ffffff;
+  font-family: var(--font-destiny-home), Manrope, sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  font-weight: 560;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.cravingSection :global(.craving-stack-copy p) {
+  margin-top: 0.75rem;
+  color: #e6faf6;
+}
+
+.cravingSection :global(.craving-stack-actions) {
+  margin-top: 2rem;
+}
+
+.cravingSection :global(.craving-stack-actions button:first-child:hover) {
+  background: #ffffff;
+  color: #000000;
+}
+
+.eventSection {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.9fr) minmax(23rem, 1.15fr) auto;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  margin: clamp(1.25rem, 3vw, 2.5rem) 0;
+  padding: clamp(1.5rem, 3vw, 2.75rem);
+  border: 1px solid rgb(0 0 0 / 15%);
+  border-radius: 2.25rem;
+  background: #e6faf6;
+  --color-surface-muted: #ffffff;
+  --color-surface-raised: #e6faf6;
+  --color-border-hairline: rgb(0 0 0 / 16%);
+  --color-paper: #000000;
+  --color-text-muted: #4b5563;
+}
+
+.eventIntro {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.eventIntro h2 {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+}
+
+.eventIcon {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #00b89c;
+  color: #000000;
+}
+
+.eventIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.eventCard {
+  min-width: 0;
+  border-radius: 1.2rem !important;
+  background: #ffffff !important;
+}
+
+.eventAction {
+  padding: 0.75rem 1rem;
+  background: #000000;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.eventAction:hover {
+  background: #00b89c;
+  color: #000000;
+}
+
+.eventSection :global(.event-type-icon) {
+  display: none;
+}
+
+.squadSection {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+.squadGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.emptyNote {
+  padding: 1.5rem;
+  border-radius: 1.2rem;
+  background: #e6faf6;
+  color: #4b5563;
+}
+
+.friendSignal {
+  color: #000000;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.popularSection {
+  padding: clamp(2rem, 4vw, 4rem);
+}
+
+.popularSection :global(.restaurant-grid) {
+  gap: 1rem;
+}
+
+.popularSection :global(.restaurant-card) {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.75rem;
+  border-color: rgb(255 255 255 / 18%);
+  border-radius: 1.65rem;
+  background: #000000;
+}
+
+.popularSection :global(.restaurant-card-media) {
+  margin: 0 0 1rem;
+  border-radius: 1.2rem;
+}
+
+.popularSection :global(.restaurant-card-image) {
+  aspect-ratio: 16 / 10;
+}
+
+.popularSection :global(.restaurant-card-image img) {
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popularSection :global(.restaurant-card:hover .restaurant-card-image img) {
+  transform: scale(1.035);
+}
+
+.popularSection :global(.restaurant-card-offer) {
+  margin-bottom: 0.65rem;
+}
+
+.popularSection :global(.restaurant-card-title) {
+  color: #ffffff;
+  font-family: var(--font-destiny-home), Manrope, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 570;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.popularSection :global(.restaurant-card-meta) {
+  color: #e6faf6;
+}
+
+.popularSection :global(.restaurant-card-tags) {
+  margin-top: 0.75rem;
+}
+
+.popularSection :global(.restaurant-card-tags span) {
+  background: #000000;
+}
+
+.popularSection :global(.restaurant-card-footer) {
+  border-color: rgb(255 255 255 / 18%);
+}
+
+.popularSection :global(.save-toggle) {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-color: rgb(0 0 0 / 18%);
+  background: #ffffff;
+  color: #000000;
+}
+
+.popularSection :global(.save-toggle[aria-pressed='true']) {
+  border-color: #00b89c;
+  background: #00b89c;
+}
+
+.popularHeading {
+  margin-bottom: 2rem;
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+  padding: 3.5rem 0.75rem 0.5rem;
+  color: #4b5563;
+  font-size: 0.8rem;
+}
+
+.footerLogo {
+  position: relative;
+  width: 7.2rem;
+  height: 2.75rem;
+  overflow: hidden;
+}
+
+.footerLogo img {
+  position: absolute;
+  top: -2.15rem;
+  left: 0;
+  width: 7.2rem;
+  height: 7.2rem;
+  max-width: none;
+}
+
+.footer p {
+  margin: 0;
+  text-align: center;
+}
+
+.footer > a:last-child {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-self: end;
+  gap: 0.5rem;
+  padding-inline: 0.5rem;
+  color: #000000;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tickerSkeleton,
+.cravingSkeleton,
+.eventSkeleton,
+.cardSkeleton {
+  background: #e6faf6 !important;
+}
+
+.tickerSkeleton {
+  height: 14rem;
+  border-radius: 2.25rem;
+}
+
+.cravingSkeleton {
+  height: 18rem;
+  margin-block: 3rem;
+  border-radius: 2.25rem;
+}
+
+.eventSkeleton {
+  height: 12rem;
+  margin-block: 2rem;
+  border-radius: 2.25rem;
+}
+
+.popularSkeletons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 3rem 0;
+}
+
+.cardSkeleton {
+  height: 24rem;
+  border-radius: 1.65rem;
+}
+
+@media (max-width: 68rem) {
+  .hero {
+    grid-template-columns: 1fr 1.08fr;
+    gap: 2.5rem;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(3.25rem, 6.6vw, 5rem);
+  }
+
+  .eventSection {
+    grid-template-columns: 1fr 1.2fr;
+  }
+
+  .eventAction {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+@media (min-width: 64rem) {
+  .home {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 53rem) {
+  .shell {
+    padding-top: 1rem;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding-top: 3rem;
+  }
+
+  .heroCopy {
+    max-width: 42rem;
+  }
+
+  .heroMedia {
+    min-height: 38rem;
+  }
+
+  .sectionHeadingOnDark,
+  .sectionHeading,
+  .popularHeading {
+    align-items: start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .eventSection {
+    grid-template-columns: 1fr;
+  }
+
+  .eventAction {
+    grid-column: auto;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 38.75rem) {
+  .shell {
+    padding: 0.25rem 0.65rem 2rem;
+  }
+
+  .hero {
+    position: relative;
+    display: grid;
+    min-height: min(43rem, calc(100svh - 5rem));
+    overflow: hidden;
+    padding: 0;
+    border-radius: 1.65rem;
+    background: #000000;
+    isolation: isolate;
+  }
+
+  .heroCopy,
+  .heroMedia {
+    grid-area: 1 / 1;
+  }
+
+  .heroCopy {
+    z-index: 2;
+    align-self: start;
+    padding: 1.3rem 1rem 1rem;
+    color: #ffffff;
+  }
+
+  .heroCopy h1 {
+    max-width: 9.5ch;
+    font-size: clamp(3rem, 15.2vw, 4.25rem);
+  }
+
+  .heroCopy > p {
+    margin: 1.25rem 0 1rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+  }
+
+  .searchPrompt {
+    min-height: 3.5rem;
+    padding-left: 1rem;
+    font-size: 0.88rem;
+  }
+
+  .searchArrow {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+
+  .heroActions {
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .primaryAction,
+  .secondaryAction {
+    min-height: 2.75rem;
+    font-size: 0.78rem;
+  }
+
+  .secondaryAction {
+    color: #ffffff;
+  }
+
+  .heroMedia {
+    z-index: 0;
+    min-height: 100%;
+    border-radius: 0;
+  }
+
+  .heroMedia::after {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background: rgb(0 0 0 / 45%);
+    content: '';
+  }
+
+  .heroMedia > img {
+    object-position: 57% center;
+  }
+
+  .locationBadge {
+    display: none;
+  }
+
+  .heroPanel {
+    display: none;
+  }
+
+  .specialsSection,
+  .popularSection {
+    padding: 1.35rem 0.9rem;
+    border-radius: 1.65rem;
+  }
+
+  .specialsSection {
+    margin-top: 0.9rem;
+  }
+
+  .sectionHeadingOnDark h2,
+  .sectionHeading h2,
+  .popularHeading h2,
+  .eventIntro h2 {
+    font-size: 2.4rem;
+  }
+
+  .sectionHeadingOnDark p,
+  .sectionHeading p,
+  .popularHeading p,
+  .eventIntro p {
+    font-size: 0.84rem;
+  }
+
+  .specialsSection :global(.specials-card) {
+    min-width: 15.5rem;
+  }
+
+  .cravingSection,
+  .squadSection {
+    padding: 4.25rem 0.25rem;
+  }
+
+  .cravingSection :global(.craving-stack) {
+    height: 17.5rem;
+  }
+
+  .cravingSection :global(.craving-stack-card) {
+    max-width: 100%;
+    min-height: 16.5rem;
+    grid-template-columns: minmax(6.5rem, 0.82fr) minmax(0, 1.18fr);
+    gap: 0.65rem;
+    padding: 0.65rem;
+  }
+
+  .cravingSection :global(.craving-stack-media) {
+    height: 100%;
+    min-height: 15.2rem;
+  }
+
+  .cravingSection :global(.craving-stack-copy) {
+    padding: 0.6rem 0.25rem 0.6rem 0;
+  }
+
+  .cravingSection :global(.craving-stack-copy h3) {
+    margin-top: 0;
+    font-size: 1.35rem;
+  }
+
+  .cravingSection :global(.craving-stack-actions) {
+    gap: 0.35rem;
+    margin-top: 0.8rem;
+  }
+
+  .cravingSection :global(.craving-stack-actions button) {
+    min-width: 0;
+    padding-inline: 0.55rem;
+    font-size: 0.68rem;
+  }
+
+  .eventSection {
+    gap: 1.2rem;
+    padding: 1.1rem;
+    border-radius: 1.65rem;
+  }
+
+  .eventIntro {
+    align-items: start;
+  }
+
+  .eventIcon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .squadGrid,
+  .popularSkeletons {
+    grid-template-columns: 1fr;
+  }
+
+  .popularSection :global(.restaurant-grid) {
+    grid-template-columns: 1fr;
+  }
+
+  .popularSection :global(.restaurant-card) {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 0.85fr) minmax(9.5rem, 1.15fr);
+    grid-template-rows: auto auto auto 1fr auto;
+    column-gap: 0.85rem;
+    min-height: 14rem;
+    padding: 0.65rem;
+  }
+
+  .popularSection :global(.restaurant-card-media) {
+    grid-row: 1 / 6;
+    height: 100%;
+    min-height: 12.7rem;
+    margin: 0;
+  }
+
+  .popularSection :global(.restaurant-card-image) {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .popularSection :global(.restaurant-card-offer) {
+    grid-column: 2;
+    margin: 0 0 0.45rem;
+  }
+
+  .popularSection :global(.restaurant-card-title),
+  .popularSection :global(.restaurant-card-meta),
+  .popularSection :global(.restaurant-card-tags),
+  .popularSection :global(.restaurant-card-footer) {
+    grid-column: 2;
+  }
+
+  .popularSection :global(.restaurant-card-title) {
+    font-size: 1.1rem;
+  }
+
+  .popularSection :global(.restaurant-card-meta) {
+    font-size: 0.68rem;
+  }
+
+  .popularSection :global(.restaurant-card-tags) {
+    align-content: start;
+    margin-top: 0.45rem;
+  }
+
+  .popularSection :global(.restaurant-card-tags span) {
+    padding-inline: 0.4rem;
+    font-size: 0.62rem;
+  }
+
+  .popularSection :global(.restaurant-card-footer) {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .footer {
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    padding: 2.5rem 0.25rem 1rem;
+  }
+
+  .footer p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    text-align: left;
+  }
+}
+
+@media (max-width: 22rem) {
+  .heroCopy h1 {
+    font-size: 2.8rem;
+  }
+
+  .secondaryAction {
+    padding-inline: 0.35rem;
+  }
+
+  .popularSection :global(.restaurant-card) {
+    display: flex;
+    min-height: 0;
+  }
+
+  .popularSection :global(.restaurant-card-media) {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin-bottom: 0.85rem;
+  }
+
+  .popularSection :global(.restaurant-card-image) {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popularSection :global(.restaurant-card-image img) {
+    transition: none;
+  }
+
+  .popularSection :global(.restaurant-card:hover .restaurant-card-image img) {
+    transform: none;
+  }
+}

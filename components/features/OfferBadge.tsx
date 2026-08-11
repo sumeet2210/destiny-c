@@ -55,7 +55,26 @@ export function OfferBadge({
           urgent ? 'text-accent-urgent-text' : 'text-text-muted',
         )}
       >
-        {urgent && <span aria-hidden>⏱ </span>}
+        {urgent && (
+          <svg viewBox="0 0 24 24" aria-hidden className="inline size-3.5">
+            <circle
+              cx="12"
+              cy="13"
+              r="8"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            />
+            <path
+              d="M9 2h6M12 5v3M12 13l3-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
         {countdown}
       </span>
     </span>

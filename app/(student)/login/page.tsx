@@ -99,7 +99,8 @@ function LoginForm() {
             className="space-y-4"
           >
             <p className="text-text-muted text-sm">
-              Enter the code sent to <span className="text-paper">{email}</span>.
+              Enter the code sent to <span className="text-paper">{email}</span>
+              .
             </p>
             <div>
               <Label htmlFor="code">Login code</Label>

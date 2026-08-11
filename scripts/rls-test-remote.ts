@@ -28,7 +28,9 @@ type Client = SupabaseClient<Database>;
 
 let failures = 0;
 const check = (label: string, pass: boolean, detail = '') => {
-  console.log(`${pass ? 'PASS' : 'FAIL'}  ${label}${detail ? ` (${detail})` : ''}`);
+  console.log(
+    `${pass ? 'PASS' : 'FAIL'}  ${label}${detail ? ` (${detail})` : ''}`,
+  );
   if (!pass) failures++;
 };
 
@@ -52,7 +54,8 @@ async function main() {
       .select('id')
       .eq('email', email)
       .single();
-    if (!u) throw new Error(`seed user ${email} missing — run seed-remote first`);
+    if (!u)
+      throw new Error(`seed user ${email} missing — run seed-remote first`);
     ids.push(u.id);
     const { error } = await admin.auth.admin.updateUserById(u.id, { password });
     if (error) throw new Error(`set password ${email}: ${error.message}`);
@@ -62,9 +65,10 @@ async function main() {
   const [sharer, friend] = ids;
 
   // Fixture: sharer↔friend accepted; sharer saved restaurant 1 and RSVP'd an event.
-  await admin.from('friendships').delete().or(
-    `requester_id.eq.${sharer},addressee_id.eq.${sharer}`,
-  );
+  await admin
+    .from('friendships')
+    .delete()
+    .or(`requester_id.eq.${sharer},addressee_id.eq.${sharer}`);
   die(
     'fixture friendship',
     (
@@ -86,7 +90,11 @@ async function main() {
         .insert({ student_id: sharer, restaurant_id: restaurantId })
     ).error,
   );
-  const { data: someEvent } = await admin.from('events').select('id').limit(1).single();
+  const { data: someEvent } = await admin
+    .from('events')
+    .select('id')
+    .limit(1)
+    .single();
   await admin.from('event_rsvps').delete().eq('student_id', sharer);
   die(
     'fixture rsvp',
@@ -103,7 +111,12 @@ async function main() {
   const setSharing = async (on: boolean) =>
     die(
       `share_activity=${on}`,
-      (await admin.from('users').update({ share_activity: on }).eq('id', sharer)).error,
+      (
+        await admin
+          .from('users')
+          .update({ share_activity: on })
+          .eq('id', sharer)
+      ).error,
     );
 
   const countFor = async (
@@ -120,25 +133,51 @@ async function main() {
 
   // Case A: sharing ON — friend sees, stranger never does.
   await setSharing(true);
-  check('A1 friend sees saved when sharing on', (await countFor(asFriend, 'saved_restaurants')) === 1);
-  check('A2 non-friend never sees saved', (await countFor(asStranger, 'saved_restaurants')) === 0);
-  check('A3 friend sees RSVP when sharing on', (await countFor(asFriend, 'event_rsvps')) === 1);
-  check('A4 non-friend never sees RSVP', (await countFor(asStranger, 'event_rsvps')) === 0);
+  check(
+    'A1 friend sees saved when sharing on',
+    (await countFor(asFriend, 'saved_restaurants')) === 1,
+  );
+  check(
+    'A2 non-friend never sees saved',
+    (await countFor(asStranger, 'saved_restaurants')) === 0,
+  );
+  check(
+    'A3 friend sees RSVP when sharing on',
+    (await countFor(asFriend, 'event_rsvps')) === 1,
+  );
+  check(
+    'A4 non-friend never sees RSVP',
+    (await countFor(asStranger, 'event_rsvps')) === 0,
+  );
 
   // Case B: sharing OFF — even the friend sees nothing.
   await setSharing(false);
-  check('B1 friend sees nothing when sharing off', (await countFor(asFriend, 'saved_restaurants')) === 0);
-  check('B2 friend sees no RSVP when sharing off', (await countFor(asFriend, 'event_rsvps')) === 0);
+  check(
+    'B1 friend sees nothing when sharing off',
+    (await countFor(asFriend, 'saved_restaurants')) === 0,
+  );
+  check(
+    'B2 friend sees no RSVP when sharing off',
+    (await countFor(asFriend, 'event_rsvps')) === 0,
+  );
 
   // Case C: bookings are NEVER visible to friends, under any setting.
   await setSharing(true);
-  check('C1 friend cannot read bookings even with sharing on', (await countFor(asFriend, 'bookings')) === 0);
-  check('C2 stranger cannot read bookings', (await countFor(asStranger, 'bookings')) === 0);
+  check(
+    'C1 friend cannot read bookings even with sharing on',
+    (await countFor(asFriend, 'bookings')) === 0,
+  );
+  check(
+    'C2 stranger cannot read bookings',
+    (await countFor(asStranger, 'bookings')) === 0,
+  );
 
   // Reset sharing to the privacy default.
   await setSharing(false);
 
-  console.log(failures === 0 ? '\nAll RLS checks passed.' : `\n${failures} FAILURES`);
+  console.log(
+    failures === 0 ? '\nAll RLS checks passed.' : `\n${failures} FAILURES`,
+  );
   process.exit(failures === 0 ? 0 : 1);
 }
 

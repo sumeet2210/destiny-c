@@ -60,14 +60,22 @@ async function main() {
 
   console.log('');
   console.log(`  ${profile.full_name ?? email}  (${profile.role})`);
-  console.log(`  sharing: ${profile.share_activity ? 'on' : 'off'}   no-shows: ${profile.no_show_count}`);
+  console.log(
+    `  sharing: ${profile.share_activity ? 'on' : 'off'}   no-shows: ${profile.no_show_count}`,
+  );
   console.log('');
   console.log(`  email:  ${email}`);
   console.log(`  code:   ${code}`);
   console.log('');
-  console.log('  Go to http://localhost:3000/login, enter that email, hit Send code');
-  console.log('  (the send will fail on the rate limit - ignore it), then paste the');
-  console.log('  code above. Or skip the form entirely with this one-shot link:');
+  console.log(
+    '  Go to http://localhost:3000/login, enter that email, hit Send code',
+  );
+  console.log(
+    '  (the send will fail on the rate limit - ignore it), then paste the',
+  );
+  console.log(
+    '  code above. Or skip the form entirely with this one-shot link:',
+  );
   console.log('');
   console.log(`  ${data.properties?.action_link}`);
   console.log('');

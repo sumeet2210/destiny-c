@@ -105,14 +105,22 @@ async function main() {
   die(
     'restaurants',
     (
-      await admin.from('restaurants').upsert(
-        seedRestaurants.map((r) => ({ ...r, owner_id: remap(r.owner_id) })),
-      )
+      await admin
+        .from('restaurants')
+        .upsert(
+          seedRestaurants.map((r) => ({ ...r, owner_id: remap(r.owner_id) })),
+        )
     ).error,
   );
-  die('menu_items', (await admin.from('menu_items').upsert(seedMenuItems)).error);
+  die(
+    'menu_items',
+    (await admin.from('menu_items').upsert(seedMenuItems)).error,
+  );
   die('offers', (await admin.from('offers').upsert(seedOffers)).error);
-  die('photos', (await admin.from('restaurant_photos').upsert(seedPhotos)).error);
+  die(
+    'photos',
+    (await admin.from('restaurant_photos').upsert(seedPhotos)).error,
+  );
   die('events', (await admin.from('events').upsert(seedEvents)).error);
 
   // Completed, confirmed bookings backing the seed reviews (review RLS).
@@ -137,14 +145,22 @@ async function main() {
   die(
     'reviews',
     (
-      await admin.from('reviews').upsert(
-        seedReviews.map((r) => ({ ...r, student_id: remap(r.student_id) })),
-      )
+      await admin
+        .from('reviews')
+        .upsert(
+          seedReviews.map((r) => ({ ...r, student_id: remap(r.student_id) })),
+        )
     ).error,
   );
 
   // A little view history so trending and analytics have something to chew on.
-  const sources = ['homepage_feed', 'search', 'craving:biryani', 'events', 'quiz'];
+  const sources = [
+    'homepage_feed',
+    'search',
+    'craving:biryani',
+    'events',
+    'quiz',
+  ];
   const views = seedRestaurants.flatMap((r) =>
     sources.flatMap((source) =>
       Array.from({ length: 4 }, () => ({

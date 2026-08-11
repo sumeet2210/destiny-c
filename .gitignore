@@ -20,6 +20,17 @@
 # production
 /build
 
+# local tooling and temporary artifacts
+/.tools/
+/tmp/
+
+# prototype-generated artifacts
+/prototypes/**/node_modules/
+/prototypes/**/dist/
+/prototypes/**/tmp/
+/prototypes/**/.preview/
+/prototypes/**/*.tar.gz
+
 # supabase local CLI metadata
 /supabase/.temp/
 

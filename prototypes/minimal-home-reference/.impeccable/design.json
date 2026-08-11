@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-09T20:59:43.5966907+05:30",
+  "title": "Design System: Destiny — The Campus Shortlist",
+  "extensions": {
+    "colorMeta": {
+      "matte-ink": {
+        "role": "neutral",
+        "displayName": "Matte Ink",
+        "canonical": "#11120f",
+        "tonalRamp": [
+          "oklch(15% 0.006 125)",
+          "oklch(25% 0.006 125)",
+          "oklch(38% 0.006 125)",
+          "oklch(50% 0.006 125)",
+          "oklch(62% 0.006 125)",
+          "oklch(74% 0.006 125)",
+          "oklch(86% 0.006 125)",
+          "oklch(95% 0.006 125)"
+        ]
+      },
+      "ink-hover": {
+        "role": "neutral",
+        "displayName": "Hover Ink",
+        "canonical": "#2d2e29",
+        "tonalRamp": [
+          "oklch(15% 0.008 120)",
+          "oklch(25% 0.008 120)",
+          "oklch(38% 0.008 120)",
+          "oklch(50% 0.008 120)",
+          "oklch(62% 0.008 120)",
+          "oklch(74% 0.008 120)",
+          "oklch(86% 0.008 120)",
+          "oklch(95% 0.008 120)"
+        ]
+      },
+      "dark-panel": {
+        "role": "neutral",
+        "displayName": "Kitchen Panel",
+        "canonical": "#20211e",
+        "tonalRamp": [
+          "oklch(15% 0.007 120)",
+          "oklch(25% 0.007 120)",
+          "oklch(38% 0.007 120)",
+          "oklch(50% 0.007 120)",
+          "oklch(62% 0.007 120)",
+          "oklch(74% 0.007 120)",
+          "oklch(86% 0.007 120)",
+          "oklch(95% 0.007 120)"
+        ]
+      },
+      "bone-canvas": {
+        "role": "neutral",
+        "displayName": "Bone Canvas",
+        "canonical": "#eff0eb",
+        "tonalRamp": [
+          "oklch(15% 0.009 120)",
+          "oklch(25% 0.009 120)",
+          "oklch(38% 0.009 120)",
+          "oklch(50% 0.009 120)",
+          "oklch(62% 0.009 120)",
+          "oklch(74% 0.009 120)",
+          "oklch(86% 0.009 120)",
+          "oklch(95% 0.009 120)"
+        ]
+      },
+      "paper-control": {
+        "role": "neutral",
+        "displayName": "Paper Control",
+        "canonical": "#fafbf6",
+        "tonalRamp": [
+          "oklch(15% 0.008 120)",
+          "oklch(25% 0.008 120)",
+          "oklch(38% 0.008 120)",
+          "oklch(50% 0.008 120)",
+          "oklch(62% 0.008 120)",
+          "oklch(74% 0.008 120)",
+          "oklch(86% 0.008 120)",
+          "oklch(95% 0.008 120)"
+        ]
+      },
+      "acid-lime": {
+        "role": "primary",
+        "displayName": "Acid Lime",
+        "canonical": "#b7ff00",
+        "tonalRamp": [
+          "oklch(15% 0.22 125)",
+          "oklch(25% 0.22 125)",
+          "oklch(38% 0.22 125)",
+          "oklch(50% 0.22 125)",
+          "oklch(62% 0.22 125)",
+          "oklch(74% 0.22 125)",
+          "oklch(86% 0.22 125)",
+          "oklch(95% 0.22 125)"
+        ]
+      },
+      "lime-mark": {
+        "role": "primary",
+        "displayName": "Grounded Lime Mark",
+        "canonical": "#78ad00",
+        "tonalRamp": [
+          "oklch(15% 0.16 125)",
+          "oklch(25% 0.16 125)",
+          "oklch(38% 0.16 125)",
+          "oklch(50% 0.16 125)",
+          "oklch(62% 0.16 125)",
+          "oklch(74% 0.16 125)",
+          "oklch(86% 0.16 125)",
+          "oklch(95% 0.16 125)"
+        ]
+      },
+      "quiet-line": {
+        "role": "neutral",
+        "displayName": "Quiet Line",
+        "canonical": "#cdd0c6",
+        "tonalRamp": [
+          "oklch(15% 0.012 120)",
+          "oklch(25% 0.012 120)",
+          "oklch(38% 0.012 120)",
+          "oklch(50% 0.012 120)",
+          "oklch(62% 0.012 120)",
+          "oklch(74% 0.012 120)",
+          "oklch(86% 0.012 120)",
+          "oklch(95% 0.012 120)"
+        ]
+      },
+      "ink-glass": {
+        "role": "neutral",
+        "displayName": "Ink Glass",
+        "canonical": "rgba(17, 18, 15, 0.72)",
+        "tonalRamp": [
+          "oklch(15% 0.006 125 / 72%)",
+          "oklch(25% 0.006 125 / 72%)",
+          "oklch(38% 0.006 125 / 72%)",
+          "oklch(50% 0.006 125 / 72%)",
+          "oklch(62% 0.006 125 / 72%)",
+          "oklch(74% 0.006 125 / 72%)",
+          "oklch(86% 0.006 125 / 72%)",
+          "oklch(95% 0.006 125 / 72%)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Decision Display",
+        "purpose": "The single first-viewport choice statement."
+      },
+      "headline": {
+        "displayName": "Editorial Headline",
+        "purpose": "Major section declarations inside quiet or dark fields."
+      },
+      "title": {
+        "displayName": "Card Title",
+        "purpose": "Media decisions, restaurant names, and compact feature titles."
+      },
+      "body": {
+        "displayName": "Open Body",
+        "purpose": "Short explanatory copy with comfortable reading rhythm."
+      },
+      "label": {
+        "displayName": "Compact Label",
+        "purpose": "Navigation, buttons, chips, status, and offer metadata."
+      }
+    },
+    "shadows": [
+      {
+        "name": "search-focus-glow",
+        "value": "0 0 0 4px rgba(183, 255, 0, 0.35)",
+        "purpose": "State-only glow around the focused search field; not surface elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default easing for the revealed quiz panel and image zoom."
+      },
+      {
+        "name": "panel-reveal",
+        "value": "420ms",
+        "purpose": "Clip-and-fade reveal of the 3-tap match panel."
+      },
+      {
+        "name": "media-zoom",
+        "value": "800ms",
+        "purpose": "Subtle restaurant-image scale response on hover."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "triptych-collapse",
+        "value": "1100px"
+      },
+      {
+        "name": "hero-stack",
+        "value": "850px"
+      },
+      {
+        "name": "compact-mobile",
+        "value": "620px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The matte-ink pill used for the principal text action.",
+      "html": "<button class=\"ds-btn-primary\">Find dinner <svg class=\"ds-btn-primary-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M6 13l6 6 6-6\"/></svg></button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:.55rem; min-height:3.2rem; padding:.75rem 1.2rem; border:1px solid var(--ink); border-radius:999px; background:var(--ink); color:var(--paper); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; font-size:.83rem; font-weight:750; cursor:pointer; } .ds-btn-primary:hover { background:#2d2e29; } .ds-btn-primary:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-btn-primary-icon { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    },
+    {
+      "name": "Text Action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "A transparent utility pill that supports the primary action without competing with it.",
+      "html": "<button class=\"ds-btn-text\"><svg class=\"ds-btn-text-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6\"/></svg>3-tap match</button>",
+      "css": ".ds-btn-text { display:inline-flex; align-items:center; justify-content:center; gap:.55rem; min-height:3.2rem; padding:.75rem .9rem; border:0; border-radius:999px; background:transparent; color:var(--ink); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; font-size:.83rem; font-weight:750; cursor:pointer; } .ds-btn-text:hover { text-decoration:underline; text-underline-offset:.25em; } .ds-btn-text:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-btn-text-icon { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    },
+    {
+      "name": "Lime Icon Button",
+      "kind": "button",
+      "refersTo": "button-lime-icon",
+      "description": "The circular forward action used inside search, media decisions, and image cards.",
+      "html": "<button class=\"ds-btn-lime\" aria-label=\"Continue\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-btn-lime { display:inline-grid; width:3.3rem; height:3.3rem; place-items:center; border:0; border-radius:50%; background:var(--lime); color:var(--ink); cursor:pointer; } .ds-btn-lime:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-btn-lime svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "The oversized dish-or-place search with a lime forward action.",
+      "html": "<form class=\"ds-search\"><svg class=\"ds-search-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"m16 16 4 4\"/></svg><input aria-label=\"Search a dish or place\" placeholder=\"Search a dish or place\"><button type=\"submit\" aria-label=\"Search\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button></form>",
+      "css": ".ds-search { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:.8rem; width:min(100%,39rem); min-height:4.25rem; padding:.45rem .45rem .45rem 1.25rem; border:1px solid #b9bdb2; border-radius:999px; background:var(--paper); color:var(--ink); } .ds-search:focus-within { border-color:var(--ink); box-shadow:0 0 0 4px rgba(183,255,0,.35); } .ds-search input { min-width:0; border:0; outline:0; background:transparent; color:var(--ink); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; font-size:1rem; } .ds-search input::placeholder { color:#74776f; } .ds-search button { display:inline-grid; width:3.3rem; height:3.3rem; place-items:center; border:0; border-radius:50%; background:var(--lime); color:var(--ink); cursor:pointer; } .ds-search button:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-search svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    },
+    {
+      "name": "Craving Chips",
+      "kind": "chip",
+      "refersTo": "chip-active",
+      "description": "A compact choice row with a black active chip and outlined alternatives.",
+      "html": "<div class=\"ds-chips\" aria-label=\"Choose a craving\"><button class=\"ds-chip ds-chip-active\" aria-pressed=\"true\">Biryani</button><button class=\"ds-chip\" aria-pressed=\"false\">Momos</button><button class=\"ds-chip\" aria-pressed=\"false\">Chai</button></div>",
+      "css": ".ds-chips { display:flex; flex-wrap:wrap; gap:.5rem; } .ds-chip { min-height:2.55rem; padding:.6rem .92rem; border:1px solid #b9bdb2; border-radius:999px; background:transparent; color:var(--ink); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; font-size:.77rem; font-weight:680; cursor:pointer; } .ds-chip:hover { border-color:var(--ink); } .ds-chip:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-chip-active { border-color:var(--ink); background:var(--ink); color:var(--paper); }"
+    },
+    {
+      "name": "Capsule Navigation",
+      "kind": "nav",
+      "refersTo": "navigation-pill",
+      "description": "The centered desktop navigation with compact links and a dark hover inversion.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Primary navigation\"><a href=\"#\">Discover</a><a href=\"#\">Live offers</a><a href=\"#\">Events</a></nav>",
+      "css": ".ds-nav { display:flex; align-items:center; gap:.25rem; width:max-content; padding:.35rem; border:1px solid var(--line); border-radius:999px; background:rgba(250,251,246,.82); } .ds-nav a { padding:.65rem 1rem; border-radius:999px; color:var(--ink); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; font-size:.82rem; font-weight:650; text-decoration:none; } .ds-nav a:hover { background:var(--ink); color:var(--paper); } .ds-nav a:focus-visible { outline:3px solid var(--lime); outline-offset:4px; }"
+    },
+    {
+      "name": "Live Decision Card",
+      "kind": "custom",
+      "refersTo": "media-decision-card",
+      "description": "The signature dark-glass decision surface attached to the hero photograph.",
+      "html": "<article class=\"ds-decision-card\"><div><p>Tonight’s fast pick</p><h3>Biryani around campus</h3><span>Live owner updates · menus included</span></div><button aria-label=\"Browse Biryani places\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button></article>",
+      "css": ".ds-decision-card { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:1rem; width:min(100%,42rem); padding:1.35rem; border:1px solid rgba(255,255,255,.2); border-radius:1.65rem; background:rgba(17,18,15,.72); color:var(--paper); backdrop-filter:blur(18px); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; } .ds-decision-card p { margin:0 0 .5rem; color:#d5d8cf; font-size:.75rem; font-weight:650; } .ds-decision-card h3 { max-width:13ch; margin:0; font-size:clamp(1.65rem,3vw,2.5rem); font-weight:560; line-height:1; letter-spacing:-.035em; } .ds-decision-card span { display:block; margin-top:.85rem; color:#d5d8cf; font-size:.72rem; } .ds-decision-card button { display:inline-grid; width:3.7rem; height:3.7rem; place-items:center; border:0; border-radius:50%; background:var(--lime); color:var(--ink); cursor:pointer; } .ds-decision-card button:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-decision-card svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    },
+    {
+      "name": "Restaurant Image Card",
+      "kind": "card",
+      "refersTo": "restaurant-card",
+      "description": "A tall editorial food card with its offer and place identity held in a bottom glass field.",
+      "html": "<article class=\"ds-restaurant-card\"><img src=\"/assets/card-smoky-biryani.png\" alt=\"Biryani Adda featured food\"><span class=\"ds-card-tag\">Group comfort</span><div class=\"ds-card-copy\"><p>Free Chicken 65 on handi biryani</p><h3>Biryani Adda</h3><span>Kakatiya · ₹180 per head</span></div><button aria-label=\"Open Biryani Adda\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button></article>",
+      "css": ".ds-restaurant-card { position:relative; width:min(100%,24rem); min-height:32rem; overflow:hidden; border-radius:1.65rem; background:#2c2e29; color:var(--paper); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; } .ds-restaurant-card>img { position:absolute; width:100%; height:100%; object-fit:cover; transition:transform 800ms cubic-bezier(.16,1,.3,1); } .ds-restaurant-card:hover>img { transform:scale(1.025); } .ds-restaurant-card::after { content:\"\"; position:absolute; inset:auto 0 0; height:46%; background:rgba(17,18,15,.72); backdrop-filter:blur(8px); } .ds-card-tag,.ds-card-copy,.ds-restaurant-card button { position:absolute; z-index:1; } .ds-card-tag { top:.9rem; left:.9rem; padding:.55rem .75rem; border-radius:999px; background:rgba(17,18,15,.72); font-size:.72rem; font-weight:700; backdrop-filter:blur(10px); } .ds-card-copy { inset:auto 1.25rem 1.35rem; } .ds-card-copy p { max-width:25ch; margin:0 0 .8rem; color:var(--lime); font-size:.78rem; font-weight:720; line-height:1.35; } .ds-card-copy h3 { max-width:9ch; margin:0; font-size:2.2rem; font-weight:580; line-height:1; letter-spacing:-.035em; } .ds-card-copy span { display:block; margin-top:.65rem; color:#d6d8d1; font-size:.73rem; } .ds-restaurant-card button { right:1.1rem; bottom:1.2rem; display:inline-grid; width:3.45rem; height:3.45rem; place-items:center; border:0; border-radius:50%; background:var(--lime); color:var(--ink); cursor:pointer; } .ds-restaurant-card button:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-restaurant-card svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    },
+    {
+      "name": "Live Offer Panel",
+      "kind": "card",
+      "refersTo": "live-panel",
+      "description": "The matte kitchen-update panel that completes the edited discovery triptych.",
+      "html": "<aside class=\"ds-live-panel\"><h3>Fresh from the kitchens</h3><p>Owner updates stay visible only while they are current.</p><button><span>Chai Theory</span><strong>Midnight maggi + chai combo ₹79</strong><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button></aside>",
+      "css": ".ds-live-panel { display:flex; flex-direction:column; width:min(100%,22rem); min-height:24rem; padding:1.5rem; border:1px solid #373a33; border-radius:1.65rem; background:#20211e; color:var(--paper); font-family:\"Manrope Variable\",\"Manrope\",sans-serif; } .ds-live-panel h3 { max-width:9ch; margin:0; font-size:2.2rem; font-weight:540; line-height:1; letter-spacing:-.035em; } .ds-live-panel>p { margin:1.2rem 0 2rem; color:#aeb2a7; font-size:.82rem; line-height:1.55; } .ds-live-panel button { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.45rem .75rem; width:100%; margin-top:auto; padding:1rem 0; border:0; border-block:1px solid #3a3d36; background:transparent; color:var(--paper); text-align:left; cursor:pointer; } .ds-live-panel button:hover strong { color:var(--lime); } .ds-live-panel button:focus-visible { outline:3px solid var(--lime); outline-offset:4px; } .ds-live-panel span,.ds-live-panel strong { grid-column:1; } .ds-live-panel span { color:#9ea299; font-size:.68rem; } .ds-live-panel strong { font-size:.83rem; line-height:1.35; } .ds-live-panel svg { grid-column:2; grid-row:1 / span 2; align-self:center; width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Campus Shortlist",
+    "overview": "The system makes a campus meal decision feel like an edited recommendation, not a directory wall. A bone-white canvas gives one oversized question room to breathe, while matte-black fields and full-bleed food photography make the few chosen options feel immediate and specific. The visual voice is minimalist, clean, culinary, and decisive; it rejects the generic SaaS hero and the endless marketplace feed.\n\nOversized rounded controls translate the supplied culinary-exploration reference into responsive web form. Manrope Variable keeps the expression neutral and contemporary, acid lime marks the next or current action, and soft translucent surfaces appear only where sticky context or imagery needs legible controls. The result is quiet around the decision and cinematic around the food.",
+    "keyCharacteristics": [
+      "One dominant decision headline and one clear path forward.",
+      "Bone-white quiet space paired with matte-black editorial fields.",
+      "Acid lime reserved for active, focused, or forward-moving moments.",
+      "Full-bleed, high-contrast culinary photography with deliberate crops.",
+      "Oversized pills, circles, and softly clipped media surfaces.",
+      "Glass used precisely for legibility over media and sticky context."
+    ],
+    "rules": [
+      {
+        "name": "The One Lime Rule",
+        "body": "Acid lime identifies a current selection, visible focus, or the next action; it never becomes a broad background wash. The darker wordmark dot is the only identity-only variation.",
+        "section": "colors"
+      },
+      {
+        "name": "The Culinary Black Rule",
+        "body": "Matte black belongs to decisive controls and editorial food fields, not to generic full-page dark mode.",
+        "section": "colors"
+      },
+      {
+        "name": "The Decision Is the Display Rule",
+        "body": "Use the largest type for a choice the user can act on, not for a brand slogan or decorative metric.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tight-Not-Cramped Rule",
+        "body": "Large headlines use tight line-height and tracking, while supporting copy returns to open 1.5–1.6 line-height for easy scanning.",
+        "section": "typography"
+      },
+      {
+        "name": "The Edited Rhythm Rule",
+        "body": "Give the question and imagery generous room, then keep the available choices short, close, and immediately actionable.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat-at-Rest Rule",
+        "body": "Do not lift ordinary surfaces with drop shadows; separate them with tone, crop, border, or spacing.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Earned Glass Rule",
+        "body": "Blur is for legibility over photography or continuity in sticky chrome. Opaque content panels stay opaque.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Silhouette Carries the System Rule",
+        "body": "Reuse the same pill, circle, medium-card, and large-surface families; do not introduce isolated corner styles.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do build the first viewport around one oversized decision question, one search field, and one cinematic food image.",
+      "Do use glossy, high-contrast, full-bleed culinary photography with a crop chosen for its slot.",
+      "Do keep Acid Lime rare and state-bearing: active, focused, selected, or forward.",
+      "Do use Matte Ink to frame a deliberately short, trusted set of choices.",
+      "Do collapse the triptych and preserve the action hierarchy at the 1100px, 850px, and 620px breakpoints."
+    ],
+    "donts": [
+      "Don't turn the experience into an endless directory wall or a dense marketplace feed.",
+      "Don't replace the culinary image field with a generic SaaS gradient, abstract illustration, or metric dashboard.",
+      "Don't introduce multiple bright accents or large Acid Lime background fields.",
+      "Don't place decorative glass across ordinary content; reserve it for sticky context and media legibility.",
+      "Don't add new radius values when a pill, circle, 1.2rem panel, 1.65rem card, or 2.25rem surface already fits."
+    ]
+  }
+}

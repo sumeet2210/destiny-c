@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { OfferBadge } from '@/components/features/OfferBadge';
-
 type TickerOffer = {
   id: string;
   restaurant_id: string;
@@ -11,6 +9,17 @@ type TickerOffer = {
   title: string;
   discount_text: string | null;
   expires_at: string;
+  image: string;
+};
+
+type TickerEvent = {
+  id: string;
+  restaurant_id: string;
+  restaurantName: string;
+  title: string;
+  event_type: string;
+  starts_at: string;
+  image: string;
 };
 
 /**
@@ -18,7 +27,13 @@ type TickerOffer = {
  * The duplicated visual cycle creates a seamless, slow loop while the first
  * cycle remains the only semantic list. Interaction and reduced-motion pause it.
  */
-export function SpecialsTicker({ offers }: { offers: TickerOffer[] }) {
+export function SpecialsTicker({
+  offers,
+  events = [],
+}: {
+  offers: TickerOffer[];
+  events?: TickerEvent[];
+}) {
   const railRef = useRef<HTMLDivElement>(null);
   const duplicateCycleRef = useRef<HTMLDivElement>(null);
   const loopAtRef = useRef(0);
@@ -64,11 +79,11 @@ export function SpecialsTicker({ offers }: { offers: TickerOffer[] }) {
     observer.observe(duplicateCycle);
     measureLoop();
     return () => observer.disconnect();
-  }, [offers.length]);
+  }, [offers.length, events.length]);
 
   useEffect(() => {
     if (
-      offers.length < 2 ||
+      offers.length + events.length < 2 ||
       reduceMotion ||
       hovered ||
       focused ||
@@ -102,12 +117,20 @@ export function SpecialsTicker({ offers }: { offers: TickerOffer[] }) {
 
     frame = requestAnimationFrame(advance);
     return () => cancelAnimationFrame(frame);
-  }, [drag, focused, hovered, inView, offers.length, reduceMotion]);
+  }, [
+    drag,
+    focused,
+    hovered,
+    inView,
+    offers.length,
+    events.length,
+    reduceMotion,
+  ]);
 
-  if (offers.length === 0) {
+  if (offers.length === 0 && events.length === 0) {
     return (
       <div className="rounded-card border-border-hairline bg-surface-muted text-text-muted border p-4 text-sm">
-        No live offers right now — check back around lunch.
+        No live offers or upcoming events right now — check back soon.
       </div>
     );
   }
@@ -116,7 +139,7 @@ export function SpecialsTicker({ offers }: { offers: TickerOffer[] }) {
     <div
       ref={railRef}
       role="list"
-      aria-label="Today's specials"
+      aria-label="Current offers and upcoming events"
       onPointerDown={(e) => {
         const el = railRef.current!;
         el.setPointerCapture(e.pointerId);
@@ -157,9 +180,12 @@ export function SpecialsTicker({ offers }: { offers: TickerOffer[] }) {
           {offers.map((offer) => (
             <OfferTile key={offer.id} offer={offer} />
           ))}
+          {events.map((event) => (
+            <EventTile key={event.id} event={event} />
+          ))}
         </div>
 
-        {offers.length > 1 && (
+        {offers.length + events.length > 1 && (
           <div
             ref={duplicateCycleRef}
             aria-hidden="true"
@@ -172,10 +198,57 @@ export function SpecialsTicker({ offers }: { offers: TickerOffer[] }) {
                 duplicate
               />
             ))}
+            {events.map((event) => (
+              <EventTile
+                key={`duplicate-event-${event.id}`}
+                event={event}
+                duplicate
+              />
+            ))}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function EventTile({
+  event,
+  duplicate = false,
+}: {
+  event: TickerEvent;
+  duplicate?: boolean;
+}) {
+  const when = new Date(event.starts_at).toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
+
+  return (
+    <Link
+      role="listitem"
+      href="/events"
+      draggable={false}
+      tabIndex={duplicate ? -1 : undefined}
+      className="specials-card specials-event-card"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={event.image} alt="" loading="lazy" draggable={false} />
+      <span className="specials-card-shade" aria-hidden />
+      <span className="specials-kind">
+        Event · {event.event_type.replaceAll('_', ' ')}
+      </span>
+      <span className="specials-card-copy">
+        <span className="specials-place">{event.restaurantName}</span>
+        <strong>{event.title}</strong>
+        <span className="specials-detail">{when}</span>
+      </span>
+      <CardArrow />
+    </Link>
   );
 }
 
@@ -192,21 +265,30 @@ function OfferTile({
       href={`/restaurant/${offer.restaurant_id}?from=homepage_feed`}
       draggable={false}
       tabIndex={duplicate ? -1 : undefined}
-      className="specials-card rounded-control border-border-hairline bg-surface-raised flex shrink-0 flex-col gap-1.5 border px-3.5 py-2.5"
+      className="specials-card specials-offer-card"
     >
-      <span className="text-paper max-w-56 truncate text-sm font-medium">
-        {offer.title}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={offer.image} alt="" loading="lazy" draggable={false} />
+      <span className="specials-card-shade" aria-hidden />
+      <span className="specials-kind">Offer</span>
+      <span className="specials-card-copy">
+        <span className="specials-place">{offer.restaurantName}</span>
+        <strong>{offer.title}</strong>
+        <span className="specials-detail">
+          {offer.discount_text ?? 'Limited-time special'}
+        </span>
       </span>
-      <span className="flex items-center gap-2">
-        <OfferBadge
-          title={offer.title}
-          discountText={offer.discount_text}
-          expiresAt={offer.expires_at}
-        />
-      </span>
-      <span className="text-text-muted text-[12px]">
-        {offer.restaurantName}
-      </span>
+      <CardArrow />
     </Link>
+  );
+}
+
+function CardArrow() {
+  return (
+    <span className="specials-card-arrow" aria-hidden>
+      <svg viewBox="0 0 24 24">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </span>
   );
 }

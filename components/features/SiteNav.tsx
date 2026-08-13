@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
 
 type NavIconName = 'home' | 'search' | 'events' | 'saved' | 'bookings';
@@ -27,53 +28,51 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const onHome = pathname === '/';
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  if (onHome) {
+    return (
+      <>
+        <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
+          <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between px-4 sm:px-6 lg:px-10">
+            <span className="pointer-events-auto inline-flex min-h-11 items-center rounded-full border border-black/15 bg-white px-3 text-[12px] font-bold">
+              Around campus
+            </span>
+            <button
+              type="button"
+              aria-label="Open navigation menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(true)}
+              className="pointer-events-auto grid h-11 w-11 place-items-center rounded-full border border-white/35 bg-black text-white transition-transform active:scale-95"
+            >
+              <MenuIcon />
+            </button>
+          </div>
+        </header>
+        <HomeMenu
+          open={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          accountHref={accountHref}
+          accountLabel={accountLabel}
+        />
+      </>
+    );
+  }
 
   return (
-    <header
-      data-home={onHome || undefined}
-      className={cn(
-        'sticky top-0 z-40 border-b backdrop-blur',
-        onHome
-          ? 'border-black/10 bg-[#F8FAFA]/95 text-black'
-          : 'border-border-hairline bg-canvas/95',
-      )}
-    >
-      <div
-        className={cn(
-          'mx-auto flex items-center justify-between gap-4 px-4',
-          onHome ? 'h-16 max-w-[100rem] sm:px-6 lg:px-10' : 'h-14 max-w-5xl',
-        )}
-      >
+    <header className="border-border-hairline bg-canvas/95 sticky top-0 z-40 border-b backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
         <Link
           href="/"
           aria-label="Destiny home"
-          className={cn(
-            onHome
-              ? 'relative h-11 w-[7.2rem] shrink-0 overflow-hidden'
-              : 'font-display text-accent-primary text-xl font-extrabold',
-          )}
+          className="font-display text-accent-primary text-xl font-extrabold"
         >
-          {onHome ? (
-            // The supplied square asset is intentionally cropped to its wordmark.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/brand/destiny-wordmark.png"
-              alt="Destiny"
-              className="absolute top-[-2.15rem] left-0 h-[7.2rem] w-[7.2rem] max-w-none"
-            />
-          ) : (
-            'Destiny'
-          )}
+          Destiny
         </Link>
 
         <nav
           aria-label="Primary navigation"
-          className={cn(
-            'hidden items-center',
-            onHome
-              ? 'gap-0.5 rounded-full border border-black/15 bg-white p-1 lg:flex'
-              : 'gap-1 sm:flex',
-          )}
+          className="hidden items-center gap-1 sm:flex"
         >
           {tabs.slice(1).map((tab) => (
             <NavLink
@@ -90,17 +89,88 @@ export function SiteHeader({
           href={accountHref}
           className={cn(
             'inline-flex items-center justify-center font-semibold',
-            onHome
-              ? 'min-h-11 rounded-full bg-[#00B89C] px-4 text-[13px] text-black hover:bg-black hover:text-white'
-              : accountLabel === 'Log in'
-                ? 'rounded-control bg-accent-primary text-ink-on-primary min-h-9 px-3.5 py-1.5 text-[13px]'
-                : 'rounded-chip border-border-hairline bg-surface-raised text-paper min-h-9 border px-3 py-1.5 text-[13px]',
+            accountLabel === 'Log in'
+              ? 'rounded-control bg-accent-primary text-ink-on-primary min-h-9 px-3.5 py-1.5 text-[13px]'
+              : 'rounded-chip border-border-hairline bg-surface-raised text-paper min-h-9 border px-3 py-1.5 text-[13px]',
           )}
         >
           {accountLabel}
         </Link>
       </div>
     </header>
+  );
+}
+
+function HomeMenu({
+  open,
+  onClose,
+  accountHref,
+  accountLabel,
+}: {
+  open: boolean;
+  onClose: () => void;
+  accountHref: string;
+  accountLabel: string;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      onClick={(event) => {
+        if (event.target === dialogRef.current) onClose();
+      }}
+      className="fixed inset-y-0 right-0 m-0 ml-auto h-dvh w-[min(22rem,88vw)] max-w-none border-0 bg-black p-0 text-white shadow-2xl backdrop:bg-black/55"
+    >
+      <div className="flex min-h-full flex-col p-5 pt-[max(1.25rem,env(safe-area-inset-top))]">
+        <div className="flex items-center justify-between border-b border-white/15 pb-5">
+          <span className="text-lg font-bold">Menu</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close navigation menu"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        <nav aria-label="Homepage navigation" className="grid py-4">
+          {[
+            ['/', 'Home'],
+            ['/search', 'Search restaurants'],
+            ['/events', 'Events'],
+            ['/saved', 'Saved'],
+            ['/bookings', 'Bookings'],
+            ['/friends', 'Friends'],
+          ].map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex min-h-12 items-center justify-between border-b border-white/10 text-[15px] font-semibold hover:text-[#25CBB5]"
+            >
+              {label}
+              <MenuArrowIcon />
+            </Link>
+          ))}
+        </nav>
+
+        <Link
+          href={accountHref}
+          className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full border border-[#00B89C] bg-[#00B89C] px-5 font-bold text-black hover:bg-white"
+        >
+          {accountLabel === 'Log in' ? 'Log in' : `Open ${accountLabel}`}
+        </Link>
+      </div>
+    </dialog>
   );
 }
 
@@ -144,6 +214,7 @@ function NavLink({
 export function MobileTabBar() {
   const pathname = usePathname();
   const onHome = pathname === '/';
+  if (onHome) return null;
   return (
     <nav
       aria-label="Mobile navigation"
@@ -182,6 +253,49 @@ export function MobileTabBar() {
         })}
       </div>
     </nav>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+      <path
+        d="M4 7h16M4 12h16M4 17h16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+      <path
+        d="m6 6 12 12M18 6 6 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function MenuArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+      <path
+        d="M5 12h14M13 6l6 6-6 6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

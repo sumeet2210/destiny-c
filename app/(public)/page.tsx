@@ -48,52 +48,28 @@ export default function HomePage() {
     <main id="top" className={`${styles.home} ${manrope.variable}`}>
       <div className={styles.shell}>
         <section className={styles.hero} aria-labelledby="home-title">
-          <div className={styles.heroCopy}>
-            <h1 id="home-title">Dinner, minus the group chat.</h1>
-            <p>
-              Fresh offers, real menus, and nearby places worth leaving the
-              hostel for.
-            </p>
-
-            <Link href="/search" className={styles.searchPrompt}>
-              <SearchIcon />
-              <span>Search a dish or place</span>
-              <span className={styles.searchArrow} aria-hidden>
-                <ArrowIcon />
-              </span>
-            </Link>
-
-            <div className={styles.heroActions}>
-              <a href="#cravings" className={styles.primaryAction}>
-                Find dinner <DownIcon />
-              </a>
-              <Link href="/quiz" className={styles.secondaryAction}>
-                <TuneIcon /> 3-tap match
-              </Link>
-            </div>
-          </div>
-
           <div className={styles.heroMedia}>
-            {/* The approved prototype image is a local, production-owned asset. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/home/hero-campus-feast.webp"
               alt="Biryani, chai and momos arranged for a shared dinner"
               fetchPriority="high"
             />
-            <div className={styles.locationBadge}>
-              <PinIcon /> Around campus
+          </div>
+
+          <div className={styles.heroCopy}>
+            <div className={styles.heroLogo}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/destiny-wordmark.png" alt="Destiny" />
             </div>
-            <div className={styles.heroPanel}>
-              <div>
-                <span>Tonight&apos;s fast pick</span>
-                <h2>Live offers, ready when you are.</h2>
-                <p>Current owner updates and full menus in one place.</p>
-              </div>
-              <a href="#specials" aria-label="Browse today's specials">
-                <ArrowIcon />
-              </a>
-            </div>
+            <h1 id="home-title">Where should we eat?</h1>
+            <p>Current offers, nearby events, and places worth the walk.</p>
+            <a href="#restaurants" className={styles.primaryAction}>
+              Find your perfect spot <DownIcon />
+            </a>
+            <Link href="/quiz" className={styles.secondaryAction}>
+              <TuneIcon /> Try the 3-tap match
+            </Link>
           </div>
         </section>
 
@@ -101,19 +77,7 @@ export default function HomePage() {
           <TickerSection />
         </Suspense>
 
-        <Suspense
-          fallback={<HomeSkeleton className={styles.cravingSkeleton} />}
-        >
-          <CravingSection />
-        </Suspense>
-
-        <Suspense fallback={<HomeSkeleton className={styles.eventSkeleton} />}>
-          <EventsPeek />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <SquadSection />
-        </Suspense>
+        <SearchSection />
 
         <Suspense
           fallback={
@@ -127,6 +91,16 @@ export default function HomePage() {
           <PopularSection />
         </Suspense>
 
+        <Suspense
+          fallback={<HomeSkeleton className={styles.cravingSkeleton} />}
+        >
+          <CravingSection />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <SquadSection />
+        </Suspense>
+
         <HomeFooter />
       </div>
     </main>
@@ -134,22 +108,19 @@ export default function HomePage() {
 }
 
 async function TickerSection() {
-  const offers = await listTickerOffers();
+  const [offers, events] = await Promise.all([
+    listTickerOffers(),
+    listUpcomingEvents(),
+  ]);
   return (
     <section
       id="specials"
       aria-labelledby="specials-title"
       className={styles.specialsSection}
     >
-      <div className={styles.sectionHeadingOnDark}>
-        <div>
-          <h2 id="specials-title">Today&apos;s specials</h2>
-          <p>Owner updates stay visible only while they are current.</p>
-        </div>
-        <Link href="/search?offer=1">
-          See every offer <ArrowIcon />
-        </Link>
-      </div>
+      <h2 id="specials-title" className="sr-only">
+        Current offers and upcoming events
+      </h2>
       <SpecialsTicker
         offers={offers.map((o) => ({
           id: o.id,
@@ -158,8 +129,51 @@ async function TickerSection() {
           title: o.title,
           discount_text: o.discount_text,
           expires_at: o.expires_at,
+          image:
+            HOME_ARTWORK[o.restaurantName] ?? '/home/hero-campus-feast.webp',
+        }))}
+        events={events.slice(0, 6).map((event) => ({
+          id: event.id,
+          restaurant_id: event.restaurant_id,
+          restaurantName: event.restaurantName,
+          title: event.title,
+          event_type: event.event_type,
+          starts_at: event.starts_at,
+          image:
+            HOME_ARTWORK[event.restaurantName] ??
+            '/home/hero-campus-feast.webp',
         }))}
       />
+      <Link href="/events" className={styles.railAction}>
+        Explore all <ArrowIcon />
+      </Link>
+    </section>
+  );
+}
+
+function SearchSection() {
+  return (
+    <section className={styles.searchSection} aria-labelledby="search-title">
+      <div>
+        <h2 id="search-title">Know what you want?</h2>
+        <p>Search a dish, restaurant, or craving.</p>
+      </div>
+      <form action="/search" method="get" className={styles.searchPrompt}>
+        <SearchIcon />
+        <input
+          type="search"
+          name="q"
+          aria-label="Search restaurants and dishes"
+          placeholder="Try biryani, chai, rooftop..."
+        />
+        <button
+          type="submit"
+          className={styles.searchArrow}
+          aria-label="Search"
+        >
+          <ArrowIcon />
+        </button>
+      </form>
     </section>
   );
 }
@@ -182,37 +196,6 @@ async function CravingSection() {
         </Link>
       </div>
       <CravingExplorer restaurants={withHomeArtwork(restaurants)} />
-    </section>
-  );
-}
-
-async function EventsPeek() {
-  const events = await listUpcomingEvents();
-  if (events.length === 0) return null;
-  const next = events[0];
-  return (
-    <section aria-labelledby="events-title" className={styles.eventSection}>
-      <div className={styles.eventIntro}>
-        <span aria-hidden className={styles.eventIcon}>
-          <CalendarIcon />
-        </span>
-        <div>
-          <h2 id="events-title">The night can be the plan.</h2>
-          <p>Open mics, screenings, and food events live beside the menu.</p>
-        </div>
-      </div>
-      <EventCard
-        className={styles.eventCard}
-        title={next.title}
-        eventType={next.event_type}
-        startsAt={next.starts_at}
-        restaurantName={next.restaurantName}
-        restaurantId={next.restaurant_id}
-        description={next.description}
-      />
-      <Link href="/events" className={styles.eventAction}>
-        Explore events <ArrowIcon />
-      </Link>
     </section>
   );
 }
@@ -312,11 +295,15 @@ async function PopularSection() {
   );
 
   return (
-    <section aria-labelledby="popular-title" className={styles.popularSection}>
+    <section
+      id="restaurants"
+      aria-labelledby="popular-title"
+      className={styles.popularSection}
+    >
       <div className={styles.popularHeading}>
         <div>
-          <h2 id="popular-title">Popular this week</h2>
-          <p>A compact view of the places students are opening most.</p>
+          <h2 id="popular-title">Restaurants for you</h2>
+          <p>Popular nearby places, kept compact for a quick decision.</p>
         </div>
         <Link href="/search">
           Browse all places <ArrowIcon />
@@ -380,24 +367,6 @@ function TuneIcon() {
   return (
     <svg className={styles.lineIcon} viewBox="0 0 24 24" aria-hidden>
       <path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" />
-    </svg>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg className={styles.lineIcon} viewBox="0 0 24 24" aria-hidden>
-      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
-      <circle cx="12" cy="10" r="2.5" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg className={styles.lineIcon} viewBox="0 0 24 24" aria-hidden>
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M16 3v4M8 3v4M3 10h18" />
     </svg>
   );
 }

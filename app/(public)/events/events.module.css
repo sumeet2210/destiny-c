@@ -1,0 +1,681 @@
+.eventsPage {
+  padding-bottom: 6rem;
+}
+
+.shell {
+  width: min(100%, 100rem);
+  margin-inline: auto;
+  padding: 0 clamp(0.75rem, 3vw, 3.25rem) 4rem;
+}
+
+.intro {
+  display: grid;
+  min-height: 30rem;
+  grid-template-columns: minmax(18rem, 1fr) auto;
+  align-items: end;
+  gap: clamp(2rem, 8vw, 9rem);
+  padding: clamp(4.5rem, 10vw, 9rem) clamp(0.25rem, 2vw, 2rem)
+    clamp(3rem, 6vw, 5rem);
+}
+
+.introCopy {
+  display: flex;
+  align-items: end;
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+.intro h1 {
+  max-width: 7ch;
+  margin: 0;
+  font-size: clamp(4rem, 9vw, 6rem);
+  font-weight: 560;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.introCopy p {
+  max-width: 31ch;
+  margin: 0 0 0.25rem;
+  color: #4b5563;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.calendarLink {
+  display: grid;
+  width: clamp(10.5rem, 14vw, 13rem);
+  aspect-ratio: 1;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  gap: 1rem;
+  padding: 1.35rem;
+  border-radius: 50%;
+  background: #00b89c;
+  color: #000000;
+  text-decoration: none;
+  transition:
+    border-radius 450ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 200ms ease-out;
+}
+
+.calendarLink:hover {
+  border-radius: 30%;
+  background: #000000;
+  color: #ffffff;
+}
+
+.calendarLink > svg:first-child {
+  width: 2.8rem;
+  height: 2.8rem;
+  grid-column: 1 / -1;
+  align-self: start;
+}
+
+.calendarLink > svg:last-child {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.calendarLink svg,
+.eventTiming svg,
+.browseLink svg,
+.emptyState > svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.calendarLink span {
+  max-width: 6ch;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.eventField {
+  padding: clamp(1.25rem, 4vw, 3.5rem);
+  border-radius: clamp(1.5rem, 3vw, 2.25rem);
+  background: #000000;
+  color: #ffffff;
+  animation: fieldReveal 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --color-paper: #ffffff;
+  --color-text-muted: #4b5563;
+  --color-surface-muted: #ffffff;
+  --color-surface-raised: #e6faf6;
+  --color-border-hairline: rgb(0 0 0 / 18%);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 0 clamp(0rem, 1.5vw, 1rem) clamp(1.5rem, 4vw, 3rem);
+}
+
+.sectionHeading h2 {
+  max-width: 10ch;
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.6rem, 5.5vw, 5rem);
+  font-weight: 560;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.sectionHeading > p {
+  margin: 0 0 0.25rem;
+  color: #e6faf6;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+
+.eventList {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.eventCard {
+  display: grid;
+  min-height: 21rem;
+  grid-template-columns: minmax(18rem, 0.88fr) minmax(22rem, 1.12fr);
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  color: #000000;
+  --color-paper: #000000;
+  --color-text-muted: #4b5563;
+  --color-surface-muted: #ffffff;
+  --color-surface-raised: #e6faf6;
+  --color-border-hairline: rgb(0 0 0 / 18%);
+}
+
+.eventCard:nth-child(even) {
+  grid-template-columns: minmax(22rem, 1.12fr) minmax(18rem, 0.88fr);
+}
+
+.eventCard:nth-child(even) .eventMedia {
+  order: 2;
+}
+
+.eventMedia {
+  position: relative;
+  min-height: 21rem;
+  overflow: hidden;
+  background-color: #e6faf6;
+  background-image:
+    linear-gradient(180deg, rgb(0 0 0 / 8%) 40%, rgb(0 0 0 / 64%) 100%),
+    var(--event-artwork);
+  background-position: center;
+  background-size: cover;
+  isolation: isolate;
+}
+
+.eventMedia::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: inherit;
+  background-position: center;
+  background-size: cover;
+  content: '';
+  transition: transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eventCard:hover .eventMedia::after {
+  transform: scale(1.035);
+}
+
+.eventType {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: #00b89c;
+  color: #000000;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.dateBlock {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: grid;
+  width: 6.25rem;
+  min-height: 7.25rem;
+  align-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 1.1rem;
+  background: #e6faf6;
+  color: #000000;
+}
+
+.dateBlock span {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dateBlock strong {
+  font-size: 3.25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 560;
+  line-height: 0.75;
+  letter-spacing: -0.04em;
+}
+
+.eventContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.2rem, 2.5vw, 2.5rem);
+}
+
+.eventTiming {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: #006f60;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.eventTiming svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.titleRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(7.25rem, 10vw, 9rem);
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-top: 0.75rem;
+}
+
+.titleRow h3 {
+  max-width: 15ch;
+  margin: 0;
+  font-size: clamp(1.95rem, 3.4vw, 3.1rem);
+  font-weight: 560;
+  line-height: 0.93;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.venueLine {
+  margin: 0.7rem 0 0;
+  color: #4b5563;
+  font-size: 0.76rem;
+}
+
+.venueLine a {
+  color: #000000;
+  font-weight: 800;
+  text-decoration-color: #00b89c;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.26em;
+}
+
+.description {
+  max-width: 54ch;
+  margin: 0.75rem 0 0;
+  color: #4b5563;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.rsvpSlot {
+  min-width: 0;
+  width: 100%;
+  max-width: 9rem;
+}
+
+.rsvpSlot > div {
+  width: 100%;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+.rsvpSlot > div > :global(span) {
+  max-width: 100%;
+  flex-basis: 100%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.rsvpSlot :global(button[data-ui-button]) {
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+}
+
+.rsvpSlot :global(button[data-ui-button][data-variant='outline']) {
+  border-color: rgb(0 0 0 / 22%);
+}
+
+.rsvpSlot :global(button[data-ui-button][data-variant='primary']):hover {
+  background: #000000;
+  color: #ffffff;
+}
+
+.browseLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  flex: none;
+  align-items: center;
+  gap: 0.45rem;
+  color: #000000;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.browseLink:hover {
+  color: #006f60;
+}
+
+.browseLink svg {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.browseLink:hover svg {
+  transform: translate(0.16rem, -0.16rem);
+}
+
+.emptyState {
+  display: grid;
+  min-height: 26rem;
+  grid-template-columns: auto minmax(16rem, 1fr) auto;
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 5rem);
+  padding: clamp(2rem, 5vw, 5rem);
+  border-radius: 2.25rem;
+  background: #000000;
+  color: #ffffff;
+}
+
+.emptyState > svg {
+  width: clamp(4rem, 8vw, 7rem);
+  height: clamp(4rem, 8vw, 7rem);
+  color: #00b89c;
+}
+
+.emptyState h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  font-weight: 560;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.emptyState p {
+  max-width: 48ch;
+  margin: 1rem 0 0;
+  color: #e6faf6;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.emptyState .browseLink {
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: #00b89c;
+  color: #000000;
+}
+
+.emptyState .browseLink:hover {
+  background: #ffffff;
+}
+
+.countSkeleton {
+  width: 9rem;
+  height: 0.8rem;
+  margin-bottom: 0.35rem;
+  background: rgb(230 250 246 / 38%) !important;
+}
+
+.eventSkeleton {
+  display: grid;
+  min-height: 21rem;
+  grid-template-columns: minmax(18rem, 0.88fr) minmax(22rem, 1.12fr);
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: #ffffff;
+}
+
+.mediaSkeleton {
+  height: 100%;
+  min-height: 21rem;
+  border-radius: 0 !important;
+  background: #bcefe7 !important;
+}
+
+.copySkeleton {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 4.5vw, 4.5rem);
+}
+
+.lineShort,
+.lineTitle,
+.lineBody,
+.actionSkeleton {
+  background: #e6faf6 !important;
+}
+
+.lineShort {
+  width: 8rem;
+  height: 0.75rem;
+}
+
+.lineTitle {
+  width: min(100%, 22rem);
+  height: 3.5rem;
+}
+
+.lineBody {
+  width: min(82%, 24rem);
+  height: 2.5rem;
+  margin-top: 1rem;
+}
+
+.actionSkeleton {
+  width: 7rem;
+  height: 2.75rem;
+}
+
+.titleSkeletonRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@keyframes fieldReveal {
+  from {
+    opacity: 0.96;
+    clip-path: inset(0 0 8% 0 round 2.25rem);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 2.25rem);
+  }
+}
+
+@media (max-width: 60rem) {
+  .intro {
+    min-height: 26rem;
+  }
+
+  .introCopy {
+    display: block;
+  }
+
+  .introCopy p {
+    margin-top: 1.25rem;
+  }
+
+  .eventCard,
+  .eventCard:nth-child(even),
+  .eventSkeleton {
+    grid-template-columns: minmax(14rem, 0.82fr) minmax(18rem, 1.18fr);
+  }
+
+  .titleRow h3 {
+    font-size: clamp(1.95rem, 4.8vw, 2.75rem);
+  }
+}
+
+@media (max-width: 44rem) {
+  .eventsPage {
+    padding-bottom: 5rem;
+  }
+
+  .shell {
+    padding-inline: 0.75rem;
+  }
+
+  .intro {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 2rem;
+    padding: 4rem 0.25rem 2.75rem;
+  }
+
+  .intro h1 {
+    font-size: clamp(3.7rem, 18vw, 5.2rem);
+  }
+
+  .introCopy p {
+    max-width: 30ch;
+    font-size: 0.84rem;
+  }
+
+  .calendarLink {
+    width: 100%;
+    min-height: 4.5rem;
+    aspect-ratio: auto;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: 1fr;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 1.2rem;
+  }
+
+  .calendarLink:hover {
+    border-radius: 1.2rem;
+  }
+
+  .calendarLink > svg:first-child {
+    width: 2rem;
+    height: 2rem;
+    grid-column: auto;
+    align-self: center;
+  }
+
+  .calendarLink span {
+    max-width: none;
+  }
+
+  .eventField {
+    padding: 1rem;
+    border-radius: 1.5rem;
+  }
+
+  .sectionHeading {
+    display: block;
+    padding: 0.5rem 0.25rem 1.5rem;
+  }
+
+  .sectionHeading h2 {
+    font-size: clamp(2.6rem, 14vw, 3.75rem);
+  }
+
+  .sectionHeading > p {
+    margin-top: 0.8rem;
+    text-align: left;
+  }
+
+  .eventCard,
+  .eventCard:nth-child(even),
+  .eventSkeleton {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .eventCard:nth-child(even) .eventMedia {
+    order: 0;
+  }
+
+  .eventMedia,
+  .mediaSkeleton {
+    min-height: clamp(11rem, 50vw, 14rem);
+  }
+
+  .dateBlock {
+    width: 5.25rem;
+    min-height: 6.25rem;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .dateBlock strong {
+    font-size: 2.8rem;
+  }
+
+  .eventContent,
+  .copySkeleton {
+    padding: 1.1rem;
+  }
+
+  .titleRow {
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .titleRow h3 {
+    font-size: clamp(1.9rem, 9.5vw, 2.35rem);
+  }
+
+  .emptyState {
+    min-height: 28rem;
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .emptyState > svg {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .emptyState h2 {
+    font-size: clamp(2.8rem, 13vw, 4rem);
+  }
+
+  .emptyState .browseLink {
+    width: fit-content;
+  }
+}
+
+@media (max-width: 22rem) {
+  .shell {
+    padding-inline: 0.5rem;
+  }
+
+  .eventField {
+    padding: 0.7rem;
+  }
+
+  .eventContent,
+  .copySkeleton {
+    padding-inline: 1rem;
+  }
+
+  .rsvpSlot > div {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+
+  .rsvpSlot > div > :global(span) {
+    flex-basis: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eventField {
+    animation: none;
+  }
+
+  .calendarLink,
+  .eventMedia::after,
+  .browseLink svg {
+    transition: none;
+  }
+}

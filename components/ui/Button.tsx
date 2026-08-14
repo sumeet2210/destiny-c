@@ -4,7 +4,7 @@ type Variant = 'primary' | 'outline' | 'ghost' | 'urgent-text';
 type Size = 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
-  // Solid turmeric — the only CTA fill. No gradients (design.md §3).
+  // The active page world supplies the semantic primary color.
   primary:
     'bg-accent-primary text-ink-on-primary font-semibold hover:brightness-105 disabled:hover:brightness-100',
   outline:
@@ -32,6 +32,8 @@ export function Button({
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
+      data-ui-button
+      data-variant={variant}
       className={cn(
         'rounded-control inline-flex items-center justify-center gap-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40',
         variants[variant],

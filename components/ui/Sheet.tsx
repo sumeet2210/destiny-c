@@ -3,10 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/cn';
 
-/**
- * Bottom sheet / modal. The one surface allowed a shadow, and it gets a scrim
- * rather than a fourth surface colour (design.md §1, §3).
- */
+/** Focused bottom sheet with a scrim and an explicit close action. */
 export function Sheet({
   open,
   onClose,
@@ -33,9 +30,8 @@ export function Sheet({
     <dialog
       ref={ref}
       onClose={onClose}
-      onClick={(e) => {
-        // Click on the backdrop closes.
-        if (e.target === ref.current) onClose();
+      onClick={(event) => {
+        if (event.target === ref.current) onClose();
       }}
       className={cn(
         'rounded-card border-border-hairline bg-surface-raised text-paper m-auto w-full max-w-md border p-0 shadow-2xl backdrop:bg-black/60',
@@ -51,14 +47,31 @@ export function Sheet({
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="rounded-control text-text-muted hover:bg-surface-muted px-2 py-1"
+              className="rounded-control text-text-muted hover:bg-surface-muted grid h-11 w-11 place-items-center"
             >
-              ✕
+              <CloseIcon />
             </button>
           </div>
         )}
         {children}
       </div>
     </dialog>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="m6 6 12 12M18 6 6 18" />
+    </svg>
   );
 }

@@ -1,9 +1,6 @@
 import { cn } from '@/lib/cn';
 
-/**
- * Card shell: surface-muted on canvas, 14px radius, 16px padding, no shadow,
- * no gradient — depth comes from the surface step alone (design.md §3).
- */
+/** Flat content surface; color and radius come from the active page world. */
 export function Card({
   className,
   children,
@@ -22,7 +19,7 @@ export function Card({
   );
 }
 
-/** Media block that bleeds to the card edges (design.md §4). */
+/** Media block that bleeds to the card edges. */
 export function CardMedia({
   className,
   children,
@@ -42,7 +39,7 @@ export function CardMedia({
   );
 }
 
-/** Receipt-reference dashed rule above a card footer (design.md §4). */
+/** Optional separated card footer. */
 export function CardFooter({
   className,
   children,

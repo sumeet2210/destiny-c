@@ -1,44 +1,60 @@
 import { cn } from '@/lib/cn';
 import { VegMark } from './VegMark';
 
-/**
- * Receipt-style menu row: veg square, name left, dotted leader, mono price
- * right. The leader is the point of the layout — don't collapse it into a
- * plain flex row (design.md §4).
- */
 export function MenuRow({
   name,
   price,
   isVeg,
   unavailable = false,
+  appearance = 'default',
   className,
 }: {
   name: string;
   price: number;
   isVeg: boolean;
   unavailable?: boolean;
+  appearance?: 'default' | 'destiny';
   className?: string;
 }) {
+  const destiny = appearance === 'destiny';
+
   return (
     <div
       className={cn(
-        'flex items-baseline gap-2 py-1.5',
+        'flex items-baseline gap-2',
+        destiny ? 'min-h-12 border-b border-black/10 py-3' : 'py-1.5',
         unavailable && 'opacity-40',
         className,
       )}
     >
       <VegMark isVeg={isVeg} className="self-center" />
-      <span className="text-paper text-sm">
+      <span className={cn('text-sm', destiny ? 'text-black' : 'text-paper')}>
         {name}
         {unavailable && (
-          <span className="text-text-muted ml-2 text-[11px]">sold out</span>
+          <span
+            className={cn(
+              'ml-2 text-[11px]',
+              destiny ? 'text-[#4B5563]' : 'text-text-muted',
+            )}
+          >
+            sold out
+          </span>
         )}
       </span>
+      {!destiny && (
+        <span
+          aria-hidden
+          className="border-border-hairline mx-1 flex-1 border-b border-dotted"
+        />
+      )}
       <span
-        aria-hidden
-        className="border-border-hairline mx-1 flex-1 border-b border-dotted"
-      />
-      <span className="text-paper font-mono text-sm">₹{price}</span>
+        className={cn(
+          'ml-auto text-sm font-bold tabular-nums',
+          destiny ? 'text-black' : 'text-paper font-mono',
+        )}
+      >
+        ₹{price}
+      </span>
     </div>
   );
 }

@@ -1,0 +1,68 @@
+.page {
+  --color-canvas: #f8fafa;
+  --color-surface-muted: #ffffff;
+  --color-surface-raised: #e6faf6;
+  --color-border-hairline: rgb(0 0 0 / 16%);
+  --color-paper: #000000;
+  --color-text-muted: #4b5563;
+  --color-accent-primary: #00b89c;
+  --color-accent-secondary: #008f7a;
+  --color-accent-urgent: #000000;
+  --color-accent-urgent-text: #000000;
+  --color-ink-on-primary: #000000;
+  --color-ink-on-secondary: #000000;
+  --font-display: var(--font-destiny), Manrope, sans-serif;
+  --font-body: var(--font-destiny), Manrope, sans-serif;
+  --font-mono: var(--font-destiny), Manrope, sans-serif;
+  --radius-chip: 999px;
+  --radius-card: 1.2rem;
+  --radius-control: 999px;
+  min-height: calc(100svh - 3.5rem);
+  margin-bottom: -4rem;
+  padding-bottom: 4rem;
+  overflow: clip;
+  background: #f8fafa;
+  color: #000000;
+  color-scheme: light;
+  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-feature-settings:
+    'ss01' 1,
+    'cv11' 1;
+}
+
+.page ::selection {
+  background: #00b89c;
+  color: #000000;
+}
+
+.page :where(a, button) {
+  text-underline-offset: 0.24em;
+}
+
+.page :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px #000000;
+}
+
+.page :global(button[data-ui-button]) {
+  min-height: 2.75rem;
+}
+
+.page :global(button[data-ui-button][data-variant='primary']):hover {
+  background: #008f7a;
+  color: #ffffff;
+  filter: none;
+}
+
+.page :global(.font-mono) {
+  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 40rem) {
+  .page {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}

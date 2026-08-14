@@ -5,10 +5,7 @@ type ChipProps = {
   disabled?: boolean;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-/**
- * Pill chip. surface-raised + hairline at rest, turmeric fill when active —
- * one active state, one color (design.md §4).
- */
+/** Pill choice with one semantic active state supplied by the page world. */
 export function Chip({
   active = false,
   disabled,

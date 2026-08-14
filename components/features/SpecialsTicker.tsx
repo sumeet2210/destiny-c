@@ -22,6 +22,15 @@ type TickerEvent = {
   image: string;
 };
 
+const DRAG_THRESHOLD_PX = 10;
+
+type PointerGesture = {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startLeft: number;
+};
+
 /**
  * Today's specials rail, sorted by soonest expiry upstream (P3-1).
  * The duplicated visual cycle creates a seamless, slow loop while the first
@@ -38,10 +47,8 @@ export function SpecialsTicker({
   const duplicateCycleRef = useRef<HTMLDivElement>(null);
   const loopAtRef = useRef(0);
   const draggedRef = useRef(false);
-  const [drag, setDrag] = useState<{
-    startX: number;
-    startLeft: number;
-  } | null>(null);
+  const pointerGestureRef = useRef<PointerGesture | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [inView, setInView] = useState(true);
@@ -87,7 +94,7 @@ export function SpecialsTicker({
       reduceMotion ||
       hovered ||
       focused ||
-      drag ||
+      dragging ||
       !inView
     ) {
       return;
@@ -118,7 +125,7 @@ export function SpecialsTicker({
     frame = requestAnimationFrame(advance);
     return () => cancelAnimationFrame(frame);
   }, [
-    drag,
+    dragging,
     focused,
     hovered,
     inView,
@@ -141,26 +148,75 @@ export function SpecialsTicker({
       role="list"
       aria-label="Current offers and upcoming events"
       onPointerDown={(e) => {
+        if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) {
+          return;
+        }
+
         const el = railRef.current!;
-        el.setPointerCapture(e.pointerId);
         draggedRef.current = false;
-        setDrag({ startX: e.clientX, startLeft: el.scrollLeft });
+        pointerGestureRef.current = {
+          pointerId: e.pointerId,
+          startX: e.clientX,
+          startY: e.clientY,
+          startLeft: el.scrollLeft,
+        };
+        setDragging(true);
       }}
       onPointerMove={(e) => {
-        if (!drag) return;
-        if (Math.abs(e.clientX - drag.startX) > 5) draggedRef.current = true;
-        railRef.current!.scrollLeft =
-          drag.startLeft - (e.clientX - drag.startX);
+        const gesture = pointerGestureRef.current;
+        if (!gesture || gesture.pointerId !== e.pointerId) return;
+
+        const deltaX = e.clientX - gesture.startX;
+        const deltaY = e.clientY - gesture.startY;
+
+        if (!draggedRef.current) {
+          if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+          if (Math.abs(deltaX) < DRAG_THRESHOLD_PX) return;
+
+          draggedRef.current = true;
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }
+
+        e.currentTarget.scrollLeft = gesture.startLeft - deltaX;
       }}
-      onPointerUp={() => {
-        setDrag(null);
+      onPointerUp={(e) => {
+        const wasDragged = draggedRef.current;
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        }
+        pointerGestureRef.current = null;
+        setDragging(false);
+
+        if (!wasDragged) {
+          draggedRef.current = false;
+          return;
+        }
+
         window.setTimeout(() => {
           draggedRef.current = false;
         }, 0);
       }}
-      onPointerCancel={() => {
-        setDrag(null);
+      onPointerCancel={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        }
+        pointerGestureRef.current = null;
+        setDragging(false);
         draggedRef.current = false;
+      }}
+      onPointerLeave={(e) => {
+        const gesture = pointerGestureRef.current;
+        if (
+          e.pointerType !== 'mouse' ||
+          !gesture ||
+          gesture.pointerId !== e.pointerId ||
+          draggedRef.current
+        ) {
+          return;
+        }
+
+        pointerGestureRef.current = null;
+        setDragging(false);
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -173,7 +229,7 @@ export function SpecialsTicker({
         e.preventDefault();
         draggedRef.current = false;
       }}
-      className="specials-ticker no-scrollbar rounded-card border-border-hairline bg-surface-muted cursor-grab overflow-x-auto border p-3 select-none active:cursor-grabbing"
+      className="specials-ticker no-scrollbar rounded-card border-border-hairline bg-surface-muted cursor-grab touch-pan-y overflow-x-auto border p-3 select-none active:cursor-grabbing"
     >
       <div className="specials-track flex w-max gap-3">
         <div className="specials-cycle flex gap-3">

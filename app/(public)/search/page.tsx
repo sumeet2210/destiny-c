@@ -1,63 +1,99 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
+import type { Viewport } from 'next';
 import { FilterBar } from '@/components/features/FilterBar';
 import { RestaurantGrid } from '@/components/features/RestaurantGrid';
 import { MenuRow } from '@/components/ui/MenuRow';
 import { Card } from '@/components/ui/Card';
+import { DestinyPage } from '@/components/ui/DestinyPage';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
   applyFilters,
   listRestaurantSummaries,
   searchDishes,
   type CatalogFilters,
+  type RestaurantSummary,
 } from '@/lib/queries/catalog';
+import styles from './search.module.css';
 
 export const metadata = { title: 'Search' };
 
-const str = (v: string | string[] | undefined) =>
-  typeof v === 'string' && v !== '' ? v : undefined;
+export const viewport: Viewport = {
+  themeColor: '#F8FAFA',
+};
+
+const SEARCH_ARTWORK: Record<string, string> = {
+  'Biryani Adda': '/home/biryani-adda.webp',
+  'Momo Nation': '/home/momo-nation.webp',
+  'Chai Theory': '/home/chai-theory.webp',
+  'Southern Spice Tiffins': '/home/southern-spice.webp',
+  'Scoops & Stories': '/home/scoops-stories.webp',
+};
+
+const str = (value: string | string[] | undefined) =>
+  typeof value === 'string' && value !== '' ? value : undefined;
+
+function withSearchArtwork(restaurants: RestaurantSummary[]) {
+  return restaurants.map((restaurant) => {
+    const artwork = SEARCH_ARTWORK[restaurant.name];
+    return artwork
+      ? { ...restaurant, photos: [artwork, ...restaurant.photos.slice(1)] }
+      : restaurant;
+  });
+}
 
 export default async function SearchPage(props: PageProps<'/search'>) {
-  const sp = await props.searchParams;
+  const searchParams = await props.searchParams;
 
   const filters: CatalogFilters = {
-    q: str(sp.q),
-    craving: str(sp.craving),
-    veg: str(sp.veg) as CatalogFilters['veg'],
-    openNow: sp.open === '1',
-    hasOffer: sp.offer === '1',
-    price: str(sp.price),
-    area: str(sp.area),
-    vibe: str(sp.vibe),
-    discount: sp.discount === '1',
-    ac: str(sp.ac) as CatalogFilters['ac'],
-    service: str(sp.service) as CatalogFilters['service'],
-    minRating: str(sp.rating) ? Number(sp.rating) : undefined,
-    sort: (str(sp.sort) as CatalogFilters['sort']) ?? 'trending',
+    q: str(searchParams.q),
+    craving: str(searchParams.craving),
+    veg: str(searchParams.veg) as CatalogFilters['veg'],
+    openNow: searchParams.open === '1',
+    hasOffer: searchParams.offer === '1',
+    price: str(searchParams.price),
+    area: str(searchParams.area),
+    vibe: str(searchParams.vibe),
+    discount: searchParams.discount === '1',
+    ac: str(searchParams.ac) as CatalogFilters['ac'],
+    service: str(searchParams.service) as CatalogFilters['service'],
+    minRating: str(searchParams.rating)
+      ? Number(searchParams.rating)
+      : undefined,
+    sort: (str(searchParams.sort) as CatalogFilters['sort']) ?? 'trending',
   };
-  const cameFromQuiz = sp.from === 'quiz';
+  const cameFromQuiz = searchParams.from === 'quiz';
 
   return (
-    <main className="mx-auto max-w-5xl space-y-5 px-4 py-6">
-      <h1 className="font-display text-paper text-2xl font-extrabold">
-        Find a spot
-      </h1>
-      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
-        <FilterBar />
-      </Suspense>
-      <Suspense
-        key={JSON.stringify(sp)}
-        fallback={
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-80" />
-            ))}
+    <DestinyPage className={styles.searchPage}>
+      <div className={styles.shell}>
+        <section className={styles.intro} aria-labelledby="search-title">
+          <h1 id="search-title">Find a spot.</h1>
+          <div className={styles.introCopy}>
+            <p>
+              Search the dish you want, then narrow the shortlist with the
+              details that matter right now.
+            </p>
+            <Link href="/quiz" className={styles.matchLink}>
+              Not sure? Get matched <ArrowIcon />
+            </Link>
           </div>
-        }
-      >
-        <Results filters={filters} cameFromQuiz={cameFromQuiz} />
-      </Suspense>
-    </main>
+        </section>
+
+        <section className={styles.filterPanel} aria-label="Search filters">
+          <Suspense fallback={<Skeleton className={styles.filterSkeleton} />}>
+            <FilterBar />
+          </Suspense>
+        </section>
+
+        <Suspense
+          key={JSON.stringify(searchParams)}
+          fallback={<ResultsSkeleton />}
+        >
+          <Results filters={filters} cameFromQuiz={cameFromQuiz} />
+        </Suspense>
+      </div>
+    </DestinyPage>
   );
 }
 
@@ -73,52 +109,60 @@ async function Results({
     : filters.craving
       ? `craving:${filters.craving}`
       : 'search';
-  const [summaries, dishHits] = await Promise.all([
+  const [rawSummaries, dishHits] = await Promise.all([
     listRestaurantSummaries(),
     filters.q ? searchDishes(filters.q) : Promise.resolve([]),
   ]);
+  const summaries = withSearchArtwork(rawSummaries);
   const results = applyFilters(summaries, filters);
 
-  // Dish-level search (P3-5): also surface restaurants whose menu matches,
-  // even if the restaurant name doesn't.
-  const resultIds = new Set(results.map((r) => r.id));
-  const dishOnlyRestaurants = dishHits
-    .map((h) => h.restaurant)
-    .filter((r, i, arr) => arr.findIndex((x) => x.id === r.id) === i)
-    .filter((r) => !resultIds.has(r.id));
+  // Dish results can introduce a restaurant even when its name does not match.
+  const resultIds = new Set(results.map((restaurant) => restaurant.id));
+  const dishOnlyRestaurants = withSearchArtwork(
+    dishHits
+      .map((hit) => hit.restaurant)
+      .filter(
+        (restaurant, index, list) =>
+          list.findIndex((candidate) => candidate.id === restaurant.id) ===
+          index,
+      )
+      .filter((restaurant) => !resultIds.has(restaurant.id)),
+  );
 
   if (results.length === 0 && dishHits.length === 0) {
     return (
-      <div className="rounded-card border-border-hairline bg-surface-muted border p-8 text-center">
-        <p className="text-paper text-sm">Nothing matches that combination.</p>
-        <p className="text-text-muted mt-1 text-[13px]">
-          Try clearing a filter or two — campus isn&apos;t that big yet.
+      <div className={styles.emptyState}>
+        <h2>Nothing matches that combination.</h2>
+        <p>
+          Clear a filter or try a broader dish name to reopen the shortlist.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.results}>
       {dishHits.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="font-display text-paper text-lg font-bold">
-            Dishes matching &ldquo;{filters.q}&rdquo;
-          </h2>
-          <Card>
-            {dishHits.slice(0, 10).map((h) => (
+        <section className={styles.dishSection} aria-labelledby="dish-title">
+          <div>
+            <h2 id="dish-title">Dishes matching &ldquo;{filters.q}&rdquo;</h2>
+            <p>Menu matches can lead to places whose name does not.</p>
+          </div>
+          <Card className={styles.dishList}>
+            {dishHits.slice(0, 10).map((hit) => (
               <Link
-                key={h.item.id}
-                href={`/restaurant/${h.restaurant.id}?from=search`}
-                className="hover:bg-surface-raised block"
+                key={hit.item.id}
+                href={`/restaurant/${hit.restaurant.id}?from=search`}
+                className={styles.dishLink}
               >
                 <MenuRow
-                  name={h.item.name}
-                  price={h.item.price}
-                  isVeg={h.item.is_veg}
+                  name={hit.item.name}
+                  price={hit.item.price}
+                  isVeg={hit.item.is_veg}
+                  appearance="destiny"
                 />
-                <p className="text-text-muted -mt-1 pb-1.5 pl-6 text-[11px]">
-                  at {h.restaurant.name} · {h.restaurant.area}
+                <p>
+                  at {hit.restaurant.name} · {hit.restaurant.area}
                 </p>
               </Link>
             ))}
@@ -127,12 +171,18 @@ async function Results({
       )}
 
       {(results.length > 0 || dishOnlyRestaurants.length > 0) && (
-        <section className="space-y-2">
-          <h2 className="font-display text-paper text-lg font-bold">
-            {filters.q
-              ? 'Restaurants'
-              : `${results.length} spot${results.length === 1 ? '' : 's'}`}
-          </h2>
+        <section
+          className={styles.restaurantSection}
+          aria-labelledby="restaurant-results-title"
+        >
+          <div className={styles.resultsHeading}>
+            <h2 id="restaurant-results-title">
+              {filters.q
+                ? 'Restaurants'
+                : `${results.length} spot${results.length === 1 ? '' : 's'}`}
+            </h2>
+            <p>Open one when the place, price, and plan feel right.</p>
+          </div>
           <RestaurantGrid
             restaurants={[...results, ...dishOnlyRestaurants]}
             source={source}
@@ -141,5 +191,26 @@ async function Results({
         </section>
       )}
     </div>
+  );
+}
+
+function ResultsSkeleton() {
+  return (
+    <div className={styles.resultsSkeleton} aria-hidden>
+      <div className={styles.resultsSkeletonHeading} />
+      <div className={styles.resultsSkeletonGrid}>
+        {[...Array(6)].map((_, index) => (
+          <Skeleton key={index} className={styles.cardSkeleton} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Roboto_Slab, Inter, JetBrains_Mono } from 'next/font/google';
+import { Roboto_Slab, Inter, JetBrains_Mono, Manrope } from 'next/font/google';
 import { ToastProvider } from '@/components/ui/Toast';
 import './globals.css';
 
@@ -20,6 +20,11 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '700'],
 });
 
+const manrope = Manrope({
+  variable: '--font-destiny',
+  subsets: ['latin'],
+});
+
 export const metadata: Metadata = {
   title: {
     default: 'Destiny — where NITW eats',
@@ -37,7 +42,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      className={`${robotoSlab.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${robotoSlab.variable} ${inter.variable} ${jetbrainsMono.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="bg-canvas text-paper font-body flex min-h-full flex-col">
         <ToastProvider>{children}</ToastProvider>

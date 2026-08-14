@@ -1,0 +1,445 @@
+.searchPage {
+  padding-bottom: 6rem;
+}
+
+.shell {
+  width: min(100%, 100rem);
+  margin-inline: auto;
+  padding: 0 clamp(1rem, 3vw, 3.25rem) 4rem;
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.85fr) minmax(23rem, 1.15fr);
+  align-items: end;
+  gap: clamp(2rem, 7vw, 8rem);
+  padding: clamp(4.5rem, 10vw, 9rem) clamp(0.25rem, 2vw, 2rem)
+    clamp(2.75rem, 6vw, 5rem);
+}
+
+.intro h1 {
+  max-width: 7ch;
+  margin: 0;
+  font-size: clamp(3.6rem, 8vw, 6rem);
+  font-weight: 560;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.introCopy {
+  display: flex;
+  max-width: 38rem;
+  align-items: end;
+  justify-self: end;
+  gap: 2rem;
+}
+
+.introCopy p {
+  max-width: 34ch;
+  margin: 0;
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.matchLink {
+  display: inline-flex;
+  min-height: 2.9rem;
+  flex: none;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.matchLink:hover {
+  background: #00b89c;
+  color: #000000;
+}
+
+.matchLink svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.filterPanel {
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 1px solid rgb(0 0 0 / 14%);
+  border-radius: 1.65rem;
+  background: #e6faf6;
+}
+
+.filterSkeleton {
+  height: 10rem;
+  background: #ffffff !important;
+}
+
+.results {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.dishSection {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.65fr) minmax(22rem, 1.35fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(2rem, 4vw, 3.5rem);
+  border-radius: 1.65rem;
+  background: #e6faf6;
+}
+
+.dishSection h2,
+.resultsHeading h2,
+.emptyState h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  font-weight: 560;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.dishSection > div > p,
+.resultsHeading p,
+.emptyState p {
+  max-width: 40ch;
+  margin: 0.75rem 0 0;
+  color: #4b5563;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.dishList {
+  overflow: hidden;
+  padding: 0 1.1rem !important;
+  border-color: rgb(0 0 0 / 14%) !important;
+  background: #ffffff !important;
+}
+
+.dishLink {
+  display: block;
+  color: #000000;
+  text-decoration: none;
+}
+
+.dishLink:last-child > div {
+  border-bottom: 0;
+}
+
+.dishLink:hover {
+  background: #f8fafa;
+}
+
+.dishLink > p {
+  margin: -0.45rem 0 0;
+  padding: 0 0 0.65rem 1.5rem;
+  color: #4b5563;
+  font-size: 0.68rem;
+}
+
+.restaurantSection,
+.resultsSkeleton {
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  border-radius: 2.25rem;
+  background: #000000;
+  color: #ffffff;
+  --color-paper: #ffffff;
+  --color-text-muted: #e6faf6;
+  --color-surface-muted: #000000;
+  --color-surface-raised: #000000;
+  --color-border-hairline: rgb(255 255 255 / 18%);
+  --color-accent-primary: #25cbb5;
+  --color-accent-secondary: #25cbb5;
+  --color-accent-urgent-text: #ffffff;
+}
+
+.resultsHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.resultsHeading p {
+  color: #e6faf6;
+  text-align: right;
+}
+
+.restaurantSection :global(.restaurant-grid) {
+  gap: 1rem;
+}
+
+.restaurantSection :global(.restaurant-card) {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.75rem;
+  border-color: rgb(255 255 255 / 18%);
+  border-radius: 1.65rem;
+  background: #000000;
+}
+
+.restaurantSection :global(.restaurant-card-media) {
+  margin: 0 0 1rem;
+  border-radius: 1.2rem;
+}
+
+.restaurantSection :global(.restaurant-card-image) {
+  aspect-ratio: 16 / 10;
+}
+
+.restaurantSection :global(.restaurant-card-image img) {
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.restaurantSection :global(.restaurant-card:hover .restaurant-card-image img) {
+  transform: scale(1.035);
+}
+
+.restaurantSection :global(.restaurant-card-title) {
+  color: #ffffff;
+  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 570;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.restaurantSection :global(.restaurant-card-meta),
+.restaurantSection :global(.restaurant-card-tags span),
+.restaurantSection :global(.restaurant-card-footer) {
+  color: #e6faf6;
+}
+
+.restaurantSection :global(.restaurant-card-tags span) {
+  background: #000000;
+}
+
+.restaurantSection :global(.restaurant-card-footer) {
+  border-color: rgb(255 255 255 / 18%);
+  border-style: solid;
+}
+
+.restaurantSection :global(.restaurant-card-footer span:last-child) {
+  color: #25cbb5;
+}
+
+.emptyState {
+  margin-top: 1rem;
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: 1.65rem;
+  background: #000000;
+  color: #ffffff;
+}
+
+.emptyState p {
+  color: #e6faf6;
+}
+
+.resultsSkeleton {
+  margin-top: 1rem;
+}
+
+.resultsSkeletonHeading {
+  width: 14rem;
+  height: 3rem;
+  margin-bottom: 2rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 12%);
+}
+
+.resultsSkeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.cardSkeleton {
+  height: 23rem;
+  border-radius: 1.65rem !important;
+  background: rgb(255 255 255 / 10%) !important;
+}
+
+@media (max-width: 58rem) {
+  .intro {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .introCopy {
+    justify-self: stretch;
+  }
+
+  .dishSection {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 38.75rem) {
+  .searchPage {
+    padding-bottom: 5rem;
+  }
+
+  .shell {
+    padding: 0 0.65rem 2rem;
+  }
+
+  .intro {
+    padding: 3.5rem 0.25rem 2rem;
+  }
+
+  .intro h1 {
+    font-size: clamp(3rem, 17vw, 4.25rem);
+  }
+
+  .introCopy {
+    align-items: start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .introCopy p {
+    max-width: 32ch;
+    font-size: 0.85rem;
+  }
+
+  .matchLink {
+    min-height: 2.75rem;
+  }
+
+  .filterPanel {
+    padding: 1rem 0.75rem;
+    border-radius: 1.35rem;
+  }
+
+  .dishSection,
+  .restaurantSection,
+  .resultsSkeleton {
+    padding: 1.25rem 0.8rem;
+    border-radius: 1.65rem;
+  }
+
+  .dishSection h2,
+  .resultsHeading h2,
+  .emptyState h2 {
+    font-size: 2rem;
+  }
+
+  .dishList {
+    padding-inline: 0.85rem !important;
+  }
+
+  .resultsHeading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .resultsHeading p {
+    margin-top: 0;
+    text-align: left;
+  }
+
+  .restaurantSection :global(.restaurant-grid) {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurantSection :global(.restaurant-card) {
+    display: grid;
+    grid-template-columns: minmax(7.25rem, 0.82fr) minmax(0, 1.18fr);
+    grid-template-rows: auto auto auto 1fr auto;
+    column-gap: 0.8rem;
+    min-height: 14rem;
+    padding: 0.65rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-media) {
+    grid-row: 1 / 6;
+    height: 100%;
+    min-height: 12.7rem;
+    margin: 0;
+  }
+
+  .restaurantSection :global(.restaurant-card-image) {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .restaurantSection :global(.restaurant-card-offer),
+  .restaurantSection :global(.restaurant-card-title),
+  .restaurantSection :global(.restaurant-card-meta),
+  .restaurantSection :global(.restaurant-card-tags),
+  .restaurantSection :global(.restaurant-card-footer) {
+    grid-column: 2;
+  }
+
+  .restaurantSection :global(.restaurant-card-offer) {
+    margin: 0 0 0.4rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-title) {
+    font-size: 1.05rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-meta) {
+    font-size: 0.66rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-tags) {
+    align-content: start;
+    margin-top: 0.4rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-tags span) {
+    padding-inline: 0.4rem;
+    font-size: 0.6rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-footer) {
+    margin-top: 0.45rem;
+    padding-top: 0.45rem;
+    font-size: 0.65rem;
+  }
+
+  .resultsSkeletonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardSkeleton {
+    height: 14rem;
+  }
+}
+
+@media (max-width: 22rem) {
+  .restaurantSection :global(.restaurant-card) {
+    grid-template-columns: 6.8rem minmax(0, 1fr);
+    column-gap: 0.65rem;
+  }
+
+  .restaurantSection :global(.restaurant-card-tags span:nth-child(n + 3)) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .restaurantSection :global(.restaurant-card-image img),
+  .restaurantSection
+    :global(.restaurant-card:hover .restaurant-card-image img) {
+    transition: none;
+    transform: none;
+  }
+}

@@ -19,6 +19,15 @@ const tabs: ReadonlyArray<{
   { href: '/bookings', label: 'Bookings', icon: 'bookings' },
 ];
 
+const menuLinks = [
+  ['/', 'Home'],
+  ['/search', 'Search restaurants'],
+  ['/events', 'Events'],
+  ['/saved', 'Saved'],
+  ['/bookings', 'Bookings'],
+  ['/friends', 'Friends'],
+] as const;
+
 export function SiteHeader({
   accountHref,
   accountLabel,
@@ -43,13 +52,13 @@ export function SiteHeader({
               aria-label="Open navigation menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(true)}
-              className="pointer-events-auto grid h-11 w-11 place-items-center rounded-full border border-white/35 bg-black text-white transition-transform active:scale-95"
+              className="pointer-events-auto grid h-11 w-11 place-items-center rounded-full border border-white/35 bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-95"
             >
               <MenuIcon />
             </button>
           </div>
         </header>
-        <HomeMenu
+        <NavigationMenu
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
           accountHref={accountHref}
@@ -60,48 +69,70 @@ export function SiteHeader({
   }
 
   return (
-    <header className="border-border-hairline bg-canvas/95 sticky top-0 z-40 border-b backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
-        <Link
-          href="/"
-          aria-label="Destiny home"
-          className="font-display text-accent-primary text-xl font-extrabold"
-        >
-          Destiny
-        </Link>
+    <>
+      <header
+        className="sticky top-0 z-40 border-b border-black/10 bg-[#F8FAFA] text-black"
+        style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
+      >
+        <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+          <Wordmark />
 
-        <nav
-          aria-label="Primary navigation"
-          className="hidden items-center gap-1 sm:flex"
-        >
-          {tabs.slice(1).map((tab) => (
-            <NavLink
-              key={tab.href}
-              href={tab.href}
-              label={tab.label}
-              onHome={onHome}
-            />
-          ))}
-          <NavLink href="/friends" label="Friends" onHome={onHome} />
-        </nav>
+          <nav
+            aria-label="Primary navigation"
+            className="hidden items-center gap-1 rounded-full border border-black/10 bg-white p-1 lg:flex"
+          >
+            {tabs.slice(1).map((tab) => (
+              <NavLink key={tab.href} href={tab.href} label={tab.label} />
+            ))}
+            <NavLink href="/friends" label="Friends" />
+          </nav>
 
-        <Link
-          href={accountHref}
-          className={cn(
-            'inline-flex items-center justify-center font-semibold',
-            accountLabel === 'Log in'
-              ? 'rounded-control bg-accent-primary text-ink-on-primary min-h-9 px-3.5 py-1.5 text-[13px]'
-              : 'rounded-chip border-border-hairline bg-surface-raised text-paper min-h-9 border px-3 py-1.5 text-[13px]',
-          )}
-        >
-          {accountLabel}
-        </Link>
-      </div>
-    </header>
+          <Link
+            href={accountHref}
+            className="hidden min-h-11 items-center justify-center rounded-full border border-[#00B89C] bg-[#00B89C] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-black hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:inline-flex"
+          >
+            {accountLabel}
+          </Link>
+
+          <button
+            type="button"
+            aria-label="Open navigation menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+            className="grid h-11 w-11 place-items-center rounded-full bg-black text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:hidden"
+          >
+            <MenuIcon />
+          </button>
+        </div>
+      </header>
+      <NavigationMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        accountHref={accountHref}
+        accountLabel={accountLabel}
+      />
+    </>
   );
 }
 
-function HomeMenu({
+function Wordmark() {
+  return (
+    <Link
+      href="/"
+      aria-label="Destiny home"
+      className="relative block h-11 w-28 overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/destiny-wordmark.png"
+        alt="Destiny"
+        className="absolute top-1/2 left-1/2 w-28 max-w-none -translate-x-1/2 -translate-y-1/2"
+      />
+    </Link>
+  );
+}
+
+function NavigationMenu({
   open,
   onClose,
   accountHref,
@@ -112,6 +143,7 @@ function HomeMenu({
   accountHref: string;
   accountLabel: string;
 }) {
+  const pathname = usePathname();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -129,6 +161,7 @@ function HomeMenu({
         if (event.target === dialogRef.current) onClose();
       }}
       className="fixed inset-y-0 right-0 m-0 ml-auto h-dvh w-[min(22rem,88vw)] max-w-none border-0 bg-black p-0 text-white shadow-2xl backdrop:bg-black/55"
+      style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
     >
       <div className="flex min-h-full flex-col p-5 pt-[max(1.25rem,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between border-b border-white/15 pb-5">
@@ -137,35 +170,38 @@ function HomeMenu({
             type="button"
             onClick={onClose}
             aria-label="Close navigation menu"
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <CloseIcon />
           </button>
         </div>
 
-        <nav aria-label="Homepage navigation" className="grid py-4">
-          {[
-            ['/', 'Home'],
-            ['/search', 'Search restaurants'],
-            ['/events', 'Events'],
-            ['/saved', 'Saved'],
-            ['/bookings', 'Bookings'],
-            ['/friends', 'Friends'],
-          ].map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex min-h-12 items-center justify-between border-b border-white/10 text-[15px] font-semibold hover:text-[#25CBB5]"
-            >
-              {label}
-              <MenuArrowIcon />
-            </Link>
-          ))}
+        <nav aria-label="Site navigation" className="grid py-4">
+          {menuLinks.map(([href, label]) => {
+            const active =
+              pathname === href || (href !== '/' && pathname.startsWith(href));
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? 'page' : undefined}
+                onClick={onClose}
+                className={cn(
+                  'flex min-h-12 items-center justify-between border-b border-white/10 text-[15px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+                  active ? 'text-[#25CBB5]' : 'text-white hover:text-[#25CBB5]',
+                )}
+              >
+                {label}
+                <MenuArrowIcon />
+              </Link>
+            );
+          })}
         </nav>
 
         <Link
           href={accountHref}
-          className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full border border-[#00B89C] bg-[#00B89C] px-5 font-bold text-black hover:bg-white"
+          onClick={onClose}
+          className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full border border-[#00B89C] bg-[#00B89C] px-5 font-bold text-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           {accountLabel === 'Log in' ? 'Log in' : `Open ${accountLabel}`}
         </Link>
@@ -174,35 +210,16 @@ function HomeMenu({
   );
 }
 
-function NavLink({
-  href,
-  label,
-  onHome,
-}: {
-  href: string;
-  label: string;
-  onHome: boolean;
-}) {
+function NavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
-  const active =
-    pathname === href || (href !== '/' && pathname.startsWith(href));
+  const active = pathname === href || pathname.startsWith(`${href}/`);
   return (
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'px-3 py-1.5 text-sm transition-colors',
-        onHome
-          ? cn(
-              'rounded-full text-black hover:bg-black hover:text-white',
-              active && 'bg-black text-white',
-            )
-          : cn(
-              'rounded-control',
-              active
-                ? 'bg-surface-raised text-paper'
-                : 'text-text-muted hover:text-paper',
-            ),
+        'inline-flex min-h-10 items-center rounded-full px-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black',
+        active ? 'bg-black text-white' : 'text-black hover:bg-[#E6FAF6]',
       )}
     >
       {label}
@@ -210,20 +227,15 @@ function NavLink({
   );
 }
 
-/** Mobile bottom tab bar — this is a phone product first (build plan §1). */
 export function MobileTabBar() {
   const pathname = usePathname();
-  const onHome = pathname === '/';
-  if (onHome) return null;
+  if (pathname === '/') return null;
+
   return (
     <nav
       aria-label="Mobile navigation"
-      className={cn(
-        'fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)]',
-        onHome
-          ? 'border-white/15 bg-black/95 text-white backdrop-blur lg:hidden'
-          : 'border-border-hairline bg-surface-muted sm:hidden',
-      )}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-black/95 pb-[env(safe-area-inset-bottom)] text-white backdrop-blur-sm sm:hidden"
+      style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
     >
       <div className="flex">
         {tabs.map((tab) => {
@@ -236,14 +248,8 @@ export function MobileTabBar() {
               href={tab.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[10px]',
-                onHome
-                  ? active
-                    ? 'text-[#00B89C]'
-                    : 'text-[#E6FAF6]'
-                  : active
-                    ? 'text-accent-primary'
-                    : 'text-text-muted',
+                'focus-visible:outline-inset flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[10px] focus-visible:outline-2 focus-visible:outline-white',
+                active ? 'text-[#00B89C]' : 'text-[#E6FAF6]',
               )}
             >
               <NavIcon name={tab.icon} />

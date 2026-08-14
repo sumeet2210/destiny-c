@@ -29,10 +29,7 @@ export type RestaurantCardData = {
 const vibeLabel = (tag: string) =>
   VIBES.find((v) => v.tag === tag)?.label ?? tag;
 
-/**
- * The directory card: media carousel, meta row, vibe pills, dashed receipt
- * footer with mono turmeric price (design.md §4, §7).
- */
+/** Directory card: media, live context, practical tags, and a clear price. */
 export function RestaurantCard({
   restaurant: r,
   source,
@@ -103,8 +100,8 @@ export function RestaurantCard({
         {r.rating !== null && (
           <>
             <span aria-hidden>·</span>
-            <span>
-              <span aria-hidden>★ </span>
+            <span className="inline-flex items-center gap-1">
+              <StarIcon />
               <span className="font-mono">{r.rating.toFixed(1)}</span>{' '}
               <span className="text-[11px]">({r.reviewCount})</span>
             </span>
@@ -146,5 +143,19 @@ export function RestaurantCard({
         )}
       </CardFooter>
     </Card>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="13"
+      height="13"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="m12 2.8 2.75 5.58 6.16.9-4.46 4.34 1.05 6.13L12 16.86l-5.5 2.89 1.05-6.13L3.1 9.28l6.15-.9L12 2.8Z" />
+    </svg>
   );
 }

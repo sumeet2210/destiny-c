@@ -1,94 +1,44 @@
-'use client';
+import type { Metadata } from 'next';
+import { Manrope } from 'next/font/google';
+import { listRestaurantSummaries } from '@/lib/queries/catalog';
+import type { RestaurantSummary } from '@/lib/queries/catalog';
+import { MatchFinder } from './MatchFinder';
+import styles from './quiz.module.css';
 
-// P3-9: "Find your perfect spot" — three taps that resolve to a pre-filled
-// filter set. Entirely client-side, no schema, no persistence (PRD §5.3).
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-destiny-match',
+});
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { QUIZ, type QuizFilterPatch } from '@/config/quiz';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+const MATCH_ARTWORK: Record<string, string> = {
+  'Biryani Adda': '/home/biryani-adda.webp',
+  'Momo Nation': '/home/momo-nation.webp',
+  'Chai Theory': '/home/chai-theory.webp',
+  'Southern Spice Tiffins': '/home/southern-spice.webp',
+  'Scoops & Stories': '/home/scoops-stories.webp',
+};
 
-export default function QuizPage() {
-  const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [patches, setPatches] = useState<QuizFilterPatch[]>([]);
+export const metadata: Metadata = {
+  title: 'Find your perfect spot',
+  description:
+    'Answer five quick questions and get restaurant matches for your budget, group, food, and mood.',
+};
 
-  const question = QUIZ[step];
+function withMatchArtwork(restaurants: RestaurantSummary[]) {
+  return restaurants.map((restaurant) => {
+    const artwork = MATCH_ARTWORK[restaurant.name];
+    return artwork
+      ? { ...restaurant, photos: [artwork, ...restaurant.photos.slice(1)] }
+      : restaurant;
+  });
+}
 
-  const answer = (patch: QuizFilterPatch) => {
-    const next = [...patches, patch];
-    if (step + 1 < QUIZ.length) {
-      setPatches(next);
-      setStep(step + 1);
-      return;
-    }
-    const params = new URLSearchParams();
-    for (const p of next) {
-      if (p.vibe) params.set('vibe', p.vibe);
-      if (p.price) params.set('price', p.price);
-      if (p.veg) params.set('veg', p.veg);
-      if (p.craving) params.set('craving', p.craving);
-    }
-    params.set('from', 'quiz');
-    router.push(`/search?${params.toString()}`);
-  };
+export default async function QuizPage() {
+  const restaurants = withMatchArtwork(await listRestaurantSummaries());
 
   return (
-    <main className="mx-auto max-w-md space-y-6 px-4 py-10">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Find your perfect spot
-        </h1>
-        <p className="text-text-muted mt-1 text-sm">
-          {QUIZ.length} taps, no wrong answers.
-        </p>
-      </div>
-
-      <div className="flex gap-1.5" aria-hidden>
-        {QUIZ.map((_, i) => (
-          <span
-            key={i}
-            className={`rounded-chip h-1 flex-1 ${
-              i <= step ? 'bg-accent-primary' : 'bg-surface-raised'
-            }`}
-          />
-        ))}
-      </div>
-
-      <Card className="craving-reveal space-y-4" key={question.id}>
-        <h2 className="font-display text-paper text-lg font-bold">
-          {question.question}
-        </h2>
-        <div className="grid grid-cols-2 gap-2">
-          {question.options.map((opt) => (
-            <button
-              key={opt.label}
-              type="button"
-              onClick={() => answer(opt.patch)}
-              className="rounded-card border-border-hairline bg-surface-raised text-paper hover:border-accent-primary flex flex-col items-center gap-2 border p-4 text-sm transition-colors"
-            >
-              <span aria-hidden className="text-2xl">
-                {opt.emoji}
-              </span>
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      {step > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setStep(step - 1);
-            setPatches(patches.slice(0, -1));
-          }}
-        >
-          ← Back a step
-        </Button>
-      )}
+    <main className={`${styles.finder} ${manrope.variable}`}>
+      <MatchFinder restaurants={restaurants} />
     </main>
   );
 }

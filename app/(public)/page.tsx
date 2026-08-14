@@ -64,11 +64,8 @@ export default function HomePage() {
             </div>
             <h1 id="home-title">Where should we eat?</h1>
             <p>Current offers, nearby events, and places worth the walk.</p>
-            <a href="#restaurants" className={styles.primaryAction}>
-              Find your perfect spot <DownIcon />
-            </a>
-            <Link href="/quiz" className={styles.secondaryAction}>
-              <TuneIcon /> Try the 3-tap match
+            <Link href="/quiz" className={styles.primaryAction}>
+              Find your perfect spot <ArrowIcon />
             </Link>
           </div>
         </section>
@@ -342,14 +339,6 @@ function ArrowIcon() {
   return (
     <svg className={styles.lineIcon} viewBox="0 0 24 24" aria-hidden>
       <path d="M5 12h14M13 6l6 6-6 6" />
-    </svg>
-  );
-}
-
-function DownIcon() {
-  return (
-    <svg className={styles.lineIcon} viewBox="0 0 24 24" aria-hidden>
-      <path d="M12 5v14M6 13l6 6 6-6" />
     </svg>
   );
 }

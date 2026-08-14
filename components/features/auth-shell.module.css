@@ -1,0 +1,475 @@
+.page {
+  --color-canvas: #f8fafa;
+  --color-surface-muted: #ffffff;
+  --color-surface-raised: #e6faf6;
+  --color-border-hairline: rgb(0 0 0 / 16%);
+  --color-paper: #000000;
+  --color-text-muted: #4b5563;
+  --color-accent-primary: #00b89c;
+  --color-accent-secondary: #008f7a;
+  --color-accent-urgent: #000000;
+  --color-accent-urgent-text: #000000;
+  --color-ink-on-primary: #000000;
+  --color-ink-on-secondary: #000000;
+  --font-display: var(--font-destiny), Manrope, sans-serif;
+  --font-body: var(--font-destiny), Manrope, sans-serif;
+  --font-mono: var(--font-destiny), Manrope, sans-serif;
+  --radius-chip: 999px;
+  --radius-card: 1.2rem;
+  --radius-control: 999px;
+  min-height: 100svh;
+  overflow: clip;
+  background: #f8fafa;
+  color: #000000;
+  color-scheme: light;
+  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-feature-settings:
+    'ss01' 1,
+    'cv11' 1;
+}
+
+.inAppShell {
+  min-height: calc(100svh - 4rem);
+  margin-bottom: -4rem;
+  padding-bottom: 4rem;
+}
+
+.page ::selection {
+  background: #00b89c;
+  color: #000000;
+}
+
+.page :where(a, button, input):focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px #000000;
+}
+
+.frame {
+  display: grid;
+  width: 100%;
+  min-height: inherit;
+  grid-template-columns: minmax(22rem, 0.92fr) minmax(28rem, 1.08fr);
+  background: #f8fafa;
+}
+
+.media {
+  position: relative;
+  min-height: inherit;
+  overflow: hidden;
+  background: #000000;
+  color: #ffffff;
+  isolation: isolate;
+}
+
+.media > img {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% center;
+  animation: auth-image-settle 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mediaShade {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / 14%), rgb(0 0 0 / 78%)),
+    linear-gradient(90deg, rgb(0 0 0 / 35%), transparent 75%);
+}
+
+.mediaCopy {
+  position: absolute;
+  right: clamp(1.5rem, 4vw, 4.5rem);
+  bottom: clamp(2rem, 7vh, 5rem);
+  left: clamp(1.5rem, 4vw, 4.5rem);
+  max-width: 34rem;
+}
+
+.mediaCopy h2 {
+  max-width: 11ch;
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 4.4vw, 4.8rem);
+  font-weight: 580;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.mediaCopy p {
+  max-width: 37rem;
+  margin: 1rem 0 0;
+  color: #e6faf6;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.formPanel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: clamp(1.25rem, 3vw, 2.75rem);
+}
+
+.panelTop {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.logo {
+  position: relative;
+  display: block;
+  width: 8.2rem;
+  height: 3rem;
+  overflow: hidden;
+}
+
+.logo img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8.2rem;
+  max-width: none;
+  transform: translate(-50%, -50%);
+}
+
+.backLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  padding-inline: 0.4rem;
+  color: #000000;
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #006c5d;
+}
+
+.formWrap {
+  width: min(100%, 30rem);
+  margin: auto;
+  padding-block: clamp(2.25rem, 8vh, 5.5rem);
+}
+
+.heading h1 {
+  max-width: 12ch;
+  margin: 0;
+  color: #000000;
+  font-size: clamp(2.55rem, 5vw, 4.6rem);
+  font-weight: 580;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.heading p {
+  max-width: 43ch;
+  margin: 1rem 0 0;
+  color: #4b5563;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.form {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 2.25rem;
+}
+
+.fieldGroup {
+  min-width: 0;
+}
+
+.page .label {
+  margin-bottom: 0.55rem;
+  color: #000000;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.page .field {
+  min-height: 3.25rem;
+  border: 1px solid rgb(0 0 0 / 18%);
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #000000;
+  caret-color: #008f7a;
+  font-size: 0.9rem;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.page .field:hover {
+  border-color: rgb(0 0 0 / 38%);
+}
+
+.page .field:focus {
+  border-color: #000000;
+}
+
+.page .field::placeholder {
+  color: #687077;
+  opacity: 1;
+}
+
+.fieldHint {
+  margin: 0.45rem 0 0;
+  color: #687077;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.page .codeField {
+  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  letter-spacing: 0.28em;
+  text-align: center;
+}
+
+.stepDetail {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.stepDetail strong {
+  color: #000000;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.error,
+.notice {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border-radius: 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.error {
+  background: #000000;
+  color: #ffffff;
+}
+
+.notice {
+  border: 1px solid rgb(0 143 122 / 24%);
+  background: #e6faf6;
+  color: #005f51;
+}
+
+.page .primaryButton {
+  width: 100%;
+  min-height: 3.25rem;
+  justify-content: space-between;
+  padding-inline: 1.2rem;
+  border: 1px solid #00b89c;
+  background: #00b89c;
+  color: #000000;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.page .primaryButton:hover:not(:disabled) {
+  border-color: #000000;
+  background: #000000;
+  color: #ffffff;
+  filter: none;
+}
+
+.page .secondaryButton,
+.textButton {
+  display: inline-flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #4b5563;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.textButton {
+  cursor: pointer;
+}
+
+.page .secondaryButton:hover,
+.textButton:hover {
+  background: transparent;
+  color: #000000;
+  text-decoration: underline;
+  text-underline-offset: 0.24em;
+}
+
+.footer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(0 0 0 / 12%);
+  color: #4b5563;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.footer a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  color: #000000;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: #00b89c;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+}
+
+.footer a:hover {
+  color: #006c5d;
+}
+
+@keyframes auth-image-settle {
+  from {
+    filter: blur(5px);
+    transform: scale(1.055);
+  }
+  to {
+    filter: blur(0);
+    transform: scale(1.01);
+  }
+}
+
+@media (max-width: 52rem) {
+  .frame {
+    grid-template-columns: 1fr;
+    grid-template-rows: 16rem auto;
+  }
+
+  .media {
+    min-height: 16rem;
+    border-radius: 0 0 1.65rem 1.65rem;
+  }
+
+  .mediaCopy {
+    right: 1.25rem;
+    bottom: 1.25rem;
+    left: 1.25rem;
+  }
+
+  .mediaCopy h2 {
+    max-width: 16ch;
+    font-size: clamp(2rem, 7vw, 3rem);
+  }
+
+  .mediaCopy p {
+    max-width: 45ch;
+    margin-top: 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .formPanel {
+    padding: 1rem clamp(1rem, 4vw, 2rem) 2.5rem;
+  }
+
+  .formWrap {
+    padding-block: 2.5rem 1rem;
+  }
+}
+
+@media (min-width: 40rem) {
+  .inAppShell {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 30rem) {
+  .frame {
+    grid-template-rows: 12.5rem auto;
+  }
+
+  .media {
+    min-height: 12.5rem;
+  }
+
+  .mediaCopy h2 {
+    max-width: 13ch;
+    font-size: 2rem;
+  }
+
+  .mediaCopy p {
+    display: none;
+  }
+
+  .formPanel {
+    padding: 0.85rem 1rem 2rem;
+  }
+
+  .panelTop {
+    min-height: 2.75rem;
+  }
+
+  .logo {
+    width: 6.75rem;
+    height: 2.75rem;
+  }
+
+  .logo img {
+    width: 6.75rem;
+  }
+
+  .backLink {
+    font-size: 0.7rem;
+  }
+
+  .formWrap {
+    padding-top: 2rem;
+  }
+
+  .heading h1 {
+    font-size: 2.45rem;
+  }
+
+  .heading p {
+    margin-top: 0.7rem;
+    font-size: 0.82rem;
+  }
+
+  .form {
+    gap: 0.95rem;
+    margin-top: 1.65rem;
+  }
+
+  .footer {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media > img {
+    animation: none;
+    filter: none;
+    transform: none;
+  }
+}

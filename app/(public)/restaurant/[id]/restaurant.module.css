@@ -1,0 +1,941 @@
+.restaurantPage {
+  padding-bottom: 6rem;
+}
+
+.shell {
+  width: min(100%, 100rem);
+  margin-inline: auto;
+  padding: 1rem clamp(0.75rem, 2vw, 2rem) 4rem;
+}
+
+.hero {
+  display: grid;
+  min-height: 40rem;
+  grid-template-columns: minmax(0, 1.14fr) minmax(25rem, 0.86fr);
+  overflow: hidden;
+  border-radius: 2.25rem;
+  background: #000000;
+  color: #ffffff;
+}
+
+.heroMedia {
+  min-width: 0;
+  min-height: 40rem;
+  overflow: hidden;
+}
+
+.heroCarousel,
+.heroCarousel :global(.restaurant-detail-hero) {
+  height: 100%;
+  min-height: 40rem;
+}
+
+.heroCarousel :global(.restaurant-detail-hero) img {
+  transition: transform 850ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroCarousel:hover :global(.restaurant-detail-hero) img {
+  transform: scale(1.025);
+}
+
+.heroCarousel [class~='bg-paper'] {
+  background: #ffffff;
+}
+
+.heroCarousel [class~='bg-paper/40'] {
+  background: rgb(255 255 255 / 42%);
+}
+
+.heroCarousel > svg,
+.heroCarousel :global(.restaurant-detail-hero) > svg {
+  width: 3rem;
+  height: 3rem;
+  fill: none;
+  stroke: #25cbb5;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.heroContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: clamp(1.5rem, 3.5vw, 3.5rem);
+}
+
+.backLink {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding-inline: 0.25rem;
+  color: #e6faf6;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #25cbb5;
+}
+
+.backLink svg,
+.bookingAction svg,
+.utilityAction svg,
+.suggestionsHeading a svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.heroCopy {
+  margin-block: auto;
+  padding-block: clamp(2rem, 5vh, 4rem);
+}
+
+.availability {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.availability > span {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.availability[data-state='open'] > span {
+  background: #25cbb5;
+}
+
+.availability[data-state='closing'] {
+  border-color: #25cbb5;
+  color: #25cbb5;
+}
+
+.availability[data-state='closing'] > span {
+  background: #25cbb5;
+}
+
+.heroCopy h1 {
+  max-width: 10ch;
+  margin: 1.2rem 0 0;
+  color: #ffffff;
+  font-size: clamp(3.6rem, 6.8vw, 6rem);
+  font-weight: 560;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.heroFacts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  color: #e6faf6;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+.rating svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: #25cbb5;
+}
+
+.rating span {
+  color: #e6faf6;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.price {
+  color: #25cbb5;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+.description {
+  max-width: 54ch;
+  margin: 1rem 0 0;
+  color: #e6faf6;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.15rem;
+}
+
+.tag {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 999px;
+  color: #e6faf6;
+  font-size: 0.63rem;
+  font-weight: 700;
+}
+
+.tag[data-tone='teal'] {
+  border-color: #25cbb5;
+  color: #25cbb5;
+}
+
+.utilityActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.utilityActions :global(.save-toggle) {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-color: rgb(255 255 255 / 28%);
+  background: #ffffff;
+  color: #000000;
+  backdrop-filter: none;
+}
+
+.utilityActions :global(.save-toggle[aria-pressed='true']) {
+  border-color: #00b89c;
+  background: #00b89c;
+}
+
+.utilityAction,
+.restaurantPage .utilityButton {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding-inline: 0.9rem;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.utilityAction:hover,
+.restaurantPage .utilityButton:hover {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #000000;
+}
+
+.bookingBlock {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(255 255 255 / 16%);
+}
+
+.bookingAction {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.1rem;
+  border-radius: 999px;
+  background: #00b89c;
+  color: #000000;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.bookingAction:hover {
+  background: #ffffff;
+}
+
+.bookingBlock p {
+  margin: 0.55rem 0 0;
+  color: #e6faf6;
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
+.liveGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.liveGrid[data-columns='one'],
+.detailsGrid[data-columns='one'] {
+  grid-template-columns: 1fr;
+}
+
+.offersSection,
+.eventsSection,
+.menuSection,
+.hoursSection,
+.reviewsSection,
+.suggestionsSection {
+  border-radius: 2.25rem;
+}
+
+.offersSection,
+.eventsSection {
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+}
+
+.offersSection {
+  background: #e6faf6;
+}
+
+.eventsSection {
+  border: 1px solid rgb(0 0 0 / 12%);
+  background: #ffffff;
+}
+
+.sectionHeading h2,
+.menuIntro h2,
+.hoursSection h2,
+.suggestionsHeading h2 {
+  margin: 0;
+  color: inherit;
+  font-size: clamp(2.3rem, 4.5vw, 4.25rem);
+  font-weight: 560;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.sectionHeading > p,
+.menuIntro > p {
+  max-width: 38ch;
+  margin: 0.75rem 0 0;
+  color: #4b5563;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.offerList,
+.eventList {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.offerCard {
+  padding: 1.1rem;
+  border: 1px solid rgb(0 0 0 / 13%);
+  border-radius: 1.2rem;
+  background: #ffffff;
+}
+
+.offerCard h3 {
+  margin: 0.85rem 0 0;
+  color: #000000;
+  font-size: 1.05rem;
+  font-weight: 720;
+  line-height: 1.15;
+}
+
+.offerCard > p {
+  margin: 0.45rem 0 0;
+  color: #4b5563;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.offerCard > button,
+.offerCard > span:last-child {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  margin-top: 0.65rem;
+  color: #4b5563;
+  font-size: 0.68rem;
+}
+
+.offerCard > button:hover {
+  color: #000000;
+}
+
+.offerBadge {
+  border-color: #008f7a !important;
+  border-radius: 999px !important;
+  color: #006c5d !important;
+  font-weight: 750 !important;
+}
+
+.eventCard {
+  padding: 1rem !important;
+  border-color: rgb(0 0 0 / 13%) !important;
+  border-radius: 1.2rem !important;
+  background: #ffffff !important;
+}
+
+.eventCard > div:first-child {
+  min-width: 4rem;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-radius: 1rem;
+  background: #00b89c;
+}
+
+.eventCard > div:first-child span {
+  color: #000000;
+}
+
+.eventCard :global(.event-type-icon) {
+  display: none;
+}
+
+.eventCard :global(button[data-ui-button]) {
+  min-height: 2.75rem;
+}
+
+.menuSection {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.62fr) minmax(23rem, 1.38fr);
+  gap: clamp(2rem, 6vw, 7rem);
+  margin-top: 1rem;
+  padding: clamp(2rem, 5vw, 5rem);
+  background: #e6faf6;
+}
+
+.menuIntro {
+  align-self: start;
+}
+
+.menuContent {
+  min-width: 0;
+}
+
+.menuPanel {
+  overflow: hidden;
+  padding-inline: 1.1rem;
+  border: 1px solid rgb(0 0 0 / 13%);
+  border-radius: 1.2rem;
+  background: #ffffff;
+}
+
+.menuPanel > div:last-child {
+  border-bottom: 0;
+}
+
+.menuPhotos {
+  margin-top: 1.25rem;
+}
+
+.menuPhotos h3 {
+  margin: 0 0 0.6rem;
+  color: #000000;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.menuCarousel {
+  overflow: hidden;
+  border-radius: 1.2rem;
+  background: #ffffff;
+}
+
+.emptyState {
+  display: flex;
+  min-height: 13rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  border: 1px solid rgb(0 0 0 / 13%);
+  border-radius: 1.2rem;
+  background: #ffffff;
+  text-align: center;
+}
+
+.emptyState svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  fill: none;
+  stroke: #008f7a;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.emptyState p {
+  max-width: 34ch;
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.72fr) minmax(25rem, 1.28fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.hoursSection,
+.reviewsSection {
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+}
+
+.hoursSection {
+  background: #000000;
+  color: #ffffff;
+}
+
+.hoursSection h2 {
+  color: #ffffff;
+}
+
+.hoursList {
+  margin-top: 2rem;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+}
+
+.hoursRow {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 14%);
+  color: #e6faf6;
+  font-size: 0.75rem;
+}
+
+.hoursRow strong {
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  text-align: right;
+}
+
+.reviewsSection {
+  border: 1px solid rgb(0 0 0 / 12%);
+  background: #ffffff;
+}
+
+.reviewsSection :global(.review-list) {
+  margin-top: 2rem;
+}
+
+.reviewsSection :global(.review-sort) {
+  overflow-x: auto;
+  padding: 0.2rem;
+  scrollbar-width: none;
+}
+
+.reviewsSection :global(.review-sort button) {
+  min-height: 2.75rem;
+}
+
+.reviewsSection :global(.review-sort::-webkit-scrollbar) {
+  display: none;
+}
+
+.reviewsSection :global(.review-card) {
+  padding: 1rem;
+  border-color: rgb(0 0 0 / 12%);
+  border-radius: 1rem;
+  background: #f8fafa;
+}
+
+.reviewsSection :global(.review-meta) {
+  flex-wrap: wrap;
+}
+
+.reviewsSection :global(.review-rating) {
+  color: #006c5d;
+}
+
+.reviewsSection :global(.review-date) {
+  color: #4b5563;
+}
+
+.reviewsSection :global(.review-verified) {
+  border-color: #008f7a;
+  color: #006c5d;
+}
+
+.reviewsSection :global(.review-comment) {
+  color: #000000;
+  line-height: 1.5;
+}
+
+.reviewsSection :global(.review-empty) {
+  max-width: 45ch;
+  margin: 2rem 0 0;
+  color: #4b5563;
+  line-height: 1.55;
+}
+
+.suggestionsSection {
+  margin-top: 1rem;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  background: #000000;
+  color: #ffffff;
+  --color-paper: #ffffff;
+  --color-text-muted: #e6faf6;
+  --color-surface-muted: #000000;
+  --color-surface-raised: #000000;
+  --color-border-hairline: rgb(255 255 255 / 18%);
+  --color-accent-primary: #25cbb5;
+  --color-accent-secondary: #25cbb5;
+  --color-accent-urgent-text: #ffffff;
+}
+
+.suggestionsHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.suggestionsHeading h2 {
+  color: #ffffff;
+}
+
+.suggestionsHeading a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.suggestionsHeading a:hover {
+  color: #25cbb5;
+}
+
+.suggestionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: 1rem;
+}
+
+.suggestionCard {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.75rem !important;
+  border-color: rgb(255 255 255 / 18%) !important;
+  border-radius: 1.65rem !important;
+  background: #000000 !important;
+}
+
+.suggestionCard :global(.restaurant-card-media) {
+  margin: 0 0 1rem;
+  border-radius: 1.2rem;
+}
+
+.suggestionCard :global(.restaurant-card-image) {
+  aspect-ratio: 16 / 10;
+}
+
+.suggestionCard :global(.restaurant-card-image img) {
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.suggestionCard:hover :global(.restaurant-card-image img) {
+  transform: scale(1.035);
+}
+
+.suggestionCard :global(.restaurant-card-title) {
+  color: #ffffff;
+  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 570;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.suggestionCard :global(.restaurant-card-meta),
+.suggestionCard :global(.restaurant-card-tags span),
+.suggestionCard :global(.restaurant-card-footer) {
+  color: #e6faf6;
+}
+
+.suggestionCard :global(.restaurant-card-tags span) {
+  background: #000000;
+}
+
+.suggestionCard :global(.restaurant-card-footer) {
+  border-color: rgb(255 255 255 / 18%);
+  border-style: solid;
+}
+
+.suggestionCard :global(.restaurant-card-footer span:last-child) {
+  color: #25cbb5;
+}
+
+@media (max-width: 64rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.9fr);
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(3.4rem, 7vw, 5rem);
+  }
+}
+
+@media (max-width: 52rem) {
+  .hero {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .heroMedia,
+  .heroCarousel,
+  .heroCarousel :global(.restaurant-detail-hero) {
+    min-height: 28rem;
+    height: 28rem;
+  }
+
+  .heroContent {
+    min-height: 34rem;
+  }
+
+  .liveGrid,
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .menuSection {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .suggestionsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 38.75rem) {
+  .restaurantPage {
+    padding-bottom: 5rem;
+  }
+
+  .shell {
+    padding: 0.65rem 0.65rem 2rem;
+  }
+
+  .hero,
+  .offersSection,
+  .eventsSection,
+  .menuSection,
+  .hoursSection,
+  .reviewsSection,
+  .suggestionsSection {
+    border-radius: 1.65rem;
+  }
+
+  .heroMedia,
+  .heroCarousel,
+  .heroCarousel :global(.restaurant-detail-hero) {
+    min-height: 18rem;
+    height: 18rem;
+  }
+
+  .heroContent {
+    min-height: 0;
+    padding: 1.1rem;
+  }
+
+  .heroCopy {
+    padding-block: 1.75rem 2rem;
+  }
+
+  .heroCopy h1 {
+    max-width: 12ch;
+    font-size: clamp(2.7rem, 13vw, 3.7rem);
+  }
+
+  .description {
+    font-size: 0.78rem;
+  }
+
+  .offersSection,
+  .eventsSection,
+  .menuSection,
+  .hoursSection,
+  .reviewsSection,
+  .suggestionsSection {
+    padding: 1.25rem 0.9rem;
+  }
+
+  .sectionHeading h2,
+  .menuIntro h2,
+  .hoursSection h2,
+  .suggestionsHeading h2 {
+    font-size: 2.2rem;
+  }
+
+  .offerList,
+  .eventList,
+  .hoursList,
+  .reviewsSection :global(.review-list) {
+    margin-top: 1.25rem;
+  }
+
+  .eventCard {
+    gap: 0.75rem !important;
+    padding: 0.8rem !important;
+  }
+
+  .eventCard > div:first-child {
+    min-width: 3.5rem;
+    padding-inline: 0.6rem;
+  }
+
+  .menuPanel {
+    padding-inline: 0.85rem;
+  }
+
+  .hoursRow {
+    font-size: 0.68rem;
+  }
+
+  .suggestionsHeading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .suggestionsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestionCard {
+    display: grid !important;
+    min-height: 14rem;
+    grid-template-columns: minmax(7.25rem, 0.82fr) minmax(0, 1.18fr);
+    grid-template-rows: auto auto auto 1fr auto;
+    column-gap: 0.8rem;
+    padding: 0.65rem !important;
+  }
+
+  .suggestionCard :global(.restaurant-card-media) {
+    grid-row: 1 / 6;
+    height: 100%;
+    min-height: 12.7rem;
+    margin: 0;
+  }
+
+  .suggestionCard :global(.restaurant-card-image) {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .suggestionCard :global(.restaurant-card-offer),
+  .suggestionCard :global(.restaurant-card-title),
+  .suggestionCard :global(.restaurant-card-meta),
+  .suggestionCard :global(.restaurant-card-tags),
+  .suggestionCard :global(.restaurant-card-footer) {
+    grid-column: 2;
+  }
+
+  .suggestionCard :global(.restaurant-card-offer) {
+    margin: 0 0 0.4rem;
+  }
+
+  .suggestionCard :global(.restaurant-card-title) {
+    font-size: 1.05rem;
+  }
+
+  .suggestionCard :global(.restaurant-card-meta) {
+    font-size: 0.66rem;
+  }
+
+  .suggestionCard :global(.restaurant-card-tags) {
+    align-content: start;
+    margin-top: 0.4rem;
+  }
+
+  .suggestionCard :global(.restaurant-card-tags span) {
+    padding-inline: 0.4rem;
+    font-size: 0.6rem;
+  }
+
+  .suggestionCard :global(.restaurant-card-footer) {
+    margin-top: 0.45rem;
+    padding-top: 0.45rem;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 22rem) {
+  .heroMedia,
+  .heroCarousel,
+  .heroCarousel :global(.restaurant-detail-hero) {
+    min-height: 15.5rem;
+    height: 15.5rem;
+  }
+
+  .heroCopy h1 {
+    font-size: 2.55rem;
+  }
+
+  .utilityAction,
+  .restaurantPage .utilityButton {
+    padding-inline: 0.7rem;
+  }
+
+  .suggestionCard {
+    grid-template-columns: 6.8rem minmax(0, 1fr);
+    column-gap: 0.65rem;
+  }
+
+  .suggestionCard :global(.restaurant-card-tags span:nth-child(n + 3)) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroCarousel :global(.restaurant-detail-hero) img,
+  .heroCarousel:hover :global(.restaurant-detail-hero) img,
+  .suggestionCard :global(.restaurant-card-image img),
+  .suggestionCard:hover :global(.restaurant-card-image img) {
+    transition: none;
+    transform: none;
+  }
+}

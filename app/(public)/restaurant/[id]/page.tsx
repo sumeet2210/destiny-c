@@ -1,29 +1,37 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
 import { EventCard } from '@/components/features/EventCard';
 import { FlagOfferButton } from '@/components/features/FlagOfferButton';
 import { OfferBadge } from '@/components/features/OfferBadge';
 import { ProfileViewLogger } from '@/components/features/ProfileViewLogger';
 import { RestaurantCard } from '@/components/features/RestaurantCard';
 import { ReviewList } from '@/components/features/ReviewList';
+import { RsvpButton } from '@/components/features/RsvpButton';
+import { SaveToggle } from '@/components/features/SaveToggle';
 import { ShareButton } from '@/components/features/ShareButton';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { DestinyPage } from '@/components/ui/DestinyPage';
 import { MenuRow } from '@/components/ui/MenuRow';
 import { PhotoCarousel } from '@/components/ui/PhotoCarousel';
 import { VIBES } from '@/config/vibes';
+import { getSessionUser } from '@/lib/auth/session';
 import {
   DAY_LABELS,
   WEEK,
   formatDayShifts,
   type OpeningHours,
 } from '@/lib/domain/hours';
-import { RsvpButton } from '@/components/features/RsvpButton';
-import { SaveToggle } from '@/components/features/SaveToggle';
-import { getSessionUser } from '@/lib/auth/session';
 import { alsoLike, getRestaurantDetail } from '@/lib/queries/catalog';
 import { getMyRsvpIds, getSavedIds } from '@/lib/queries/social';
+import styles from './restaurant.module.css';
+
+const DETAIL_ARTWORK: Record<string, string> = {
+  'Biryani Adda': '/home/biryani-adda.webp',
+  'Momo Nation': '/home/momo-nation.webp',
+  'Chai Theory': '/home/chai-theory.webp',
+  'Southern Spice Tiffins': '/home/southern-spice.webp',
+  'Scoops & Stories': '/home/scoops-stories.webp',
+};
 
 export async function generateMetadata(
   props: PageProps<'/restaurant/[id]'>,
@@ -45,251 +53,319 @@ export default async function RestaurantPage(
     getMyRsvpIds(),
   ]);
   if (!detail) notFound();
-  const isStudent = user?.role === 'student';
 
-  const { summary: s, row, menu, menuPhotos, offers, events, reviews } = detail;
+  const isStudent = user?.role === 'student';
+  const { summary, row, menu, menuPhotos, offers, events, reviews } = detail;
   const from = typeof search.from === 'string' ? search.from : 'direct';
   const hours = row.opening_hours as OpeningHours | null;
   const vibeLabel = (tag: string) =>
-    VIBES.find((v) => v.tag === tag)?.label ?? tag;
+    VIBES.find((vibe) => vibe.tag === tag)?.label ?? tag;
   const directionsHref =
-    s.lat !== null && s.lng !== null
-      ? `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`
+    summary.lat !== null && summary.lng !== null
+      ? `https://www.google.com/maps/dir/?api=1&destination=${summary.lat},${summary.lng}`
       : null;
+  const artwork = DETAIL_ARTWORK[row.name];
+  const heroPhotos = artwork
+    ? [artwork, ...summary.photos.filter((photo) => photo !== artwork)]
+    : summary.photos;
+  const availability = summary.isOpen
+    ? summary.closingInMinutes !== null && summary.closingInMinutes <= 45
+      ? {
+          state: 'closing',
+          label: `Closing in ${summary.closingInMinutes}m`,
+        }
+      : { state: 'open', label: 'Open now' }
+    : { state: 'closed', label: 'Closed right now' };
 
   return (
-    <main className="mx-auto max-w-3xl space-y-8 px-4 py-6">
+    <DestinyPage className={styles.restaurantPage}>
       <ProfileViewLogger restaurantId={id} source={from} />
 
-      <section>
-        <PhotoCarousel
-          photos={s.photos}
-          alt={row.name}
-          className="rounded-card overflow-hidden"
-        />
-        <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="font-display text-paper text-2xl font-extrabold">
-              {row.name}
-            </h1>
-            <p className="text-text-muted mt-1 flex flex-wrap items-center gap-x-2 text-[13px]">
-              <span>{row.area}</span>
-              <span aria-hidden>·</span>
-              {s.isOpen ? (
-                s.closingInMinutes !== null && s.closingInMinutes <= 45 ? (
-                  <span className="text-accent-urgent-text">
-                    Closing in{' '}
-                    <span className="font-mono">{s.closingInMinutes}m</span>
-                  </span>
-                ) : (
-                  <span className="text-accent-secondary">Open now</span>
-                )
-              ) : (
-                <span>Closed right now</span>
-              )}
-              {s.rating !== null && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span>
-                    <span aria-hidden>★ </span>
-                    <span className="font-mono">
-                      {s.rating.toFixed(1)}
-                    </span>{' '}
-                    <span className="text-[11px]">
-                      ({s.reviewCount} reviews)
+      <div className={styles.shell}>
+        <section className={styles.hero} aria-labelledby="restaurant-name">
+          <div className={styles.heroMedia}>
+            <PhotoCarousel
+              photos={heroPhotos}
+              alt={row.name}
+              aspect="restaurant-detail-hero"
+              className={styles.heroCarousel}
+              emptyFallback={<PhotoPlaceholderIcon />}
+              showControls
+            />
+          </div>
+
+          <div className={styles.heroContent}>
+            <Link href="/search" className={styles.backLink}>
+              <BackIcon />
+              Back to restaurants
+            </Link>
+
+            <div className={styles.heroCopy}>
+              <span
+                className={styles.availability}
+                data-state={availability.state}
+              >
+                <span aria-hidden />
+                {availability.label}
+              </span>
+
+              <h1 id="restaurant-name">{row.name}</h1>
+
+              <p className={styles.heroFacts}>
+                <span>{row.area}</span>
+                {summary.rating !== null ? (
+                  <>
+                    <span aria-hidden>•</span>
+                    <span className={styles.rating}>
+                      <StarIcon />
+                      {summary.rating.toFixed(1)}
+                      <span>({summary.reviewCount})</span>
                     </span>
-                  </span>
-                </>
-              )}
-              {s.price_per_head && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span>
-                    <span className="font-mono">₹{s.price_per_head}</span>/head
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {isStudent && (
-              <SaveToggle restaurantId={id} initialSaved={savedIds.has(id)} />
-            )}
-            {directionsHref && (
-              <a
-                href={directionsHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-control border-border-hairline text-paper hover:bg-surface-raised inline-flex h-8 items-center border px-3 text-[13px]"
-              >
-                Directions
-              </a>
-            )}
-            <ShareButton
-              title={row.name}
-              text={`${row.name} — ${row.area}. Found it on Destiny.`}
-            />
-          </div>
-        </div>
+                  </>
+                ) : null}
+                {summary.price_per_head ? (
+                  <>
+                    <span aria-hidden>•</span>
+                    <span className={styles.price}>
+                      ₹{summary.price_per_head} per head
+                    </span>
+                  </>
+                ) : null}
+              </p>
 
-        {row.description && (
-          <p className="text-text-muted mt-3 text-sm">{row.description}</p>
-        )}
+              {row.description ? (
+                <p className={styles.description}>{row.description}</p>
+              ) : null}
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {row.is_veg_only && (
-            <span className="rounded-chip border-accent-secondary text-accent-secondary border px-2 py-0.5 text-[11px]">
-              Pure veg
-            </span>
-          )}
-          {row.student_discount && (
-            <span className="rounded-chip border-accent-primary text-accent-primary border px-2 py-0.5 text-[11px]">
-              Student discount
-            </span>
-          )}
-          {row.has_ac && <Tag>AC</Tag>}
-          {row.dine_in && <Tag>Dine-in</Tag>}
-          {row.takeaway && <Tag>Takeaway</Tag>}
-          {row.vibe_tags.map((t) => (
-            <Tag key={t}>{vibeLabel(t)}</Tag>
-          ))}
-        </div>
-
-        <div className="mt-4">
-          <Link href={`/restaurant/${id}/book`}>
-            <Button size="lg" className="w-full sm:w-auto">
-              Let them know you&apos;re coming
-            </Button>
-          </Link>
-          <p className="text-text-muted mt-1.5 text-[11px]">
-            A heads-up, not a reservation — the owner sees your group is likely
-            coming.
-          </p>
-        </div>
-      </section>
-
-      {offers.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="font-display text-paper text-lg font-bold">
-            Live offers
-          </h2>
-          {offers.map((o) => (
-            <Card key={o.id} className="space-y-1.5">
-              <OfferBadge
-                title={o.title}
-                discountText={o.discount_text}
-                expiresAt={o.expires_at}
-              />
-              <p className="text-paper text-sm font-medium">{o.title}</p>
-              {o.description && (
-                <p className="text-text-muted text-[13px]">{o.description}</p>
-              )}
-              <FlagOfferButton offerId={o.id} />
-            </Card>
-          ))}
-        </section>
-      )}
-
-      {events.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="font-display text-paper text-lg font-bold">
-            Upcoming here
-          </h2>
-          {events.map((e) => (
-            <EventCard
-              key={e.id}
-              title={e.title}
-              eventType={e.event_type}
-              startsAt={e.starts_at}
-              description={e.description}
-              rsvpSlot={
-                <RsvpButton
-                  eventId={e.id}
-                  initialGoing={myRsvps.has(e.id)}
-                  loggedIn={isStudent}
-                />
-              }
-            />
-          ))}
-        </section>
-      )}
-
-      <section className="space-y-3">
-        <h2 className="font-display text-paper text-lg font-bold">Menu</h2>
-        {menu.length === 0 && menuPhotos.length === 0 ? (
-          <p className="text-text-muted text-sm">
-            Menu&apos;s not up yet — the owner is probably still typing it in.
-          </p>
-        ) : (
-          <>
-            {menu.length > 0 && (
-              <Card>
-                {menu.map((m) => (
-                  <MenuRow
-                    key={m.id}
-                    name={m.name}
-                    price={m.price}
-                    isVeg={m.is_veg}
-                    unavailable={!m.is_available}
-                  />
+              <div className={styles.tags} aria-label="Restaurant features">
+                {row.is_veg_only ? <Tag tone="teal">Pure veg</Tag> : null}
+                {row.student_discount ? (
+                  <Tag tone="teal">Student discount</Tag>
+                ) : null}
+                {row.has_ac ? <Tag>AC</Tag> : null}
+                {row.dine_in ? <Tag>Dine-in</Tag> : null}
+                {row.takeaway ? <Tag>Takeaway</Tag> : null}
+                {row.vibe_tags.map((tag) => (
+                  <Tag key={tag}>{vibeLabel(tag)}</Tag>
                 ))}
-              </Card>
-            )}
-            {menuPhotos.length > 0 && (
-              <div>
-                <h3 className="text-text-muted mb-2 text-[13px] font-medium">
-                  Menu photos
-                </h3>
-                <PhotoCarousel
-                  photos={menuPhotos}
-                  alt={`${row.name} menu`}
-                  className="rounded-card overflow-hidden"
-                />
               </div>
-            )}
-          </>
-        )}
-      </section>
+            </div>
 
-      {hours && (
-        <section className="space-y-3">
-          <h2 className="font-display text-paper text-lg font-bold">Hours</h2>
-          <Card>
-            {WEEK.map((day) => (
-              <div
-                key={day}
-                className="flex items-baseline justify-between py-1 text-sm"
+            <div className={styles.utilityActions}>
+              {isStudent ? (
+                <SaveToggle restaurantId={id} initialSaved={savedIds.has(id)} />
+              ) : null}
+
+              {directionsHref ? (
+                <a
+                  href={directionsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.utilityAction}
+                >
+                  <DirectionsIcon />
+                  Directions
+                </a>
+              ) : null}
+
+              <ShareButton
+                title={row.name}
+                text={`${row.name} — ${row.area}. Found it on Destiny.`}
+                className={styles.utilityButton}
+                showIcon
+              />
+            </div>
+
+            <div className={styles.bookingBlock}>
+              <Link
+                href={`/restaurant/${id}/book`}
+                className={styles.bookingAction}
               >
-                <span className="text-text-muted">{DAY_LABELS[day]}</span>
-                <span className="text-paper font-mono text-[13px]">
-                  {formatDayShifts(hours[day])}
-                </span>
-              </div>
-            ))}
-          </Card>
+                Let them know you&apos;re coming
+                <ArrowIcon />
+              </Link>
+              <p>
+                A heads-up, not a reservation — the owner sees your group is
+                likely coming.
+              </p>
+            </div>
+          </div>
         </section>
-      )}
 
-      <section className="space-y-3">
-        <h2 className="font-display text-paper text-lg font-bold">Reviews</h2>
-        <ReviewList
-          reviews={reviews.map((r) => ({
-            id: r.id,
-            rating: r.rating,
-            comment: r.comment,
-            created_at: r.created_at,
-          }))}
-        />
-      </section>
+        {offers.length > 0 || events.length > 0 ? (
+          <div
+            className={styles.liveGrid}
+            data-columns={
+              offers.length > 0 && events.length > 0 ? 'two' : 'one'
+            }
+          >
+            {offers.length > 0 ? (
+              <section
+                className={styles.offersSection}
+                aria-labelledby="offers-title"
+              >
+                <div className={styles.sectionHeading}>
+                  <h2 id="offers-title">Live offers</h2>
+                  <p>Current specials listed by this restaurant.</p>
+                </div>
 
-      <AlsoLike id={id} />
-    </main>
+                <div className={styles.offerList}>
+                  {offers.map((offer) => (
+                    <article key={offer.id} className={styles.offerCard}>
+                      <OfferBadge
+                        title={offer.title}
+                        discountText={offer.discount_text}
+                        expiresAt={offer.expires_at}
+                        className={styles.offerBadge}
+                      />
+                      <h3>{offer.title}</h3>
+                      {offer.description ? <p>{offer.description}</p> : null}
+                      <FlagOfferButton offerId={offer.id} />
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {events.length > 0 ? (
+              <section
+                className={styles.eventsSection}
+                aria-labelledby="events-title"
+              >
+                <div className={styles.sectionHeading}>
+                  <h2 id="events-title">Upcoming here</h2>
+                  <p>Events currently scheduled at this restaurant.</p>
+                </div>
+
+                <div className={styles.eventList}>
+                  {events.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      title={event.title}
+                      eventType={event.event_type}
+                      startsAt={event.starts_at}
+                      description={event.description}
+                      className={styles.eventCard}
+                      rsvpSlot={
+                        <RsvpButton
+                          eventId={event.id}
+                          initialGoing={myRsvps.has(event.id)}
+                          loggedIn={isStudent}
+                        />
+                      }
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
+
+        <section className={styles.menuSection} aria-labelledby="menu-title">
+          <div className={styles.menuIntro}>
+            <h2 id="menu-title">Menu</h2>
+            <p>Browse listed dishes and current menu photos before you go.</p>
+          </div>
+
+          <div className={styles.menuContent}>
+            {menu.length === 0 && menuPhotos.length === 0 ? (
+              <div className={styles.emptyState}>
+                <MenuIcon />
+                <p>
+                  Menu&apos;s not up yet — the owner is probably still typing it
+                  in.
+                </p>
+              </div>
+            ) : (
+              <>
+                {menu.length > 0 ? (
+                  <div className={styles.menuPanel}>
+                    {menu.map((item) => (
+                      <MenuRow
+                        key={item.id}
+                        name={item.name}
+                        price={item.price}
+                        isVeg={item.is_veg}
+                        unavailable={!item.is_available}
+                        appearance="destiny"
+                      />
+                    ))}
+                  </div>
+                ) : null}
+
+                {menuPhotos.length > 0 ? (
+                  <div className={styles.menuPhotos}>
+                    <h3>Menu photos</h3>
+                    <PhotoCarousel
+                      photos={menuPhotos}
+                      alt={`${row.name} menu`}
+                      className={styles.menuCarousel}
+                      emptyFallback={<PhotoPlaceholderIcon />}
+                      showControls
+                    />
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
+        </section>
+
+        <div
+          className={styles.detailsGrid}
+          data-columns={hours ? 'two' : 'one'}
+        >
+          {hours ? (
+            <section
+              className={styles.hoursSection}
+              aria-labelledby="hours-title"
+            >
+              <h2 id="hours-title">Hours</h2>
+              <div className={styles.hoursList}>
+                {WEEK.map((day) => (
+                  <div key={day} className={styles.hoursRow}>
+                    <span>{DAY_LABELS[day]}</span>
+                    <strong>{formatDayShifts(hours[day])}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <section
+            className={styles.reviewsSection}
+            aria-labelledby="reviews-title"
+          >
+            <div className={styles.sectionHeading}>
+              <h2 id="reviews-title">Reviews</h2>
+              <p>Verified feedback from completed student visits.</p>
+            </div>
+            <ReviewList
+              appearance="destiny"
+              reviews={reviews.map((review) => ({
+                id: review.id,
+                rating: review.rating,
+                comment: review.comment,
+                created_at: review.created_at,
+              }))}
+            />
+          </section>
+        </div>
+
+        <AlsoLike id={id} />
+      </div>
+    </DestinyPage>
   );
 }
 
-function Tag({ children }: { children: React.ReactNode }) {
+function Tag({
+  children,
+  tone = 'neutral',
+}: {
+  children: React.ReactNode;
+  tone?: 'neutral' | 'teal';
+}) {
   return (
-    <span className="rounded-chip border-border-hairline bg-surface-raised text-text-muted border px-2 py-0.5 text-[11px]">
+    <span className={styles.tag} data-tone={tone}>
       {children}
     </span>
   );
@@ -298,16 +374,92 @@ function Tag({ children }: { children: React.ReactNode }) {
 async function AlsoLike({ id }: { id: string }) {
   const suggestions = await alsoLike(id);
   if (suggestions.length === 0) return null;
+
   return (
-    <section className="space-y-3">
-      <h2 className="font-display text-paper text-lg font-bold">
-        You may also like
-      </h2>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {suggestions.map((r) => (
-          <RestaurantCard key={r.id} restaurant={r} source="direct" />
+    <section
+      className={styles.suggestionsSection}
+      aria-labelledby="suggestions-title"
+    >
+      <div className={styles.suggestionsHeading}>
+        <h2 id="suggestions-title">You may also like</h2>
+        <Link href="/search">
+          Browse all
+          <ArrowIcon />
+        </Link>
+      </div>
+      <div className={styles.suggestionsGrid}>
+        {suggestions.map((restaurant) => (
+          <RestaurantCard
+            key={restaurant.id}
+            restaurant={withDetailArtwork(restaurant)}
+            source="direct"
+            className={styles.suggestionCard}
+          />
         ))}
       </div>
     </section>
+  );
+}
+
+function withDetailArtwork<T extends { name: string; photos: string[] }>(
+  restaurant: T,
+): T {
+  const artwork = DETAIL_ARTWORK[restaurant.name];
+  if (!artwork) return restaurant;
+  return {
+    ...restaurant,
+    photos: [
+      artwork,
+      ...restaurant.photos.filter((photo) => photo !== artwork),
+    ],
+  };
+}
+
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M19 12H5m6-6-6 6 6 6" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M5 12h14m-6-6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function DirectionsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="m12 3 9 9-9 9-9-9 9-9Z" />
+      <path d="M8.5 12h7M13 8.5l3.5 3.5-3.5 3.5" />
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="m12 2.8 2.75 5.58 6.16.9-4.46 4.34 1.05 6.13L12 16.86l-5.5 2.89 1.05-6.13L3.1 9.28l6.15-.9L12 2.8Z" />
+    </svg>
+  );
+}
+
+function PhotoPlaceholderIcon() {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden>
+      <path d="M8 10h32v28H8zM8 32l9-9 7 7 5-5 11 11M31 19h.01" />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden>
+      <path d="M10 8h28v32H10zM16 17h16M16 24h16M16 31h10" />
+    </svg>
   );
 }

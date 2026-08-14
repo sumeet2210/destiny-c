@@ -28,6 +28,7 @@ export function RsvpButton({
       <Button
         size="sm"
         variant={going ? 'primary' : 'outline'}
+        aria-pressed={going}
         disabled={pending}
         onClick={() => {
           if (!loggedIn) {
@@ -45,15 +46,37 @@ export function RsvpButton({
           });
         }}
       >
-        {going ? "I'm going ✓" : "I'm going"}
+        {going ? (
+          <>
+            I&apos;m going <CheckIcon />
+          </>
+        ) : (
+          "I'm going"
+        )}
       </Button>
-      {friendsGoing && friendsGoing.length > 0 && (
+
+      {friendsGoing && friendsGoing.length > 0 ? (
         <span className="text-text-muted text-[12px]">
           {friendsGoing.length === 1
             ? `${friendsGoing[0]} is going`
             : `${friendsGoing[0]} + ${friendsGoing.length - 1} more going`}
         </span>
-      )}
+      ) : null}
     </div>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path
+        d="m5 12 4.25 4.25L19 6.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

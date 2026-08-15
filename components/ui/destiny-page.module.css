@@ -1,16 +1,16 @@
 .page {
-  --color-canvas: #f8fafa;
-  --color-surface-muted: #ffffff;
-  --color-surface-raised: #e6faf6;
-  --color-border-hairline: rgb(0 0 0 / 16%);
-  --color-paper: #000000;
-  --color-text-muted: #4b5563;
-  --color-accent-primary: #00b89c;
-  --color-accent-secondary: #008f7a;
-  --color-accent-urgent: #000000;
-  --color-accent-urgent-text: #000000;
-  --color-ink-on-primary: #000000;
-  --color-ink-on-secondary: #000000;
+  --color-canvas: #ededed;
+  --color-surface-muted: #ededed;
+  --color-surface-raised: #ededed;
+  --color-border-hairline: #505050;
+  --color-paper: #2b2b2b;
+  --color-text-muted: #8a8a8a;
+  --color-accent-primary: #1db954;
+  --color-accent-secondary: #1db954;
+  --color-accent-urgent: #2b2b2b;
+  --color-accent-urgent-text: #2b2b2b;
+  --color-ink-on-primary: #2b2b2b;
+  --color-ink-on-secondary: #2b2b2b;
   --font-display: var(--font-destiny), Manrope, sans-serif;
   --font-body: var(--font-destiny), Manrope, sans-serif;
   --font-mono: var(--font-destiny), Manrope, sans-serif;
@@ -21,8 +21,8 @@
   margin-bottom: -4rem;
   padding-bottom: 4rem;
   overflow: clip;
-  background: #f8fafa;
-  color: #000000;
+  background: #ededed;
+  color: #2b2b2b;
   color-scheme: light;
   font-family: var(--font-destiny), Manrope, sans-serif;
   font-feature-settings:
@@ -31,8 +31,8 @@
 }
 
 .page ::selection {
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
 }
 
 .page :where(a, button) {
@@ -40,9 +40,9 @@
 }
 
 .page :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid #1db954;
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px #000000;
+  box-shadow: 0 0 0 5px #2b2b2b;
 }
 
 .page :global(button[data-ui-button]) {
@@ -50,8 +50,8 @@
 }
 
 .page :global(button[data-ui-button][data-variant='primary']):hover {
-  background: #008f7a;
-  color: #ffffff;
+  background: #1db954;
+  color: #ededed;
   filter: none;
 }
 

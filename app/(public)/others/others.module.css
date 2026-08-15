@@ -1,0 +1,169 @@
+.page {
+  min-height: calc(100svh - 4rem);
+  background: #2b2b2b;
+  color: #ededed;
+  color-scheme: dark;
+  font-family: var(--font-destiny), Manrope, sans-serif;
+}
+
+.shell {
+  width: min(100%, 82rem);
+  margin-inline: auto;
+  padding: clamp(2.5rem, 6vw, 5.5rem) clamp(1rem, 4vw, 3rem) 3rem;
+}
+
+.intro > span,
+.infoCard > span {
+  color: #1db954;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.intro h1 {
+  max-width: 10ch;
+  margin: 0.55rem 0 0;
+  font-size: clamp(2.7rem, 7vw, 5.5rem);
+  font-weight: 580;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+}
+
+.intro p {
+  max-width: 38rem;
+  margin: 1rem 0 0;
+  color: #8a8a8a;
+  line-height: 1.55;
+}
+
+.menuGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: clamp(2rem, 5vw, 4rem);
+}
+
+.menuCard {
+  display: grid;
+  min-width: 0;
+  min-height: 6.5rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #505050;
+  border-radius: 1.25rem;
+  background: #2b2b2b;
+  color: #ededed;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.menuCard:hover {
+  border-color: rgb(29 185 84 / 72%);
+  background: #2b2b2b;
+  transform: translateY(-2px);
+}
+
+.iconWrap {
+  display: grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: rgb(29 185 84 / 13%);
+  color: #1db954;
+}
+
+.iconWrap svg,
+.arrow {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cardCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.cardCopy strong {
+  font-size: 0.95rem;
+}
+
+.cardCopy small {
+  color: #8a8a8a;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.arrow {
+  width: 1rem;
+  color: #8a8a8a;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  scroll-margin-top: 6rem;
+}
+
+.infoCard {
+  scroll-margin-top: 6rem;
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+  border: 1px solid #505050;
+  border-radius: 1.4rem;
+  background: #2b2b2b;
+}
+
+.infoCard h2 {
+  margin: 0.6rem 0 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1.05;
+}
+
+.infoCard p {
+  margin: 0.8rem 0 1rem;
+  color: #8a8a8a;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.infoCard a {
+  color: #1db954;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+@media (max-width: 38.75rem) {
+  .shell {
+    padding: 2.3rem 0.85rem 2rem;
+  }
+
+  .menuGrid,
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .menuCard {
+    min-height: 5.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menuCard {
+    transition: none;
+  }
+}

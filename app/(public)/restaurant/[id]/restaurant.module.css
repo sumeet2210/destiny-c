@@ -14,8 +14,8 @@
   grid-template-columns: minmax(0, 1.14fr) minmax(25rem, 0.86fr);
   overflow: hidden;
   border-radius: 2.25rem;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .heroMedia {
@@ -39,11 +39,11 @@
 }
 
 .heroCarousel [class~='bg-paper'] {
-  background: #ffffff;
+  background: #ededed;
 }
 
 .heroCarousel [class~='bg-paper/40'] {
-  background: rgb(255 255 255 / 42%);
+  background: rgb(237 237 237 / 42%);
 }
 
 .heroCarousel > svg,
@@ -51,7 +51,7 @@
   width: 3rem;
   height: 3rem;
   fill: none;
-  stroke: #25cbb5;
+  stroke: #1db954;
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -71,14 +71,14 @@
   align-items: center;
   gap: 0.5rem;
   padding-inline: 0.25rem;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.72rem;
   font-weight: 750;
   text-decoration: none;
 }
 
 .backLink:hover {
-  color: #25cbb5;
+  color: #1db954;
 }
 
 .backLink svg,
@@ -105,9 +105,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.7rem;
-  border: 1px solid rgb(255 255 255 / 22%);
+  border: 1px solid #505050;
   border-radius: 999px;
-  color: #ffffff;
+  color: #ededed;
   font-size: 0.68rem;
   font-weight: 750;
 }
@@ -116,26 +116,26 @@
   width: 0.48rem;
   height: 0.48rem;
   border-radius: 50%;
-  background: #ffffff;
+  background: #ededed;
 }
 
 .availability[data-state='open'] > span {
-  background: #25cbb5;
+  background: #1db954;
 }
 
 .availability[data-state='closing'] {
-  border-color: #25cbb5;
-  color: #25cbb5;
+  border-color: #1db954;
+  color: #1db954;
 }
 
 .availability[data-state='closing'] > span {
-  background: #25cbb5;
+  background: #1db954;
 }
 
 .heroCopy h1 {
   max-width: 10ch;
   margin: 1.2rem 0 0;
-  color: #ffffff;
+  color: #ededed;
   font-size: clamp(3.6rem, 6.8vw, 6rem);
   font-weight: 560;
   line-height: 0.88;
@@ -149,7 +149,7 @@
   align-items: center;
   gap: 0.5rem;
   margin: 1.25rem 0 0;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.76rem;
   line-height: 1.4;
 }
@@ -158,7 +158,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: #ffffff;
+  color: #ededed;
   font-variant-numeric: tabular-nums;
   font-weight: 750;
 }
@@ -166,17 +166,17 @@
 .rating svg {
   width: 0.9rem;
   height: 0.9rem;
-  fill: #25cbb5;
+  fill: #1db954;
 }
 
 .rating span {
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.65rem;
   font-weight: 600;
 }
 
 .price {
-  color: #25cbb5;
+  color: #1db954;
   font-variant-numeric: tabular-nums;
   font-weight: 750;
 }
@@ -184,7 +184,7 @@
 .description {
   max-width: 54ch;
   margin: 1rem 0 0;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.86rem;
   line-height: 1.55;
 }
@@ -201,16 +201,16 @@
   min-height: 1.75rem;
   align-items: center;
   padding: 0.35rem 0.65rem;
-  border: 1px solid rgb(255 255 255 / 20%);
+  border: 1px solid #505050;
   border-radius: 999px;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.63rem;
   font-weight: 700;
 }
 
-.tag[data-tone='teal'] {
-  border-color: #25cbb5;
-  color: #25cbb5;
+.tag[data-tone='accent'] {
+  border-color: #1db954;
+  color: #1db954;
 }
 
 .utilityActions {
@@ -223,15 +223,15 @@
 .utilityActions :global(.save-toggle) {
   width: 2.75rem;
   height: 2.75rem;
-  border-color: rgb(255 255 255 / 28%);
-  background: #ffffff;
-  color: #000000;
+  border-color: #505050;
+  background: #ededed;
+  color: #2b2b2b;
   backdrop-filter: none;
 }
 
 .utilityActions :global(.save-toggle[aria-pressed='true']) {
-  border-color: #00b89c;
-  background: #00b89c;
+  border-color: #1db954;
+  background: #1db954;
 }
 
 .utilityAction,
@@ -242,10 +242,10 @@
   justify-content: center;
   gap: 0.45rem;
   padding-inline: 0.9rem;
-  border: 1px solid rgb(255 255 255 / 28%);
+  border: 1px solid #505050;
   border-radius: 999px;
   background: transparent;
-  color: #ffffff;
+  color: #ededed;
   font-size: 0.72rem;
   font-weight: 750;
   text-decoration: none;
@@ -253,15 +253,15 @@
 
 .utilityAction:hover,
 .restaurantPage .utilityButton:hover {
-  border-color: #ffffff;
-  background: #ffffff;
-  color: #000000;
+  border-color: #505050;
+  background: #ededed;
+  color: #2b2b2b;
 }
 
 .bookingBlock {
   margin-top: 1.25rem;
   padding-top: 1.25rem;
-  border-top: 1px solid rgb(255 255 255 / 16%);
+  border-top: 1px solid #505050;
 }
 
 .bookingAction {
@@ -272,20 +272,20 @@
   gap: 1rem;
   padding: 0.8rem 1.1rem;
   border-radius: 999px;
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
   font-size: 0.78rem;
   font-weight: 850;
   text-decoration: none;
 }
 
 .bookingAction:hover {
-  background: #ffffff;
+  background: #ededed;
 }
 
 .bookingBlock p {
   margin: 0.55rem 0 0;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.66rem;
   line-height: 1.45;
 }
@@ -317,12 +317,12 @@
 }
 
 .offersSection {
-  background: #e6faf6;
+  background: #ededed;
 }
 
 .eventsSection {
-  border: 1px solid rgb(0 0 0 / 12%);
-  background: #ffffff;
+  border: 1px solid #505050;
+  background: #ededed;
 }
 
 .sectionHeading h2,
@@ -342,7 +342,7 @@
 .menuIntro > p {
   max-width: 38ch;
   margin: 0.75rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.78rem;
   line-height: 1.5;
 }
@@ -356,14 +356,14 @@
 
 .offerCard {
   padding: 1.1rem;
-  border: 1px solid rgb(0 0 0 / 13%);
+  border: 1px solid #505050;
   border-radius: 1.2rem;
-  background: #ffffff;
+  background: #ededed;
 }
 
 .offerCard h3 {
   margin: 0.85rem 0 0;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 1.05rem;
   font-weight: 720;
   line-height: 1.15;
@@ -371,7 +371,7 @@
 
 .offerCard > p {
   margin: 0.45rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.76rem;
   line-height: 1.5;
 }
@@ -382,26 +382,26 @@
   min-height: 2.75rem;
   align-items: center;
   margin-top: 0.65rem;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.68rem;
 }
 
 .offerCard > button:hover {
-  color: #000000;
+  color: #2b2b2b;
 }
 
 .offerBadge {
-  border-color: #008f7a !important;
+  border-color: #1db954 !important;
   border-radius: 999px !important;
-  color: #006c5d !important;
+  color: #1db954 !important;
   font-weight: 750 !important;
 }
 
 .eventCard {
   padding: 1rem !important;
-  border-color: rgb(0 0 0 / 13%) !important;
+  border-color: #505050 !important;
   border-radius: 1.2rem !important;
-  background: #ffffff !important;
+  background: #ededed !important;
 }
 
 .eventCard > div:first-child {
@@ -409,11 +409,11 @@
   padding: 0.7rem 0.8rem;
   border: 0;
   border-radius: 1rem;
-  background: #00b89c;
+  background: #1db954;
 }
 
 .eventCard > div:first-child span {
-  color: #000000;
+  color: #2b2b2b;
 }
 
 .eventCard :global(.event-type-icon) {
@@ -430,7 +430,7 @@
   gap: clamp(2rem, 6vw, 7rem);
   margin-top: 1rem;
   padding: clamp(2rem, 5vw, 5rem);
-  background: #e6faf6;
+  background: #ededed;
 }
 
 .menuIntro {
@@ -444,9 +444,9 @@
 .menuPanel {
   overflow: hidden;
   padding-inline: 1.1rem;
-  border: 1px solid rgb(0 0 0 / 13%);
+  border: 1px solid #505050;
   border-radius: 1.2rem;
-  background: #ffffff;
+  background: #ededed;
 }
 
 .menuPanel > div:last-child {
@@ -459,7 +459,7 @@
 
 .menuPhotos h3 {
   margin: 0 0 0.6rem;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 0.75rem;
   font-weight: 750;
 }
@@ -467,7 +467,7 @@
 .menuCarousel {
   overflow: hidden;
   border-radius: 1.2rem;
-  background: #ffffff;
+  background: #ededed;
 }
 
 .emptyState {
@@ -478,9 +478,9 @@
   flex-direction: column;
   gap: 1rem;
   padding: 2rem;
-  border: 1px solid rgb(0 0 0 / 13%);
+  border: 1px solid #505050;
   border-radius: 1.2rem;
-  background: #ffffff;
+  background: #ededed;
   text-align: center;
 }
 
@@ -488,7 +488,7 @@
   width: 2.5rem;
   height: 2.5rem;
   fill: none;
-  stroke: #008f7a;
+  stroke: #1db954;
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -497,7 +497,7 @@
 .emptyState p {
   max-width: 34ch;
   margin: 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.8rem;
   line-height: 1.5;
 }
@@ -515,17 +515,17 @@
 }
 
 .hoursSection {
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .hoursSection h2 {
-  color: #ffffff;
+  color: #ededed;
 }
 
 .hoursList {
   margin-top: 2rem;
-  border-top: 1px solid rgb(255 255 255 / 18%);
+  border-top: 1px solid #505050;
 }
 
 .hoursRow {
@@ -534,21 +534,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid rgb(255 255 255 / 14%);
-  color: #e6faf6;
+  border-bottom: 1px solid #505050;
+  color: #ededed;
   font-size: 0.75rem;
 }
 
 .hoursRow strong {
-  color: #ffffff;
+  color: #ededed;
   font-variant-numeric: tabular-nums;
   font-weight: 650;
   text-align: right;
 }
 
 .reviewsSection {
-  border: 1px solid rgb(0 0 0 / 12%);
-  background: #ffffff;
+  border: 1px solid #505050;
+  background: #ededed;
 }
 
 .reviewsSection :global(.review-list) {
@@ -571,9 +571,9 @@
 
 .reviewsSection :global(.review-card) {
   padding: 1rem;
-  border-color: rgb(0 0 0 / 12%);
+  border-color: #505050;
   border-radius: 1rem;
-  background: #f8fafa;
+  background: #ededed;
 }
 
 .reviewsSection :global(.review-meta) {
@@ -581,43 +581,43 @@
 }
 
 .reviewsSection :global(.review-rating) {
-  color: #006c5d;
+  color: #1db954;
 }
 
 .reviewsSection :global(.review-date) {
-  color: #4b5563;
+  color: #8a8a8a;
 }
 
 .reviewsSection :global(.review-verified) {
-  border-color: #008f7a;
-  color: #006c5d;
+  border-color: #1db954;
+  color: #1db954;
 }
 
 .reviewsSection :global(.review-comment) {
-  color: #000000;
+  color: #2b2b2b;
   line-height: 1.5;
 }
 
 .reviewsSection :global(.review-empty) {
   max-width: 45ch;
   margin: 2rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   line-height: 1.55;
 }
 
 .suggestionsSection {
   margin-top: 1rem;
   padding: clamp(1.5rem, 4vw, 3.5rem);
-  background: #000000;
-  color: #ffffff;
-  --color-paper: #ffffff;
-  --color-text-muted: #e6faf6;
-  --color-surface-muted: #000000;
-  --color-surface-raised: #000000;
-  --color-border-hairline: rgb(255 255 255 / 18%);
-  --color-accent-primary: #25cbb5;
-  --color-accent-secondary: #25cbb5;
-  --color-accent-urgent-text: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
+  --color-paper: #ededed;
+  --color-text-muted: #8a8a8a;
+  --color-surface-muted: #2b2b2b;
+  --color-surface-raised: #2b2b2b;
+  --color-border-hairline: #505050;
+  --color-accent-primary: #1db954;
+  --color-accent-secondary: #1db954;
+  --color-accent-urgent-text: #ededed;
 }
 
 .suggestionsHeading {
@@ -629,7 +629,7 @@
 }
 
 .suggestionsHeading h2 {
-  color: #ffffff;
+  color: #ededed;
 }
 
 .suggestionsHeading a {
@@ -637,14 +637,14 @@
   min-height: 2.75rem;
   align-items: center;
   gap: 0.5rem;
-  color: #ffffff;
+  color: #ededed;
   font-size: 0.72rem;
   font-weight: 750;
   text-decoration: none;
 }
 
 .suggestionsHeading a:hover {
-  color: #25cbb5;
+  color: #1db954;
 }
 
 .suggestionsGrid {
@@ -657,9 +657,9 @@
   min-width: 0;
   overflow: hidden;
   padding: 0.75rem !important;
-  border-color: rgb(255 255 255 / 18%) !important;
+  border-color: #505050 !important;
   border-radius: 1.65rem !important;
-  background: #000000 !important;
+  background: #2b2b2b !important;
 }
 
 .suggestionCard :global(.restaurant-card-media) {
@@ -680,7 +680,7 @@
 }
 
 .suggestionCard :global(.restaurant-card-title) {
-  color: #ffffff;
+  color: #ededed;
   font-family: var(--font-destiny), Manrope, sans-serif;
   font-size: 1.25rem;
   font-weight: 570;
@@ -691,20 +691,20 @@
 .suggestionCard :global(.restaurant-card-meta),
 .suggestionCard :global(.restaurant-card-tags span),
 .suggestionCard :global(.restaurant-card-footer) {
-  color: #e6faf6;
+  color: #ededed;
 }
 
 .suggestionCard :global(.restaurant-card-tags span) {
-  background: #000000;
+  background: #2b2b2b;
 }
 
 .suggestionCard :global(.restaurant-card-footer) {
-  border-color: rgb(255 255 255 / 18%);
+  border-color: #505050;
   border-style: solid;
 }
 
 .suggestionCard :global(.restaurant-card-footer span:last-child) {
-  color: #25cbb5;
+  color: #1db954;
 }
 
 @media (max-width: 64rem) {

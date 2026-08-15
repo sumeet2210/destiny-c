@@ -329,11 +329,17 @@ export async function getRestaurantDetail(
 export async function listTickerOffers() {
   const catalog = await getCatalog();
   return catalog.offers
-    .map((o) => ({
-      ...o,
-      restaurantName:
-        catalog.restaurants.find((r) => r.id === o.restaurant_id)?.name ?? '',
-    }))
+    .map((o) => {
+      const restaurant = catalog.restaurants.find(
+        (r) => r.id === o.restaurant_id,
+      );
+      return {
+        ...o,
+        restaurantName: restaurant?.name ?? '',
+        restaurantLat: restaurant?.lat ?? null,
+        restaurantLng: restaurant?.lng ?? null,
+      };
+    })
     .filter((o) => o.restaurantName)
     .sort(
       (a, b) =>
@@ -351,17 +357,73 @@ export async function listUpcomingEvents() {
       (a, b) =>
         new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
     )
-    .map((e) => ({
-      ...e,
-      restaurantName:
-        catalog.restaurants.find((r) => r.id === e.restaurant_id)?.name ?? '',
-    }));
+    .map((e) => {
+      const restaurant = catalog.restaurants.find(
+        (r) => r.id === e.restaurant_id,
+      );
+      return {
+        ...e,
+        restaurantName: restaurant?.name ?? '',
+        restaurantLat: restaurant?.lat ?? null,
+        restaurantLng: restaurant?.lng ?? null,
+      };
+    });
 }
 
 export type DishHit = {
   item: Tables<'menu_items'>;
   restaurant: RestaurantSummary;
 };
+
+export type QuickSearchIndex = {
+  restaurants: Array<{
+    id: string;
+    name: string;
+    area: string;
+  }>;
+  dishes: Array<{
+    id: string;
+    name: string;
+    price: number;
+    restaurantId: string;
+    restaurantName: string;
+  }>;
+};
+
+/** Minimal client-safe index for the homepage's instant search suggestions. */
+export async function listQuickSearchIndex(): Promise<QuickSearchIndex> {
+  const catalog = await getCatalog();
+  const restaurantsById = new Map(
+    catalog.restaurants.map((restaurant) => [restaurant.id, restaurant]),
+  );
+
+  return {
+    restaurants: catalog.restaurants
+      .map((restaurant) => ({
+        id: restaurant.id,
+        name: restaurant.name,
+        area: restaurant.area,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    dishes: catalog.menuItems
+      .filter((item) => item.is_available)
+      .flatMap((item) => {
+        const restaurant = restaurantsById.get(item.restaurant_id);
+        return restaurant
+          ? [
+              {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                restaurantId: restaurant.id,
+                restaurantName: restaurant.name,
+              },
+            ]
+          : [];
+      })
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  };
+}
 
 /** Dish-level search: menu items whose name matches, with prices (P3-5). */
 export async function searchDishes(q: string): Promise<DishHit[]> {

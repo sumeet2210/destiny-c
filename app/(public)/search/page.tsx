@@ -19,7 +19,7 @@ import styles from './search.module.css';
 export const metadata = { title: 'Search' };
 
 export const viewport: Viewport = {
-  themeColor: '#F8FAFA',
+  themeColor: '#EDEDED',
 };
 
 const SEARCH_ARTWORK: Record<string, string> = {

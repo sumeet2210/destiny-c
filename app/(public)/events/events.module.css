@@ -37,7 +37,7 @@
 .introCopy p {
   max-width: 31ch;
   margin: 0 0 0.25rem;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.94rem;
   line-height: 1.55;
 }
@@ -51,9 +51,10 @@
   align-items: end;
   gap: 1rem;
   padding: 1.35rem;
+  border: 2px solid #1db954;
   border-radius: 50%;
-  background: #00b89c;
-  color: #000000;
+  background: #ededed;
+  color: #2b2b2b;
   text-decoration: none;
   transition:
     border-radius 450ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -62,8 +63,8 @@
 
 .calendarLink:hover {
   border-radius: 30%;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .calendarLink > svg:first-child {
@@ -71,6 +72,7 @@
   height: 2.8rem;
   grid-column: 1 / -1;
   align-self: start;
+  color: #1db954;
 }
 
 .calendarLink > svg:last-child {
@@ -99,14 +101,14 @@
 .eventField {
   padding: clamp(1.25rem, 4vw, 3.5rem);
   border-radius: clamp(1.5rem, 3vw, 2.25rem);
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
   animation: fieldReveal 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  --color-paper: #ffffff;
-  --color-text-muted: #4b5563;
-  --color-surface-muted: #ffffff;
-  --color-surface-raised: #e6faf6;
-  --color-border-hairline: rgb(0 0 0 / 18%);
+  --color-paper: #ededed;
+  --color-text-muted: #8a8a8a;
+  --color-surface-muted: #ededed;
+  --color-surface-raised: #ededed;
+  --color-border-hairline: #505050;
 }
 
 .sectionHeading {
@@ -120,7 +122,7 @@
 .sectionHeading h2 {
   max-width: 10ch;
   margin: 0;
-  color: #ffffff;
+  color: #ededed;
   font-size: clamp(2.6rem, 5.5vw, 5rem);
   font-weight: 560;
   line-height: 0.92;
@@ -130,7 +132,7 @@
 
 .sectionHeading > p {
   margin: 0 0 0.25rem;
-  color: #e6faf6;
+  color: #8a8a8a;
   font-size: 0.76rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -148,13 +150,13 @@
   grid-template-columns: minmax(18rem, 0.88fr) minmax(22rem, 1.12fr);
   overflow: hidden;
   border-radius: 1.5rem;
-  background: #ffffff;
-  color: #000000;
-  --color-paper: #000000;
-  --color-text-muted: #4b5563;
-  --color-surface-muted: #ffffff;
-  --color-surface-raised: #e6faf6;
-  --color-border-hairline: rgb(0 0 0 / 18%);
+  background: #ededed;
+  color: #2b2b2b;
+  --color-paper: #2b2b2b;
+  --color-text-muted: #8a8a8a;
+  --color-surface-muted: #ededed;
+  --color-surface-raised: #ededed;
+  --color-border-hairline: #505050;
 }
 
 .eventCard:nth-child(even) {
@@ -169,9 +171,9 @@
   position: relative;
   min-height: 21rem;
   overflow: hidden;
-  background-color: #e6faf6;
+  background-color: #ededed;
   background-image:
-    linear-gradient(180deg, rgb(0 0 0 / 8%) 40%, rgb(0 0 0 / 64%) 100%),
+    linear-gradient(180deg, rgb(43 43 43 / 8%) 40%, rgb(43 43 43 / 64%) 100%),
     var(--event-artwork);
   background-position: center;
   background-size: cover;
@@ -202,8 +204,8 @@
   align-items: center;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
   font-size: 0.66rem;
   font-weight: 800;
 }
@@ -218,8 +220,8 @@
   align-content: space-between;
   padding: 0.85rem 1rem;
   border-radius: 1.1rem;
-  background: #e6faf6;
-  color: #000000;
+  background: #ededed;
+  color: #2b2b2b;
 }
 
 .dateBlock span {
@@ -250,7 +252,7 @@
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-  color: #006f60;
+  color: #1db954;
   font-size: 0.66rem;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
@@ -281,14 +283,14 @@
 
 .venueLine {
   margin: 0.7rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.76rem;
 }
 
 .venueLine a {
-  color: #000000;
+  color: #2b2b2b;
   font-weight: 800;
-  text-decoration-color: #00b89c;
+  text-decoration-color: #1db954;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.26em;
 }
@@ -296,7 +298,7 @@
 .description {
   max-width: 54ch;
   margin: 0.75rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.76rem;
   line-height: 1.45;
 }
@@ -327,12 +329,12 @@
 }
 
 .rsvpSlot :global(button[data-ui-button][data-variant='outline']) {
-  border-color: rgb(0 0 0 / 22%);
+  border-color: #505050;
 }
 
 .rsvpSlot :global(button[data-ui-button][data-variant='primary']):hover {
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .browseLink {
@@ -341,14 +343,14 @@
   flex: none;
   align-items: center;
   gap: 0.45rem;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 0.7rem;
   font-weight: 800;
   text-decoration: none;
 }
 
 .browseLink:hover {
-  color: #006f60;
+  color: #1db954;
 }
 
 .browseLink svg {
@@ -369,14 +371,14 @@
   gap: clamp(1.5rem, 5vw, 5rem);
   padding: clamp(2rem, 5vw, 5rem);
   border-radius: 2.25rem;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .emptyState > svg {
   width: clamp(4rem, 8vw, 7rem);
   height: clamp(4rem, 8vw, 7rem);
-  color: #00b89c;
+  color: #1db954;
 }
 
 .emptyState h2 {
@@ -392,7 +394,7 @@
 .emptyState p {
   max-width: 48ch;
   margin: 1rem 0 0;
-  color: #e6faf6;
+  color: #8a8a8a;
   font-size: 0.82rem;
   line-height: 1.55;
 }
@@ -400,19 +402,19 @@
 .emptyState .browseLink {
   padding: 0.7rem 1rem;
   border-radius: 999px;
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
 }
 
 .emptyState .browseLink:hover {
-  background: #ffffff;
+  background: #ededed;
 }
 
 .countSkeleton {
   width: 9rem;
   height: 0.8rem;
   margin-bottom: 0.35rem;
-  background: rgb(230 250 246 / 38%) !important;
+  background: rgb(237 237 237 / 38%) !important;
 }
 
 .eventSkeleton {
@@ -421,14 +423,14 @@
   grid-template-columns: minmax(18rem, 0.88fr) minmax(22rem, 1.12fr);
   overflow: hidden;
   border-radius: 1.5rem;
-  background: #ffffff;
+  background: #ededed;
 }
 
 .mediaSkeleton {
   height: 100%;
   min-height: 21rem;
   border-radius: 0 !important;
-  background: #bcefe7 !important;
+  background: #ededed !important;
 }
 
 .copySkeleton {
@@ -442,7 +444,7 @@
 .lineTitle,
 .lineBody,
 .actionSkeleton {
-  background: #e6faf6 !important;
+  background: #ededed !important;
 }
 
 .lineShort {

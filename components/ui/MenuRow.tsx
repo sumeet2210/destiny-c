@@ -34,7 +34,7 @@ export function MenuRow({
           <span
             className={cn(
               'ml-2 text-[11px]',
-              destiny ? 'text-[#4B5563]' : 'text-text-muted',
+              destiny ? 'text-[#8A8A8A]' : 'text-text-muted',
             )}
           >
             sold out

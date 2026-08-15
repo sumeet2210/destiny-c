@@ -1,16 +1,16 @@
 .page {
-  --color-canvas: #f8fafa;
-  --color-surface-muted: #ffffff;
-  --color-surface-raised: #e6faf6;
-  --color-border-hairline: rgb(0 0 0 / 16%);
-  --color-paper: #000000;
-  --color-text-muted: #4b5563;
-  --color-accent-primary: #00b89c;
-  --color-accent-secondary: #008f7a;
-  --color-accent-urgent: #000000;
-  --color-accent-urgent-text: #000000;
-  --color-ink-on-primary: #000000;
-  --color-ink-on-secondary: #000000;
+  --color-canvas: #ededed;
+  --color-surface-muted: #ededed;
+  --color-surface-raised: #ededed;
+  --color-border-hairline: #505050;
+  --color-paper: #2b2b2b;
+  --color-text-muted: #8a8a8a;
+  --color-accent-primary: #1db954;
+  --color-accent-secondary: #1db954;
+  --color-accent-urgent: #2b2b2b;
+  --color-accent-urgent-text: #2b2b2b;
+  --color-ink-on-primary: #2b2b2b;
+  --color-ink-on-secondary: #2b2b2b;
   --font-display: var(--font-destiny), Manrope, sans-serif;
   --font-body: var(--font-destiny), Manrope, sans-serif;
   --font-mono: var(--font-destiny), Manrope, sans-serif;
@@ -19,8 +19,8 @@
   --radius-control: 999px;
   min-height: 100svh;
   overflow: clip;
-  background: #f8fafa;
-  color: #000000;
+  background: #ededed;
+  color: #2b2b2b;
   color-scheme: light;
   font-family: var(--font-destiny), Manrope, sans-serif;
   font-feature-settings:
@@ -35,14 +35,14 @@
 }
 
 .page ::selection {
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
 }
 
 .page :where(a, button, input):focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid #1db954;
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px #000000;
+  box-shadow: 0 0 0 5px #2b2b2b;
 }
 
 .frame {
@@ -50,15 +50,15 @@
   width: 100%;
   min-height: inherit;
   grid-template-columns: minmax(22rem, 0.92fr) minmax(28rem, 1.08fr);
-  background: #f8fafa;
+  background: #ededed;
 }
 
 .media {
   position: relative;
   min-height: inherit;
   overflow: hidden;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
   isolation: isolate;
 }
 
@@ -78,8 +78,8 @@
   z-index: -1;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(0 0 0 / 14%), rgb(0 0 0 / 78%)),
-    linear-gradient(90deg, rgb(0 0 0 / 35%), transparent 75%);
+    linear-gradient(180deg, rgb(43 43 43 / 14%), rgb(43 43 43 / 78%)),
+    linear-gradient(90deg, rgb(43 43 43 / 35%), transparent 75%);
 }
 
 .mediaCopy {
@@ -93,7 +93,7 @@
 .mediaCopy h2 {
   max-width: 11ch;
   margin: 0;
-  color: #ffffff;
+  color: #ededed;
   font-size: clamp(2.4rem, 4.4vw, 4.8rem);
   font-weight: 580;
   line-height: 0.94;
@@ -104,7 +104,7 @@
 .mediaCopy p {
   max-width: 37rem;
   margin: 1rem 0 0;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.5;
@@ -148,14 +148,14 @@
   align-items: center;
   gap: 0.45rem;
   padding-inline: 0.4rem;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 0.75rem;
   font-weight: 750;
   text-decoration: none;
 }
 
 .backLink:hover {
-  color: #006c5d;
+  color: #1db954;
 }
 
 .formWrap {
@@ -167,7 +167,7 @@
 .heading h1 {
   max-width: 12ch;
   margin: 0;
-  color: #000000;
+  color: #2b2b2b;
   font-size: clamp(2.55rem, 5vw, 4.6rem);
   font-weight: 580;
   line-height: 0.94;
@@ -178,7 +178,7 @@
 .heading p {
   max-width: 43ch;
   margin: 1rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.92rem;
   line-height: 1.55;
 }
@@ -195,18 +195,18 @@
 
 .page .label {
   margin-bottom: 0.55rem;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 0.76rem;
   font-weight: 750;
 }
 
 .page .field {
   min-height: 3.25rem;
-  border: 1px solid rgb(0 0 0 / 18%);
+  border: 1px solid #505050;
   border-radius: 1rem;
-  background: #ffffff;
-  color: #000000;
-  caret-color: #008f7a;
+  background: #ededed;
+  color: #2b2b2b;
+  caret-color: #1db954;
   font-size: 0.9rem;
   transition:
     border-color 180ms ease,
@@ -214,21 +214,21 @@
 }
 
 .page .field:hover {
-  border-color: rgb(0 0 0 / 38%);
+  border-color: #505050;
 }
 
 .page .field:focus {
-  border-color: #000000;
+  border-color: #505050;
 }
 
 .page .field::placeholder {
-  color: #687077;
+  color: #8a8a8a;
   opacity: 1;
 }
 
 .fieldHint {
   margin: 0.45rem 0 0;
-  color: #687077;
+  color: #8a8a8a;
   font-size: 0.7rem;
   line-height: 1.4;
 }
@@ -244,13 +244,13 @@
 
 .stepDetail {
   margin: 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.84rem;
   line-height: 1.5;
 }
 
 .stepDetail strong {
-  color: #000000;
+  color: #2b2b2b;
   font-weight: 750;
   overflow-wrap: anywhere;
 }
@@ -266,14 +266,14 @@
 }
 
 .error {
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .notice {
-  border: 1px solid rgb(0 143 122 / 24%);
-  background: #e6faf6;
-  color: #005f51;
+  border: 1px solid rgb(29 185 84 / 24%);
+  background: #ededed;
+  color: #1db954;
 }
 
 .page .primaryButton {
@@ -281,17 +281,17 @@
   min-height: 3.25rem;
   justify-content: space-between;
   padding-inline: 1.2rem;
-  border: 1px solid #00b89c;
-  background: #00b89c;
-  color: #000000;
+  border: 1px solid #1db954;
+  background: #1db954;
+  color: #2b2b2b;
   font-size: 0.84rem;
   font-weight: 800;
 }
 
 .page .primaryButton:hover:not(:disabled) {
-  border-color: #000000;
-  background: #000000;
-  color: #ffffff;
+  border-color: #505050;
+  background: #2b2b2b;
+  color: #ededed;
   filter: none;
 }
 
@@ -304,7 +304,7 @@
   justify-content: center;
   border: 0;
   background: transparent;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.76rem;
   font-weight: 700;
   text-align: center;
@@ -318,7 +318,7 @@
 .page .secondaryButton:hover,
 .textButton:hover {
   background: transparent;
-  color: #000000;
+  color: #2b2b2b;
   text-decoration: underline;
   text-underline-offset: 0.24em;
 }
@@ -326,8 +326,8 @@
 .footer {
   margin-top: 2rem;
   padding-top: 1.25rem;
-  border-top: 1px solid rgb(0 0 0 / 12%);
-  color: #4b5563;
+  border-top: 1px solid #505050;
+  color: #8a8a8a;
   font-size: 0.78rem;
   line-height: 1.5;
   text-align: center;
@@ -337,16 +337,16 @@
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
-  color: #000000;
+  color: #2b2b2b;
   font-weight: 800;
   text-decoration: underline;
-  text-decoration-color: #00b89c;
+  text-decoration-color: #1db954;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.25em;
 }
 
 .footer a:hover {
-  color: #006c5d;
+  color: #1db954;
 }
 
 @keyframes auth-image-settle {

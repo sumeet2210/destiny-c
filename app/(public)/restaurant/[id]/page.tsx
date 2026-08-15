@@ -138,9 +138,9 @@ export default async function RestaurantPage(
               ) : null}
 
               <div className={styles.tags} aria-label="Restaurant features">
-                {row.is_veg_only ? <Tag tone="teal">Pure veg</Tag> : null}
+                {row.is_veg_only ? <Tag tone="accent">Pure veg</Tag> : null}
                 {row.student_discount ? (
-                  <Tag tone="teal">Student discount</Tag>
+                  <Tag tone="accent">Student discount</Tag>
                 ) : null}
                 {row.has_ac ? <Tag>AC</Tag> : null}
                 {row.dine_in ? <Tag>Dine-in</Tag> : null}
@@ -362,7 +362,7 @@ function Tag({
   tone = 'neutral',
 }: {
   children: React.ReactNode;
-  tone?: 'neutral' | 'teal';
+  tone?: 'neutral' | 'accent';
 }) {
   return (
     <span className={styles.tag} data-tone={tone}>

@@ -2,8 +2,8 @@
   min-height: calc(100svh - 4rem);
   margin-bottom: -4rem;
   padding-bottom: 4rem;
-  background: #f8fafa;
-  color: #000000;
+  background: #ededed;
+  color: #2b2b2b;
   color-scheme: light;
   font-family: var(--font-destiny-match), Manrope, sans-serif;
   font-feature-settings:
@@ -12,14 +12,14 @@
 }
 
 .finder ::selection {
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
 }
 
 .finder :where(a, button):focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid #1db954;
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px #000000;
+  box-shadow: 0 0 0 5px #2b2b2b;
 }
 
 .questionShell,
@@ -68,7 +68,7 @@
 .skipLink {
   min-height: 2.75rem;
   padding: 0.8rem 0.2rem;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 0.78rem;
   font-weight: 750;
   text-underline-offset: 0.25em;
@@ -78,7 +78,7 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.55rem;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -88,14 +88,14 @@
   height: 0.35rem;
   overflow: hidden;
   border-radius: 999px;
-  background: #dce4e3;
+  background: #ededed;
 }
 
 .progressTrack span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #00b89c;
+  background: #1db954;
   transition: width 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -118,7 +118,7 @@
 .resultsHeader p {
   max-width: 58ch;
   margin: 1rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.95rem;
   line-height: 1.55;
 }
@@ -137,10 +137,10 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.05rem;
-  border: 1px solid rgb(0 0 0 / 16%);
+  border: 1px solid #505050;
   border-radius: 1rem;
-  background: #ffffff;
-  color: #000000;
+  background: #ededed;
+  color: #2b2b2b;
   text-align: left;
   cursor: pointer;
   transition:
@@ -150,8 +150,8 @@
 }
 
 .option:hover {
-  border-color: #000000;
-  background: #e6faf6;
+  border-color: #505050;
+  background: #ededed;
   transform: translateY(-2px);
 }
 
@@ -166,7 +166,7 @@
 }
 
 .option small {
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.73rem;
   line-height: 1.35;
 }
@@ -186,13 +186,13 @@
 }
 
 .option svg {
-  color: #008f7a;
+  color: #1db954;
 }
 
 .questionFooter {
   align-items: end;
   padding-top: 1rem;
-  border-top: 1px solid rgb(0 0 0 / 12%);
+  border-top: 1px solid #505050;
 }
 
 .questionFooter button,
@@ -204,7 +204,7 @@
   padding: 0.65rem 0.2rem;
   border: 0;
   background: transparent;
-  color: #000000;
+  color: #2b2b2b;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 750;
@@ -212,14 +212,14 @@
 }
 
 .questionFooter button:disabled {
-  color: #737b7a;
+  color: #8a8a8a;
   cursor: not-allowed;
 }
 
 .questionFooter p {
   max-width: 28rem;
   margin: 0 0 0.75rem;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.68rem;
   line-height: 1.4;
   text-align: right;
@@ -232,7 +232,7 @@
 .resultsHeader {
   align-items: end;
   padding: clamp(1rem, 4vw, 3rem) 0 clamp(2rem, 6vw, 4rem);
-  border-bottom: 1px solid rgb(0 0 0 / 14%);
+  border-bottom: 1px solid #505050;
 }
 
 .resultsHeader > div:last-child {
@@ -257,8 +257,8 @@
   min-height: 19rem;
   overflow: hidden;
   border-radius: 1.5rem;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .resultMedia {
@@ -270,7 +270,7 @@
 .resultMedia::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(0 0 0 / 8%), rgb(0 0 0 / 42%));
+  background: linear-gradient(180deg, rgb(43 43 43 / 8%), rgb(43 43 43 / 42%));
   content: '';
 }
 
@@ -292,8 +292,8 @@
   left: 0.85rem;
   padding: 0.42rem 0.7rem;
   border-radius: 999px;
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
   font-size: 0.65rem;
   font-weight: 800;
 }
@@ -319,7 +319,7 @@
 
 .resultTitleRow p {
   margin: 0.45rem 0 0;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.75rem;
   line-height: 1.4;
 }
@@ -334,13 +334,13 @@
 }
 
 .open {
-  background: #e6faf6;
-  color: #006d5d;
+  background: #ededed;
+  color: #1db954;
 }
 
 .closed {
-  background: #303030;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .reasons {
@@ -355,21 +355,21 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  color: #e6faf6;
+  color: #ededed;
   font-size: 0.78rem;
 }
 
 .reasons svg {
-  color: #25cbb5;
+  color: #1db954;
 }
 
 .offer {
   width: fit-content;
   margin: auto 0 0.85rem;
   padding: 0.45rem 0.65rem;
-  border: 1px solid rgb(37 203 181 / 45%);
+  border: 1px solid rgb(29 185 84 / 45%);
   border-radius: 0.6rem;
-  color: #25cbb5;
+  color: #1db954;
   font-size: 0.7rem;
   font-weight: 750;
 }
@@ -383,15 +383,15 @@
   margin-top: auto;
   padding: 0.72rem 1rem;
   border-radius: 999px;
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
   font-size: 0.76rem;
   font-weight: 800;
   text-decoration: none;
 }
 
 .viewAction:hover {
-  background: #ffffff;
+  background: #ededed;
 }
 
 .resultActions {
@@ -404,7 +404,7 @@
 .resultActions a {
   min-height: 2.75rem;
   padding: 0.75rem;
-  color: #000000;
+  color: #2b2b2b;
   font-size: 0.76rem;
   font-weight: 750;
   text-underline-offset: 0.25em;
@@ -414,8 +414,8 @@
   margin-top: 1rem;
   padding: 2rem;
   border-radius: 1.5rem;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .emptyState h2 {
@@ -424,11 +424,11 @@
 }
 
 .emptyState p {
-  color: #e6faf6;
+  color: #ededed;
 }
 
 .emptyState a {
-  color: #25cbb5;
+  color: #1db954;
 }
 
 @keyframes question-enter {

@@ -1,22 +1,26 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-canvas: #14161f;
-  --color-surface-muted: #1d2029;
-  --color-surface-raised: #262a36;
-  --color-border-hairline: #2e3340;
-  --color-paper: #f3eee2;
-  --color-text-muted: #a29b96;
-  --color-accent-primary: #ffc229;
-  --color-accent-secondary: #6fbf8b;
-  --color-accent-urgent: #e8432b;
-  --color-accent-urgent-text: #f2604b;
+  /* Rebase Tailwind's black/white utilities onto Destiny's charcoal/paper
+     palette so legacy utility classes inherit the new theme too. */
+  --color-black: #2b2b2b;
+  --color-white: #ededed;
+  --color-canvas: #2b2b2b;
+  --color-surface-muted: #2b2b2b;
+  --color-surface-raised: #2b2b2b;
+  --color-border-hairline: #505050;
+  --color-paper: #ededed;
+  --color-text-muted: #8a8a8a;
+  --color-accent-primary: #1db954;
+  --color-accent-secondary: #1db954;
+  --color-accent-urgent: #1db954;
+  --color-accent-urgent-text: #1db954;
   /* Ink colors for text sitting ON an accent fill (design.md §1 accents table). */
-  --color-ink-on-primary: #14110f;
-  --color-ink-on-secondary: #0f1f17;
+  --color-ink-on-primary: #2b2b2b;
+  --color-ink-on-secondary: #2b2b2b;
   /* Non-veg marker. Semantic indicator, never decorative — pairs with the
      triangle glyph so it survives greyscale (design.md §6). */
-  --color-nonveg: #c25749;
+  --color-nonveg: #505050;
 
   --font-display: var(--font-roboto-slab), Georgia, serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui;
@@ -60,7 +64,7 @@ html {
 
 /* Design system: every interactive element gets a visible focus state. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-accent-primary);
+  outline: 2px solid #1db954;
   outline-offset: 2px;
 }
 

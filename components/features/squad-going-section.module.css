@@ -1,0 +1,538 @@
+.section {
+  padding: clamp(3.5rem, 7vw, 7rem) clamp(0.5rem, 3vw, 3rem);
+  background: #2b2b2b;
+  color: #ededed;
+}
+
+.headingRow {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.headingRow h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 560;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.headingRow p {
+  margin: 0.7rem 0 0;
+  color: #8a8a8a;
+  font-size: 0.9rem;
+}
+
+.filterButton {
+  display: inline-flex;
+  min-height: 2.9rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #505050;
+  border-radius: 999px;
+  background: #2b2b2b;
+  color: #ededed;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 120ms ease;
+}
+
+.filterButton:hover {
+  border-color: #1db954;
+  background: #2b2b2b;
+}
+
+.filterButton:active {
+  transform: scale(0.97);
+}
+
+.filterButton svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.filterCount {
+  display: grid;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  place-items: center;
+  padding-inline: 0.28rem;
+  border-radius: 999px;
+  background: #1db954;
+  color: #2b2b2b;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.resultCount {
+  margin: 0 0 1.25rem;
+  color: #8a8a8a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #505050;
+  border-radius: 1.4rem;
+  background: #2b2b2b;
+  transition:
+    border-color 170ms ease,
+    transform 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.card:hover {
+  border-color: rgb(29 185 84 / 72%);
+  box-shadow: 0 1.1rem 2.6rem rgb(43 43 43 / 38%);
+  transform: translateY(-3px);
+}
+
+.card:active {
+  transform: translateY(-1px) scale(0.992);
+}
+
+.cardLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardMedia {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #2b2b2b;
+}
+
+.cardMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .cardMedia img {
+  transform: scale(1.045);
+}
+
+.mediaShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 48%, rgb(43 43 43 / 52%));
+}
+
+.openBadge,
+.closedBadge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  padding: 0.35rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.openBadge {
+  background: #1db954;
+  color: #2b2b2b;
+}
+
+.closedBadge {
+  background: rgb(43 43 43 / 78%);
+  color: #8a8a8a;
+}
+
+.cardBody {
+  padding: 1rem;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.cardTitleRow > div {
+  min-width: 0;
+}
+
+.cardTitleRow h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #ededed;
+  font-size: 1.15rem;
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardTitleRow p {
+  overflow: hidden;
+  margin: 0.3rem 0 0;
+  color: #8a8a8a;
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priceLevel {
+  flex: none;
+  color: #1db954;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  margin-top: 0.9rem;
+  color: #8a8a8a;
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.metaRow span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.metaRow svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  fill: #1db954;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+}
+
+.tagRow span {
+  padding: 0.28rem 0.5rem;
+  border: 1px solid #505050;
+  border-radius: 999px;
+  color: #8a8a8a;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.saveButton {
+  position: absolute;
+  z-index: 2;
+  top: 0.7rem;
+  right: 0.7rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid #505050;
+  border-radius: 50%;
+  background: rgb(43 43 43 / 68%);
+  color: #ededed;
+  cursor: pointer;
+  backdrop-filter: blur(0.5rem);
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.saveButton:hover,
+.saved {
+  border-color: #1db954;
+  background: #1db954;
+  color: #2b2b2b;
+  transform: scale(1.06);
+}
+
+.saveButton svg {
+  width: 1.08rem;
+  height: 1.08rem;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.popping {
+  animation: heart-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.35);
+}
+
+.emptyState {
+  display: flex;
+  min-height: 15rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.55rem;
+  border: 1px dashed #505050;
+  border-radius: 1.4rem;
+  color: #8a8a8a;
+  text-align: center;
+}
+
+.emptyState strong {
+  color: #ededed;
+}
+
+.emptyState button,
+.filterIntro button {
+  border: 0;
+  background: transparent;
+  color: #1db954;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.filterSheet {
+  max-height: min(46rem, 88dvh);
+  overflow-y: auto;
+  border-color: #505050;
+  background: #2b2b2b;
+  color: #ededed;
+}
+
+.filterIntro {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.filterIntro p {
+  max-width: 26rem;
+  margin: 0;
+  color: #8a8a8a;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.filterGroup {
+  margin: 0 0 1.2rem;
+  padding: 0;
+  border: 0;
+}
+
+.filterGroup legend {
+  margin-bottom: 0.65rem;
+  color: #8a8a8a;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.filterGroup > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filterChip,
+.activeChip {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #505050;
+  border-radius: 999px;
+  background: #2b2b2b;
+  color: #ededed;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.activeChip {
+  border-color: #1db954;
+  background: #1db954;
+  color: #2b2b2b;
+}
+
+.openToggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.25rem 0 1.25rem;
+  padding: 0.85rem;
+  border: 1px solid #505050;
+  border-radius: 0.9rem;
+  background: #2b2b2b;
+  cursor: pointer;
+}
+
+.openToggle span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.openToggle strong {
+  font-size: 0.78rem;
+}
+
+.openToggle small {
+  color: #8a8a8a;
+  font-size: 0.65rem;
+}
+
+.openToggle input {
+  position: absolute;
+  opacity: 0;
+}
+
+.openToggle i {
+  position: relative;
+  width: 2.65rem;
+  height: 1.5rem;
+  flex: none;
+  border-radius: 999px;
+  background: #505050;
+  transition: background 150ms ease;
+}
+
+.openToggle i::after {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: #ededed;
+  content: '';
+  transition: transform 150ms ease;
+}
+
+.openToggle input:checked + i {
+  background: #1db954;
+}
+
+.openToggle input:checked + i::after {
+  transform: translateX(1.15rem);
+}
+
+.openToggle input:focus-visible + i {
+  outline: 2px solid #1db954;
+  outline-offset: 3px;
+}
+
+.applyButton {
+  width: 100%;
+  min-height: 3.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #1db954;
+  color: #2b2b2b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+@keyframes heart-pop {
+  0%,
+  100% {
+    transform: scale(1.06);
+  }
+  45% {
+    transform: scale(0.82);
+  }
+  72% {
+    transform: scale(1.22);
+  }
+}
+
+@media (max-width: 62rem) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 38.75rem) {
+  .section {
+    padding: 3.5rem 0.25rem;
+  }
+
+  .headingRow {
+    align-items: start;
+    gap: 0.8rem;
+  }
+
+  .headingRow h2 {
+    font-size: 2rem;
+  }
+
+  .headingRow p {
+    max-width: 28ch;
+    font-size: 0.75rem;
+  }
+
+  .filterButton {
+    min-height: 2.7rem;
+    padding-inline: 0.75rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    border-radius: 1.15rem;
+  }
+
+  .filterSheet {
+    max-height: 90dvh;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cardMedia img,
+  .saveButton,
+  .openToggle i,
+  .openToggle i::after {
+    transition: none;
+  }
+
+  .popping {
+    animation: none;
+  }
+}

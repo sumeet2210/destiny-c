@@ -38,7 +38,7 @@
 .introCopy p {
   max-width: 34ch;
   margin: 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 1rem;
   line-height: 1.55;
 }
@@ -51,16 +51,16 @@
   gap: 0.55rem;
   padding: 0.75rem 1rem;
   border-radius: 999px;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
   font-size: 0.75rem;
   font-weight: 800;
   text-decoration: none;
 }
 
 .matchLink:hover {
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
 }
 
 .matchLink svg {
@@ -75,14 +75,14 @@
 
 .filterPanel {
   padding: clamp(1.25rem, 3vw, 2.25rem);
-  border: 1px solid rgb(0 0 0 / 14%);
+  border: 1px solid #505050;
   border-radius: 1.65rem;
-  background: #e6faf6;
+  background: #ededed;
 }
 
 .filterSkeleton {
   height: 10rem;
-  background: #ffffff !important;
+  background: #ededed !important;
 }
 
 .results {
@@ -97,7 +97,7 @@
   gap: clamp(2rem, 6vw, 6rem);
   padding: clamp(2rem, 4vw, 3.5rem);
   border-radius: 1.65rem;
-  background: #e6faf6;
+  background: #ededed;
 }
 
 .dishSection h2,
@@ -116,7 +116,7 @@
 .emptyState p {
   max-width: 40ch;
   margin: 0.75rem 0 0;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.82rem;
   line-height: 1.5;
 }
@@ -124,13 +124,13 @@
 .dishList {
   overflow: hidden;
   padding: 0 1.1rem !important;
-  border-color: rgb(0 0 0 / 14%) !important;
-  background: #ffffff !important;
+  border-color: #505050 !important;
+  background: #ededed !important;
 }
 
 .dishLink {
   display: block;
-  color: #000000;
+  color: #2b2b2b;
   text-decoration: none;
 }
 
@@ -139,13 +139,13 @@
 }
 
 .dishLink:hover {
-  background: #f8fafa;
+  background: #ededed;
 }
 
 .dishLink > p {
   margin: -0.45rem 0 0;
   padding: 0 0 0.65rem 1.5rem;
-  color: #4b5563;
+  color: #8a8a8a;
   font-size: 0.68rem;
 }
 
@@ -153,16 +153,16 @@
 .resultsSkeleton {
   padding: clamp(1.5rem, 4vw, 3.5rem);
   border-radius: 2.25rem;
-  background: #000000;
-  color: #ffffff;
-  --color-paper: #ffffff;
-  --color-text-muted: #e6faf6;
-  --color-surface-muted: #000000;
-  --color-surface-raised: #000000;
-  --color-border-hairline: rgb(255 255 255 / 18%);
-  --color-accent-primary: #25cbb5;
-  --color-accent-secondary: #25cbb5;
-  --color-accent-urgent-text: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
+  --color-paper: #ededed;
+  --color-text-muted: #8a8a8a;
+  --color-surface-muted: #2b2b2b;
+  --color-surface-raised: #2b2b2b;
+  --color-border-hairline: #505050;
+  --color-accent-primary: #1db954;
+  --color-accent-secondary: #1db954;
+  --color-accent-urgent-text: #ededed;
 }
 
 .resultsHeading {
@@ -174,7 +174,7 @@
 }
 
 .resultsHeading p {
-  color: #e6faf6;
+  color: #ededed;
   text-align: right;
 }
 
@@ -186,9 +186,9 @@
   min-width: 0;
   overflow: hidden;
   padding: 0.75rem;
-  border-color: rgb(255 255 255 / 18%);
+  border-color: #505050;
   border-radius: 1.65rem;
-  background: #000000;
+  background: #2b2b2b;
 }
 
 .restaurantSection :global(.restaurant-card-media) {
@@ -209,7 +209,7 @@
 }
 
 .restaurantSection :global(.restaurant-card-title) {
-  color: #ffffff;
+  color: #ededed;
   font-family: var(--font-destiny), Manrope, sans-serif;
   font-size: 1.3rem;
   font-weight: 570;
@@ -220,32 +220,32 @@
 .restaurantSection :global(.restaurant-card-meta),
 .restaurantSection :global(.restaurant-card-tags span),
 .restaurantSection :global(.restaurant-card-footer) {
-  color: #e6faf6;
+  color: #ededed;
 }
 
 .restaurantSection :global(.restaurant-card-tags span) {
-  background: #000000;
+  background: #2b2b2b;
 }
 
 .restaurantSection :global(.restaurant-card-footer) {
-  border-color: rgb(255 255 255 / 18%);
+  border-color: #505050;
   border-style: solid;
 }
 
 .restaurantSection :global(.restaurant-card-footer span:last-child) {
-  color: #25cbb5;
+  color: #1db954;
 }
 
 .emptyState {
   margin-top: 1rem;
   padding: clamp(2rem, 5vw, 4rem);
   border-radius: 1.65rem;
-  background: #000000;
-  color: #ffffff;
+  background: #2b2b2b;
+  color: #ededed;
 }
 
 .emptyState p {
-  color: #e6faf6;
+  color: #ededed;
 }
 
 .resultsSkeleton {
@@ -257,7 +257,7 @@
   height: 3rem;
   margin-bottom: 2rem;
   border-radius: 999px;
-  background: rgb(255 255 255 / 12%);
+  background: rgb(237 237 237 / 12%);
 }
 
 .resultsSkeletonGrid {
@@ -269,7 +269,7 @@
 .cardSkeleton {
   height: 23rem;
   border-radius: 1.65rem !important;
-  background: rgb(255 255 255 / 10%) !important;
+  background: rgb(237 237 237 / 10%) !important;
 }
 
 @media (max-width: 58rem) {

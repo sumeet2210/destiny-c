@@ -9,14 +9,14 @@
   align-items: center;
   min-height: 4rem;
   padding-inline: 1.15rem 0.4rem;
-  border: 1px solid rgb(0 0 0 / 18%);
+  border: 1px solid #505050;
   border-radius: 999px;
-  background: #ffffff;
+  background: #ededed;
   transition: border-color 180ms ease;
 }
 
 .searchField:focus-within {
-  border-color: #000000;
+  border-color: #505050;
 }
 
 .searchField > svg,
@@ -36,12 +36,12 @@
   padding-inline: 0.85rem !important;
   border: 0 !important;
   background: transparent !important;
-  color: #000000 !important;
+  color: #2b2b2b !important;
   box-shadow: none !important;
 }
 
 .searchInput::placeholder {
-  color: #4b5563 !important;
+  color: #8a8a8a !important;
   opacity: 1;
 }
 
@@ -102,9 +102,9 @@
 }
 
 .filterTrigger {
-  border-color: #000000 !important;
-  background: #000000 !important;
-  color: #ffffff !important;
+  border-color: #505050 !important;
+  background: #2b2b2b !important;
+  color: #ededed !important;
 }
 
 .filterCount {
@@ -113,8 +113,8 @@
   height: 1.25rem;
   place-items: center;
   border-radius: 999px;
-  background: #00b89c;
-  color: #000000;
+  background: #1db954;
+  color: #2b2b2b;
   font-size: 0.65rem;
   font-variant-numeric: tabular-nums;
   font-weight: 850;
@@ -124,9 +124,9 @@
   width: auto;
   min-height: 2.75rem;
   padding-block: 0.6rem !important;
-  border-color: rgb(0 0 0 / 18%) !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  border-color: #505050 !important;
+  background: #ededed !important;
+  color: #2b2b2b !important;
   font-size: 0.75rem !important;
   font-weight: 700;
   appearance: auto !important;
@@ -134,8 +134,8 @@
 
 .sheet {
   border-radius: 1.65rem !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #ededed !important;
+  color: #2b2b2b !important;
   font-family: var(--font-destiny), Manrope, sans-serif;
 }
 

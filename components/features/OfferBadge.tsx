@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn';
 /**
  * Offer badge. Turmeric outline at rest; under an hour from expiry the
  * countdown flips to accent-urgent-text with a clock icon. This — plus
- * "closing soon" — is the entire permitted chili surface (design.md §1).
+ * "closing soon" — is the entire permitted high-signal surface (design.md §1).
  * Deal-tag radius keeps the prototype's clipped corner: 6px 6px 6px 0.
  */
 export function OfferBadge({

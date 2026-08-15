@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
 
-type NavIconName = 'home' | 'search' | 'events' | 'saved' | 'bookings';
+type NavIconName = 'home' | 'events' | 'others';
 
 const tabs: ReadonlyArray<{
   href: string;
@@ -13,10 +13,8 @@ const tabs: ReadonlyArray<{
   icon: NavIconName;
 }> = [
   { href: '/', label: 'Home', icon: 'home' },
-  { href: '/search', label: 'Search', icon: 'search' },
   { href: '/events', label: 'Events', icon: 'events' },
-  { href: '/saved', label: 'Saved', icon: 'saved' },
-  { href: '/bookings', label: 'Bookings', icon: 'bookings' },
+  { href: '/others', label: 'Others', icon: 'others' },
 ];
 
 const menuLinks = [
@@ -26,6 +24,7 @@ const menuLinks = [
   ['/saved', 'Saved'],
   ['/bookings', 'Bookings'],
   ['/friends', 'Friends'],
+  ['/others', 'More'],
 ] as const;
 
 export function SiteHeader({
@@ -43,16 +42,13 @@ export function SiteHeader({
     return (
       <>
         <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
-          <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between px-4 sm:px-6 lg:px-10">
-            <span className="pointer-events-auto inline-flex min-h-11 items-center rounded-full border border-black/15 bg-white px-3 text-[12px] font-bold">
-              Around campus
-            </span>
+          <div className="mx-auto flex h-14 max-w-[100rem] items-start justify-end px-3 pt-2 sm:px-5 lg:px-8">
             <button
               type="button"
               aria-label="Open navigation menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(true)}
-              className="pointer-events-auto grid h-11 w-11 place-items-center rounded-full border border-white/35 bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-95"
+              className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-[#505050] bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95"
             >
               <MenuIcon />
             </button>
@@ -71,7 +67,7 @@ export function SiteHeader({
   return (
     <>
       <header
-        className="sticky top-0 z-40 border-b border-black/10 bg-[#F8FAFA] text-black"
+        className="sticky top-0 z-40 border-b border-[#505050] bg-[#EDEDED] text-black"
         style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
       >
         <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
@@ -79,7 +75,7 @@ export function SiteHeader({
 
           <nav
             aria-label="Primary navigation"
-            className="hidden items-center gap-1 rounded-full border border-black/10 bg-white p-1 lg:flex"
+            className="hidden items-center gap-1 rounded-full border border-[#505050] bg-white p-1 lg:flex"
           >
             {tabs.slice(1).map((tab) => (
               <NavLink key={tab.href} href={tab.href} label={tab.label} />
@@ -89,7 +85,7 @@ export function SiteHeader({
 
           <Link
             href={accountHref}
-            className="hidden min-h-11 items-center justify-center rounded-full border border-[#00B89C] bg-[#00B89C] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-black hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:inline-flex"
+            className="hidden min-h-11 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-[#1DB954] hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:inline-flex"
           >
             {accountLabel}
           </Link>
@@ -99,7 +95,7 @@ export function SiteHeader({
             aria-label="Open navigation menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(true)}
-            className="grid h-11 w-11 place-items-center rounded-full bg-black text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:hidden"
+            className="grid h-11 w-11 place-items-center rounded-full bg-black text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:hidden"
           >
             <MenuIcon />
           </button>
@@ -120,7 +116,7 @@ function Wordmark() {
     <Link
       href="/"
       aria-label="Destiny home"
-      className="relative block h-11 w-28 overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+      className="relative block h-11 w-28 overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -164,13 +160,13 @@ function NavigationMenu({
       style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
     >
       <div className="flex min-h-full flex-col p-5 pt-[max(1.25rem,env(safe-area-inset-top))]">
-        <div className="flex items-center justify-between border-b border-white/15 pb-5">
+        <div className="flex items-center justify-between border-b border-[#505050] pb-5">
           <span className="text-lg font-bold">Menu</span>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close navigation menu"
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="grid h-11 w-11 place-items-center rounded-full border border-[#505050] text-white hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]"
           >
             <CloseIcon />
           </button>
@@ -187,8 +183,8 @@ function NavigationMenu({
                 aria-current={active ? 'page' : undefined}
                 onClick={onClose}
                 className={cn(
-                  'flex min-h-12 items-center justify-between border-b border-white/10 text-[15px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
-                  active ? 'text-[#25CBB5]' : 'text-white hover:text-[#25CBB5]',
+                  'flex min-h-12 items-center justify-between border-b border-[#505050] text-[15px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]',
+                  active ? 'text-[#1DB954]' : 'text-white hover:text-[#1DB954]',
                 )}
               >
                 {label}
@@ -201,7 +197,7 @@ function NavigationMenu({
         <Link
           href={accountHref}
           onClick={onClose}
-          className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full border border-[#00B89C] bg-[#00B89C] px-5 font-bold text-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-5 font-bold text-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]"
         >
           {accountLabel === 'Log in' ? 'Log in' : `Open ${accountLabel}`}
         </Link>
@@ -218,8 +214,8 @@ function NavLink({ href, label }: { href: string; label: string }) {
       href={href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'inline-flex min-h-10 items-center rounded-full px-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black',
-        active ? 'bg-black text-white' : 'text-black hover:bg-[#E6FAF6]',
+        'inline-flex min-h-10 items-center rounded-full px-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]',
+        active ? 'bg-black text-white' : 'text-black hover:bg-[#EDEDED]',
       )}
     >
       {label}
@@ -229,37 +225,65 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export function MobileTabBar() {
   const pathname = usePathname();
-  if (pathname === '/') return null;
 
   return (
     <nav
-      aria-label="Mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-black/95 pb-[env(safe-area-inset-bottom)] text-white backdrop-blur-sm sm:hidden"
+      aria-label="Primary app navigation"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-[#505050] bg-black/95 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-0.75rem_2.5rem_rgba(43,43,43,0.34)] backdrop-blur-xl"
       style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
     >
-      <div className="flex">
+      <div className="mx-auto flex max-w-[38rem] px-2">
         {tabs.map((tab) => {
-          const active =
-            pathname === tab.href ||
-            (tab.href !== '/' && pathname.startsWith(tab.href));
+          const active = isTabActive(pathname, tab.href);
           return (
             <Link
               key={tab.href}
               href={tab.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'focus-visible:outline-inset flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[10px] focus-visible:outline-2 focus-visible:outline-white',
-                active ? 'text-[#00B89C]' : 'text-[#E6FAF6]',
+                'focus-visible:outline-inset flex min-h-[4.25rem] flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[10px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#1DB954]',
+                active ? 'text-[#1DB954]' : 'text-[#8A8A8A] hover:text-white',
               )}
             >
-              <NavIcon name={tab.icon} />
-              {tab.label}
+              <span
+                className={cn(
+                  'grid h-7 min-w-10 place-items-center rounded-full px-2 transition-colors',
+                  active && 'bg-[#1DB954]/15',
+                )}
+              >
+                <NavIcon name={tab.icon} />
+              </span>
+              <span className={active ? 'font-extrabold' : undefined}>
+                {tab.label}
+              </span>
             </Link>
           );
         })}
       </div>
     </nav>
   );
+}
+
+function isTabActive(pathname: string, href: string) {
+  if (href === '/') {
+    return (
+      ['/discover', '/search', '/quiz', '/restaurant'].some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`),
+      ) || pathname === '/'
+    );
+  }
+  if (href === '/events') {
+    return pathname === '/events' || pathname.startsWith('/events/');
+  }
+  return [
+    '/others',
+    '/saved',
+    '/bookings',
+    '/friends',
+    '/account',
+    '/login',
+    '/owner',
+  ].some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 function MenuIcon() {
@@ -326,14 +350,6 @@ function NavIcon({ name }: { name: NavIconName }) {
       </svg>
     );
   }
-  if (name === 'search') {
-    return (
-      <svg {...common}>
-        <circle cx="10.5" cy="10.5" r="6.5" />
-        <path d="m15.5 15.5 5 5" />
-      </svg>
-    );
-  }
   if (name === 'events') {
     return (
       <svg {...common}>
@@ -342,16 +358,12 @@ function NavIcon({ name }: { name: NavIconName }) {
       </svg>
     );
   }
-  if (name === 'saved') {
-    return (
-      <svg {...common}>
-        <path d="M6.5 4.5A1.5 1.5 0 0 1 8 3h8a1.5 1.5 0 0 1 1.5 1.5V21L12 17.8 6.5 21V4.5Z" />
-      </svg>
-    );
-  }
   return (
     <svg {...common}>
-      <path d="M7 3v5M4.5 3v3.5A2.5 2.5 0 0 0 7 9v12M9.5 3v3.5A2.5 2.5 0 0 1 7 9M16 3v18M16 3c3 1.6 4.5 4 4.5 7.2H16" />
+      <circle cx="6" cy="6" r="1.5" />
+      <circle cx="18" cy="6" r="1.5" />
+      <circle cx="6" cy="18" r="1.5" />
+      <circle cx="18" cy="18" r="1.5" />
     </svg>
   );
 }

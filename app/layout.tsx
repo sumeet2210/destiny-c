@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Roboto_Slab, Inter, JetBrains_Mono, Manrope } from 'next/font/google';
 import { ToastProvider } from '@/components/ui/Toast';
+import { MobileTabBar } from '@/components/features/SiteNav';
 import './globals.css';
 
 const robotoSlab = Roboto_Slab({
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#14161F',
+  themeColor: '#2B2B2B',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
@@ -45,7 +46,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={`${robotoSlab.variable} ${inter.variable} ${jetbrainsMono.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="bg-canvas text-paper font-body flex min-h-full flex-col">
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          <div className="min-h-full w-full pb-[calc(4.25rem+env(safe-area-inset-bottom))]">
+            {children}
+          </div>
+          <MobileTabBar />
+        </ToastProvider>
       </body>
     </html>
   );

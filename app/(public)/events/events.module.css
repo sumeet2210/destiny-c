@@ -1,5 +1,13 @@
 .eventsPage {
+  background: #101010;
   padding-bottom: 6rem;
+}
+
+.intro h1,
+.sectionHeading h2,
+.titleRow h3,
+.emptyState h2 {
+  font-family: var(--font-display);
 }
 
 .shell {

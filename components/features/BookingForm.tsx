@@ -11,15 +11,27 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { validateLeadTime } from '@/lib/domain/booking';
+import type { BookingDayOption } from '@/lib/domain/hours';
+import { cn } from '@/lib/cn';
 
 export function BookingForm({
   restaurantId,
   restaurantName,
+  bookingDays,
+  bookForLater,
 }: {
   restaurantId: string;
   restaurantName: string;
+  bookingDays: BookingDayOption[];
+  bookForLater: boolean;
 }) {
   const router = useRouter();
+  const [selectedDate, setSelectedDate] = useState(
+    () => bookingDays[0]?.date ?? '',
+  );
+  const [selectedTime, setSelectedTime] = useState(
+    () => bookingDays[0]?.defaultTime ?? '',
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -27,9 +39,7 @@ export function BookingForm({
   if (done) {
     return (
       <Card className="space-y-2 text-center">
-        <p aria-hidden className="text-3xl">
-          🎉
-        </p>
+        <SuccessIcon />
         <p className="text-paper text-sm font-medium">
           {restaurantName} knows you&apos;re likely coming.
         </p>
@@ -88,16 +98,65 @@ export function BookingForm({
       >
         <div>
           <Label htmlFor="bk-time">When are you going?</Label>
-          <Input
-            id="bk-time"
-            name="booking_time"
-            type="datetime-local"
-            required
-            className="font-mono"
-          />
+          {bookingDays.length > 0 ? (
+            <>
+              <div
+                className="no-scrollbar mb-2 flex gap-2 overflow-x-auto pb-1"
+                aria-label="Available booking dates"
+              >
+                {bookingDays.map((day) => {
+                  const active = day.date === selectedDate;
+                  return (
+                    <button
+                      key={day.date}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        setSelectedDate(day.date);
+                        setSelectedTime(day.defaultTime);
+                      }}
+                      className={cn(
+                        'rounded-control min-w-[4.75rem] shrink-0 border px-3 py-2 text-center text-xs font-semibold transition-colors',
+                        active
+                          ? 'border-accent-primary bg-accent-primary text-ink-on-primary'
+                          : 'border-border-hairline bg-surface-muted text-text-muted hover:text-paper',
+                      )}
+                    >
+                      <span className="block">{day.label}</span>
+                      <span className="mt-0.5 block text-[10px] opacity-75">
+                        {day.detail}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <input
+                type="hidden"
+                name="booking_time"
+                value={`${selectedDate}T${selectedTime}`}
+              />
+              <Input
+                id="bk-time"
+                type="time"
+                required
+                value={selectedTime}
+                onChange={(event) => setSelectedTime(event.target.value)}
+                className="font-mono"
+              />
+            </>
+          ) : (
+            <Input
+              id="bk-time"
+              name="booking_time"
+              type="datetime-local"
+              required
+              className="font-mono"
+            />
+          )}
           <p className="text-text-muted mt-1 text-[11px]">
-            At least {BOOKING.minLeadTimeMinutes} minutes from now, so the owner
-            actually sees it coming.
+            {bookForLater
+              ? 'Today is skipped — the next open day is selected for you.'
+              : `At least ${BOOKING.minLeadTimeMinutes} minutes from now, so the owner actually sees it coming.`}
           </p>
         </div>
         <div>
@@ -138,5 +197,18 @@ export function BookingForm({
         </Button>
       </form>
     </Card>
+  );
+}
+
+function SuccessIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="text-accent-primary mx-auto size-9 fill-none stroke-current stroke-2"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8 12 2.6 2.6L16.5 9" />
+    </svg>
   );
 }

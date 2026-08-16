@@ -79,9 +79,7 @@ export default function KitchenSink() {
             <Chip>Default</Chip>
             <Chip active>Active</Chip>
             <Chip disabled>Disabled</Chip>
-            <Chip>
-              <span aria-hidden>🍛</span> With emoji
-            </Chip>
+            <Chip>Featured</Chip>
           </div>
         </Section>
 

@@ -1,10 +1,10 @@
 .page {
   min-height: calc(100svh - 4rem);
   overflow: clip;
-  background: #2b2b2b;
+  background: #101010;
   color: #ededed;
   color-scheme: dark;
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-body);
 }
 
 .shell {

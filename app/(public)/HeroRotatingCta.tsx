@@ -12,6 +12,12 @@ const CTA_COPY = [
 ] as const;
 
 const ROTATION_MS = 3200;
+const CTA_FLIP_DIRECTIONS = [
+  styles.flipFromTop,
+  styles.flipFromRight,
+  styles.flipFromBottom,
+  styles.flipFromLeft,
+] as const;
 
 export function HeroRotatingCta() {
   const [index, setIndex] = useState(0);
@@ -30,7 +36,11 @@ export function HeroRotatingCta() {
       className={styles.primaryAction}
       aria-label="Find my perfect restaurant spot"
     >
-      <span key={index} className={styles.rotatingCtaCopy} aria-hidden="true">
+      <span
+        key={index}
+        className={`${styles.rotatingCtaCopy} ${CTA_FLIP_DIRECTIONS[index]}`}
+        aria-hidden="true"
+      >
         {CTA_COPY[index]}
       </span>
     </Link>

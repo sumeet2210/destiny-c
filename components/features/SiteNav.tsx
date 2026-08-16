@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
+import styles from './site-nav.module.css';
 
 type NavIconName = 'home' | 'events' | 'others';
 
@@ -17,16 +18,6 @@ const tabs: ReadonlyArray<{
   { href: '/others', label: 'Others', icon: 'others' },
 ];
 
-const menuLinks = [
-  ['/', 'Home'],
-  ['/search', 'Search restaurants'],
-  ['/events', 'Events'],
-  ['/saved', 'Saved'],
-  ['/bookings', 'Bookings'],
-  ['/friends', 'Friends'],
-  ['/others', 'More'],
-] as const;
-
 export function SiteHeader({
   accountHref,
   accountLabel,
@@ -35,79 +26,132 @@ export function SiteHeader({
   accountLabel: string;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const onHome = pathname === '/';
-  const [menuOpen, setMenuOpen] = useState(false);
+  const onOthers = pathname === '/others' || pathname.startsWith('/others/');
+  const onToolboxChild = ['/saved', '/bookings'].some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+  const toolboxOpen = onOthers || onToolboxChild;
+  const [menuOpen, setMenuOpen] = useState(toolboxOpen);
+  const menuNavigationTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setMenuOpen(toolboxOpen));
+    return () => window.cancelAnimationFrame(frame);
+  }, [toolboxOpen]);
+
+  useEffect(
+    () => () => {
+      if (menuNavigationTimerRef.current !== null) {
+        window.clearTimeout(menuNavigationTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const toggleMorePage = () => {
+    if (onToolboxChild) {
+      router.push('/others');
+      return;
+    }
+
+    const nextOpen = !onOthers;
+    setMenuOpen(nextOpen);
+
+    if (menuNavigationTimerRef.current !== null) {
+      window.clearTimeout(menuNavigationTimerRef.current);
+    }
+
+    menuNavigationTimerRef.current = window.setTimeout(() => {
+      router.push(nextOpen ? '/others' : '/');
+      menuNavigationTimerRef.current = null;
+    }, 120);
+  };
 
   if (onHome) {
     return (
-      <>
-        <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
-          <div className="mx-auto flex h-14 max-w-[100rem] items-start justify-end px-3 pt-2 sm:px-5 lg:px-8">
-            <button
-              type="button"
-              aria-label="Open navigation menu"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen(true)}
-              className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-[#505050] bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95"
-            >
-              <MenuIcon />
-            </button>
-          </div>
-        </header>
-        <NavigationMenu
-          open={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          accountHref={accountHref}
-          accountLabel={accountLabel}
-        />
-      </>
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
+        <div className="mx-auto flex h-24 max-w-[100rem] items-start justify-end px-3 pt-10 sm:px-5 sm:pt-12 lg:px-8">
+          <button
+            type="button"
+            aria-label="Open more options"
+            aria-expanded={menuOpen}
+            onClick={toggleMorePage}
+            className={cn(
+              menuOpen && styles.open,
+              'pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-[#505050] bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95',
+            )}
+          >
+            <AnimatedMenuIcon />
+          </button>
+        </div>
+      </header>
+    );
+  }
+
+  if (toolboxOpen) {
+    return (
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
+        <div className="mx-auto flex h-14 max-w-[100rem] items-start justify-end px-3 pt-2 sm:px-5 lg:px-8">
+          <button
+            type="button"
+            aria-label={
+              onToolboxChild ? 'Close toolbox page' : 'Close Destiny Toolbox'
+            }
+            aria-expanded={menuOpen}
+            onClick={toggleMorePage}
+            className={cn(
+              menuOpen && styles.open,
+              'pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-[#505050] bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95',
+            )}
+          >
+            <AnimatedMenuIcon />
+          </button>
+        </div>
+      </header>
     );
   }
 
   return (
-    <>
-      <header
-        className="sticky top-0 z-40 border-b border-[#505050] bg-[#EDEDED] text-black"
-        style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
-      >
-        <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
-          <Wordmark />
+    <header
+      className="sticky top-0 z-40 border-b border-[#505050] bg-[#EDEDED] text-black"
+      style={{ fontFamily: 'var(--font-body)' }}
+    >
+      <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+        <Wordmark />
 
-          <nav
-            aria-label="Primary navigation"
-            className="hidden items-center gap-1 rounded-full border border-[#505050] bg-white p-1 lg:flex"
-          >
-            {tabs.slice(1).map((tab) => (
-              <NavLink key={tab.href} href={tab.href} label={tab.label} />
-            ))}
-            <NavLink href="/friends" label="Friends" />
-          </nav>
+        <nav
+          aria-label="Primary navigation"
+          className="hidden items-center gap-1 rounded-full border border-[#505050] bg-white p-1 lg:flex"
+        >
+          {tabs.slice(1).map((tab) => (
+            <NavLink key={tab.href} href={tab.href} label={tab.label} />
+          ))}
+          <NavLink href="/friends" label="Friends" />
+        </nav>
 
-          <Link
-            href={accountHref}
-            className="hidden min-h-11 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-[#1DB954] hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:inline-flex"
-          >
-            {accountLabel}
-          </Link>
+        <Link
+          href={accountHref}
+          className="hidden min-h-11 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-[#1DB954] hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:inline-flex"
+        >
+          {accountLabel}
+        </Link>
 
-          <button
-            type="button"
-            aria-label="Open navigation menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
-            className="grid h-11 w-11 place-items-center rounded-full bg-black text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:hidden"
-          >
-            <MenuIcon />
-          </button>
-        </div>
-      </header>
-      <NavigationMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        accountHref={accountHref}
-        accountLabel={accountLabel}
-      />
-    </>
+        <button
+          type="button"
+          aria-label="Open more options"
+          aria-expanded={menuOpen}
+          onClick={toggleMorePage}
+          className={cn(
+            menuOpen && styles.open,
+            'grid h-11 w-11 place-items-center rounded-full bg-black text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:hidden',
+          )}
+        >
+          <AnimatedMenuIcon />
+        </button>
+      </div>
+    </header>
   );
 }
 
@@ -125,84 +169,6 @@ function Wordmark() {
         className="absolute top-1/2 left-1/2 w-28 max-w-none -translate-x-1/2 -translate-y-1/2"
       />
     </Link>
-  );
-}
-
-function NavigationMenu({
-  open,
-  onClose,
-  accountHref,
-  accountLabel,
-}: {
-  open: boolean;
-  onClose: () => void;
-  accountHref: string;
-  accountLabel: string;
-}) {
-  const pathname = usePathname();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
-  return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      onClick={(event) => {
-        if (event.target === dialogRef.current) onClose();
-      }}
-      className="fixed inset-y-0 right-0 m-0 ml-auto h-dvh w-[min(22rem,88vw)] max-w-none border-0 bg-black p-0 text-white shadow-2xl backdrop:bg-black/55"
-      style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
-    >
-      <div className="flex min-h-full flex-col p-5 pt-[max(1.25rem,env(safe-area-inset-top))]">
-        <div className="flex items-center justify-between border-b border-[#505050] pb-5">
-          <span className="text-lg font-bold">Menu</span>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close navigation menu"
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#505050] text-white hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        <nav aria-label="Site navigation" className="grid py-4">
-          {menuLinks.map(([href, label]) => {
-            const active =
-              pathname === href || (href !== '/' && pathname.startsWith(href));
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? 'page' : undefined}
-                onClick={onClose}
-                className={cn(
-                  'flex min-h-12 items-center justify-between border-b border-[#505050] text-[15px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]',
-                  active ? 'text-[#1DB954]' : 'text-white hover:text-[#1DB954]',
-                )}
-              >
-                {label}
-                <MenuArrowIcon />
-              </Link>
-            );
-          })}
-        </nav>
-
-        <Link
-          href={accountHref}
-          onClick={onClose}
-          className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-5 font-bold text-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]"
-        >
-          {accountLabel === 'Log in' ? 'Log in' : `Open ${accountLabel}`}
-        </Link>
-      </div>
-    </dialog>
   );
 }
 
@@ -225,14 +191,77 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export function MobileTabBar() {
   const pathname = usePathname();
+  const [hidden, setHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
+  const frameRef = useRef<number | null>(null);
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => isTabActive(pathname, tab.href)),
+  );
+
+  useEffect(() => {
+    lastScrollYRef.current = window.scrollY;
+
+    const onScroll = () => {
+      if (frameRef.current !== null) return;
+
+      frameRef.current = window.requestAnimationFrame(() => {
+        frameRef.current = null;
+        const currentY = Math.max(0, window.scrollY);
+
+        if (currentY <= 80) {
+          lastScrollYRef.current = currentY;
+          setHidden(false);
+          return;
+        }
+
+        const delta = currentY - lastScrollYRef.current;
+        if (Math.abs(delta) < 10) return;
+
+        setHidden(delta > 0);
+        lastScrollYRef.current = currentY;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setHidden(false);
+      lastScrollYRef.current = window.scrollY;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [pathname]);
 
   return (
     <nav
       aria-label="Primary app navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[#505050] bg-black/95 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-0.75rem_2.5rem_rgba(43,43,43,0.34)] backdrop-blur-xl"
-      style={{ fontFamily: 'var(--font-destiny), Manrope, sans-serif' }}
+      aria-hidden={hidden || undefined}
+      inert={hidden ? true : undefined}
+      className={cn(
+        'fixed bottom-[calc(1rem_+_env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100%_-_2rem)] max-w-[22.5rem] -translate-x-1/2 rounded-[20px] border border-white/15 bg-[#101010]/92 p-2 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_42px_rgba(0,0,0,0.48),0_3px_10px_rgba(0,0,0,0.34)] backdrop-blur-[18px] transition-[transform,opacity] will-change-[transform,opacity]',
+        hidden
+          ? 'pointer-events-none translate-y-[130%] opacity-0 duration-[600ms] ease-[cubic-bezier(0.22,0.7,0.2,1)]'
+          : 'translate-y-0 opacity-100 duration-[650ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
+      )}
+      style={{ fontFamily: 'var(--font-body)' }}
     >
-      <div className="mx-auto flex max-w-[38rem] px-2">
+      <div className="relative grid grid-cols-3">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-0 flex h-9 w-1/3 justify-center transition-transform duration-300 ease-[cubic-bezier(0.2,0.85,0.25,1.1)]"
+          style={{ transform: `translateX(${activeIndex * 100}%)` }}
+        >
+          <span className="h-9 w-12 rounded-[12px] bg-[#1DB954] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_5px_16px_rgba(29,185,84,0.3)]" />
+        </div>
+
         {tabs.map((tab) => {
           const active = isTabActive(pathname, tab.href);
           return (
@@ -241,19 +270,27 @@ export function MobileTabBar() {
               href={tab.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'focus-visible:outline-inset flex min-h-[4.25rem] flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[10px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#1DB954]',
-                active ? 'text-[#1DB954]' : 'text-[#8A8A8A] hover:text-white',
+                'group focus-visible:outline-inset relative z-10 flex min-h-[4.1rem] flex-col items-center justify-start gap-1 rounded-[14px] pt-0 pb-1 text-[11px] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-[#1DB954] active:scale-[0.97]',
               )}
             >
               <span
                 className={cn(
-                  'grid h-7 min-w-10 place-items-center rounded-full px-2 transition-colors',
-                  active && 'bg-[#1DB954]/15',
+                  'grid h-9 min-w-12 place-items-center px-2 transition-colors duration-200',
+                  active
+                    ? 'text-[#101010]'
+                    : 'text-[#8A8A8A] group-hover:text-white',
                 )}
               >
                 <NavIcon name={tab.icon} />
               </span>
-              <span className={active ? 'font-extrabold' : undefined}>
+              <span
+                className={cn(
+                  'leading-none tracking-[-0.01em] transition-colors duration-200',
+                  active
+                    ? 'font-extrabold text-[#1DB954]'
+                    : 'font-semibold text-[#8A8A8A] group-hover:text-white',
+                )}
+              >
                 {tab.label}
               </span>
             </Link>
@@ -286,46 +323,13 @@ function isTabActive(pathname: string, href: string) {
   ].some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
-function MenuIcon() {
+function AnimatedMenuIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
-      <path
-        d="M4 7h16M4 12h16M4 17h16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
-      <path
-        d="m6 6 12 12M18 6 6 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function MenuArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
-      <path
-        d="M5 12h14M13 6l6 6-6 6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <span className={styles.menuGlyph} aria-hidden>
+      <span />
+      <span />
+      <span />
+    </span>
   );
 }
 

@@ -210,7 +210,7 @@
 
 .restaurantSection :global(.restaurant-card-title) {
   color: #ededed;
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.3rem;
   font-weight: 570;
   line-height: 1;
@@ -442,4 +442,10 @@
     transition: none;
     transform: none;
   }
+}
+.intro h1,
+.dishSection h2,
+.resultsHeading h2,
+.emptyState h2 {
+  font-family: var(--font-display);
 }

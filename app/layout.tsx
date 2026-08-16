@@ -1,29 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { Roboto_Slab, Inter, JetBrains_Mono, Manrope } from 'next/font/google';
+import { JetBrains_Mono } from 'next/font/google';
 import { ToastProvider } from '@/components/ui/Toast';
 import { MobileTabBar } from '@/components/features/SiteNav';
 import './globals.css';
-
-const robotoSlab = Roboto_Slab({
-  variable: '--font-roboto-slab',
-  subsets: ['latin'],
-  weight: ['700', '800'],
-});
-
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-});
 
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
   subsets: ['latin'],
   weight: ['400', '700'],
-});
-
-const manrope = Manrope({
-  variable: '--font-destiny',
-  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
@@ -36,18 +20,29 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#2B2B2B',
+  themeColor: '#101010',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html
-      lang="en"
-      className={`${robotoSlab.variable} ${inter.variable} ${jetbrainsMono.variable} ${manrope.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${jetbrainsMono.variable} h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        {/* This root layout supplies the font stylesheet to every App Router page. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Slab:wght@700;800&display=swap"
+        />
+      </head>
       <body className="bg-canvas text-paper font-body flex min-h-full flex-col">
         <ToastProvider>
-          <div className="min-h-full w-full pb-[calc(4.25rem+env(safe-area-inset-bottom))]">
+          <div className="min-h-full w-full pb-[calc(6rem+env(safe-area-inset-bottom))]">
             {children}
           </div>
           <MobileTabBar />

@@ -1,6 +1,6 @@
 /*
 THESIS: Destiny turns a vague dinner debate into a short, credible campus choice; it refuses the endless delivery-app feed.
-OWN-WORLD: Paper and charcoal surfaces, signal-green actions, Manrope typography, cinematic food crops, and compact rounded surfaces.
+OWN-WORLD: Paper and charcoal surfaces, signal-green actions, Inter and Roboto Slab typography, cinematic food crops, and compact rounded surfaces.
 STORY: Search or choose a craving, see only current offers and useful signals, then open one real place without losing the existing product paths.
 FIRST VIEWPORT: An editorial decision statement and existing search/quiz routes sit beside one food image; current offers, cravings, events, social signals, and popular places follow in compact bands.
 FORM: Approved final prototype, code-led translation of the established Destiny visual system.
@@ -19,15 +19,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   --color-accent-urgent: #1db954;
   --color-accent-urgent-text: #1db954;
   --color-ink-on-primary: #2b2b2b;
-  --font-display: var(--font-destiny-home), Manrope, sans-serif;
-  --font-body: var(--font-destiny-home), Manrope, sans-serif;
   min-height: 100vh;
   margin-bottom: -4rem;
   padding-bottom: 4rem;
   overflow: clip;
   background: #ededed;
   color: #2b2b2b;
-  font-family: var(--font-destiny-home), Manrope, sans-serif;
+  font-family: var(--font-body);
   font-feature-settings:
     'ss01' 1,
     'cv11' 1;
@@ -46,6 +44,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   outline: 2px solid #1db954;
   outline-offset: 3px;
   box-shadow: 0 0 0 5px #2b2b2b;
+}
+
+.heroCopy h1,
+.heroPanel h2,
+.sectionHeadingOnDark h2,
+.sectionHeading h2,
+.popularHeading h2,
+.eventIntro h2,
+.searchSection h2,
+.tickerHeading {
+  font-family: var(--font-display);
 }
 
 .lineIcon {
@@ -371,10 +380,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   min-height: 2.75rem;
 }
 
-.cravingSection :global(.craving-emoji) {
-  display: none;
-}
-
 .cravingSection :global(.craving-stack) {
   height: 23rem;
   margin-top: 1.25rem;
@@ -411,7 +416,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 .cravingSection :global(.craving-stack-copy h3) {
   color: #ededed;
-  font-family: var(--font-destiny-home), Manrope, sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(1.8rem, 3vw, 2.7rem);
   font-weight: 560;
   line-height: 0.95;
@@ -493,10 +498,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   color: #2b2b2b;
 }
 
-.eventSection :global(.event-type-icon) {
-  display: none;
-}
-
 .squadSection {
   padding-top: 4rem;
   padding-bottom: 4rem;
@@ -561,7 +562,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 .popularSection :global(.restaurant-card-title) {
   color: #ededed;
-  font-family: var(--font-destiny-home), Manrope, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.35rem;
   font-weight: 570;
   line-height: 1;
@@ -1169,8 +1170,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 }
 
 .heroCopy > .heroTagline {
-  margin: 1.8rem 0 2.35rem;
-  font-family: var(--font-elms-sans), sans-serif;
+  margin: 0.75rem 0 2.35rem;
+  font-family: var(--font-body);
   font-size: clamp(1.45rem, 2.4vw, 2rem);
   font-weight: 600;
   line-height: 1.05;
@@ -1178,28 +1179,113 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 }
 
 .primaryAction {
+  position: relative;
+  isolation: isolate;
   width: min(23rem, 92vw);
-  min-height: 3.8rem;
+  min-height: 4rem;
   overflow: hidden;
-  padding: 1rem 1.5rem;
-  border: 1px solid #1db954;
-  background: #1db954;
+  padding: 1.08rem 1.75rem;
+  border: 0;
+  background: linear-gradient(
+    135deg,
+    #1db954 0%,
+    color-mix(in srgb, #1db954 86%, #2b2b2b) 100%
+  );
   color: #2b2b2b;
+  box-shadow:
+    0 4px 8px rgb(0 0 0 / 25%),
+    0 12px 32px rgb(29 185 84 / 33%);
   font-size: clamp(1.18rem, 2.2vw, 1.35rem);
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.005em;
+  perspective: 700px;
+  transition:
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.primaryAction::before,
+.primaryAction::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+}
+
+.primaryAction::before {
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 25%) 0%,
+    transparent 40%
+  );
+}
+
+.primaryAction::after {
+  top: -35%;
+  bottom: -35%;
+  left: -60%;
+  width: 24%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 35%),
+    transparent
+  );
+  transform: skewX(-22deg);
+  transition: left 500ms ease;
 }
 
 .rotatingCtaCopy {
+  position: relative;
+  z-index: 1;
   display: inline-block;
   min-width: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
   white-space: nowrap;
-  animation: hero-cta-cycle 3200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .primaryAction:hover {
   background: #ededed;
   color: #2b2b2b;
+  box-shadow:
+    0 6px 10px rgb(0 0 0 / 25%),
+    0 16px 38px rgb(29 185 84 / 38%);
+  transform: translateY(-2px);
+}
+
+.primaryAction:hover::after {
+  left: 120%;
+}
+
+.primaryAction:active {
+  box-shadow:
+    0 3px 6px rgb(0 0 0 / 25%),
+    0 8px 22px rgb(29 185 84 / 27%);
+  transform: translateY(0) scale(0.99);
+}
+
+.flipFromTop {
+  transform-origin: 50% 100%;
+  animation: hero-cta-flip-top 3200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.flipFromRight {
+  transform-origin: 0 50%;
+  animation: hero-cta-flip-right 3200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.flipFromBottom {
+  transform-origin: 50% 0;
+  animation: hero-cta-flip-bottom 3200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.flipFromLeft {
+  transform-origin: 100% 50%;
+  animation: hero-cta-flip-left 3200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .secondaryAction {
@@ -1218,6 +1304,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 .tickerHeading {
   margin: 0 0 1rem;
   color: #ededed;
+  font-family: var(--font-display);
   font-size: clamp(1.55rem, 3vw, 2.35rem);
   font-weight: 600;
   line-height: 1;
@@ -1327,6 +1414,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   overflow: hidden;
   margin-top: 0.2rem;
   color: #ededed;
+  font-family: var(--font-display);
   font-size: 1.12rem;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -1415,20 +1503,34 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 .specialsSection :global(.specials-kind) {
   position: absolute;
-  top: 0.8rem;
-  left: 0.8rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  background: #ededed;
-  color: #2b2b2b;
+  top: 0.7rem;
+  left: 0;
+  padding: 0.4rem 2rem 0.4rem 0.8rem;
+  border-radius: 0;
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.specialsSection :global(.specials-offer-card .specials-kind) {
+  background: linear-gradient(
+    90deg,
+    var(--chili) 0%,
+    color-mix(in srgb, var(--chili) 76%, transparent) 52%,
+    transparent 100%
+  );
+  color: #ededed;
+}
+
 .specialsSection :global(.specials-event-card .specials-kind) {
-  background: #1db954;
+  background: linear-gradient(
+    90deg,
+    var(--event-yellow) 0%,
+    color-mix(in srgb, var(--event-yellow) 72%, transparent) 52%,
+    transparent 100%
+  );
+  color: #2b2b2b;
 }
 
 .specialsSection :global(.specials-heat) {
@@ -1436,19 +1538,34 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   top: 0.72rem;
   right: 0.78rem;
   display: grid;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.05rem;
+  height: 2.05rem;
   place-items: center;
-  border: 1px solid #505050;
-  border-radius: 50%;
-  background: rgb(43 43 43 / 68%);
-  font-size: calc(0.8rem * var(--heat-scale));
-  backdrop-filter: blur(0.5rem);
+  border: 1px solid color-mix(in srgb, var(--chili) 62%, #505050);
+  border-radius: 0.68rem 0.68rem 0.68rem 0.2rem;
+  background: linear-gradient(145deg, rgb(43 43 43 / 94%), rgb(80 80 80 / 82%));
+  box-shadow:
+    inset 0 1px 0 rgb(237 237 237 / 14%),
+    0 4px 10px rgb(43 43 43 / 42%),
+    0 0 1rem color-mix(in srgb, var(--chili) 28%, transparent);
+  backdrop-filter: blur(0.45rem);
 }
 
-.specialsSection :global(.specials-heat > span) {
+.specialsSection :global(.specials-heat svg) {
+  width: 1.12rem;
+  height: 1.12rem;
+  overflow: visible;
+  fill: var(--chili);
   transform: scale(var(--heat-scale));
+  transform-origin: 50% 70%;
   animation: ticker-flame var(--heat-speed) ease-in-out infinite;
+  filter: drop-shadow(
+    0 0 0.28rem color-mix(in srgb, var(--chili) 54%, transparent)
+  );
+}
+
+.specialsSection :global(.specials-flame-core) {
+  fill: var(--event-yellow);
 }
 
 .specialsSection :global(.specials-card-copy) {
@@ -1471,6 +1588,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   display: -webkit-box;
   overflow: hidden;
   color: #ededed;
+  font-family: var(--font-display);
   font-size: 1.22rem;
   font-weight: 650;
   line-height: 1.08;
@@ -1622,19 +1740,67 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   }
 }
 
-@keyframes hero-cta-cycle {
+@keyframes hero-cta-flip-top {
   0% {
     opacity: 0;
-    transform: translateY(0.45rem);
+    transform: translateY(-0.55rem) rotateX(82deg);
   }
-  12%,
-  78% {
+  6%,
+  94% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0) rotateX(0);
   }
   100% {
     opacity: 0;
-    transform: translateY(-0.45rem);
+    transform: translateY(0.55rem) rotateX(-82deg);
+  }
+}
+
+@keyframes hero-cta-flip-right {
+  0% {
+    opacity: 0;
+    transform: translateX(0.7rem) rotateY(-82deg);
+  }
+  6%,
+  94% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-0.7rem) rotateY(82deg);
+  }
+}
+
+@keyframes hero-cta-flip-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(0.55rem) rotateX(-82deg);
+  }
+  6%,
+  94% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-0.55rem) rotateX(82deg);
+  }
+}
+
+@keyframes hero-cta-flip-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-0.7rem) rotateY(82deg);
+  }
+  6%,
+  94% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(0.7rem) rotateY(-82deg);
   }
 }
 
@@ -1707,7 +1873,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   }
 
   .heroCopy > .heroTagline {
-    margin: 1.4rem 0 2rem;
+    margin: 0.6rem 0 2rem;
     font-size: 1.35rem;
   }
 
@@ -1810,9 +1976,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   }
 
   .rotatingCtaCopy,
-  .specialsSection :global(.specials-heat > span),
+  .specialsSection :global(.specials-heat svg),
   .specialsSection :global(.specials-confetti i) {
     animation: none;
+  }
+
+  .primaryAction::after {
+    display: none;
   }
 
   .specialsSection :global(.specials-card-flipper) {
@@ -1829,13 +1999,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 /* Keep the homepage as one continuous black canvas rather than a stack of
    visually separate panels. Cards and controls retain their own affordances. */
 .home {
-  --color-canvas: #2b2b2b;
-  --color-surface-muted: #2b2b2b;
-  --color-surface-raised: #2b2b2b;
+  --color-canvas: #101010;
+  --color-surface-muted: #181818;
+  --color-surface-raised: #202020;
   --color-border-hairline: #505050;
   --color-paper: #ededed;
   --color-text-muted: #8a8a8a;
-  background: #2b2b2b;
+  background: #101010;
   color: #ededed;
 }
 
@@ -1847,7 +2017,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 .cravingSection,
 .squadSection,
 .footer {
-  background: #2b2b2b;
+  background: #101010;
 }
 
 .heroMedia::before,
@@ -1911,8 +2081,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 .cravingSection,
 .squadSection {
-  --color-surface-muted: #2b2b2b;
-  --color-surface-raised: #2b2b2b;
+  --color-surface-muted: #181818;
+  --color-surface-raised: #202020;
   --color-border-hairline: #505050;
   --color-paper: #ededed;
   --color-text-muted: #8a8a8a;
@@ -1967,11 +2137,24 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 .homeSearchSection {
   position: relative;
   z-index: 13;
-  padding: 0 1rem;
+  padding: 1rem 1rem 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(237 237 237 / 4%),
+    transparent 68%
+  );
+}
+
+.homeSearchSection .homeSearch {
+  margin-bottom: 0;
+}
+
+.homeSquadSection {
+  padding-top: 4rem;
 }
 
 .specialsSection {
-  margin-top: 0;
+  margin-top: 2.25rem;
   padding: 0.35rem 1rem 1.25rem;
 }
 
@@ -2012,11 +2195,15 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   }
 
   .homeSearchSection {
-    padding: 0 0.65rem;
+    padding: 0.75rem 0.65rem 0;
+  }
+
+  .homeSquadSection {
+    padding-top: 2.75rem;
   }
 
   .specialsSection {
-    margin-top: 0;
+    margin-top: 1.65rem;
     padding: 0.25rem 0.65rem 1rem;
   }
 
@@ -2036,6 +2223,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   .searchSkeleton {
     width: calc(100% - 1.3rem);
     margin-inline: 0.65rem;
+  }
+
+  .homeSquadSection {
+    padding-top: 2.75rem;
   }
 
   .discoverSkeleton {

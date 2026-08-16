@@ -58,7 +58,9 @@ export function AnalyticsView({ data }: { data: Data }) {
 
       <Card>
         <p className="text-text-muted text-[13px]">Profile views</p>
-        <p className="text-paper mt-1 font-mono text-3xl font-bold">{total}</p>
+        <p className="font-display text-paper mt-1 text-3xl font-bold">
+          {total}
+        </p>
       </Card>
 
       <Card className="space-y-2">

@@ -1,4 +1,3 @@
-import { Elms_Sans, Manrope } from 'next/font/google';
 import { Suspense } from 'react';
 import { LiveTickerSearch } from '@/components/features/LiveTickerSearch';
 import { SpecialsTicker } from '@/components/features/SpecialsTicker';
@@ -16,18 +15,6 @@ import {
 import { getSavedIds } from '@/lib/queries/social';
 import { HeroRotatingCta } from './HeroRotatingCta';
 import styles from './home.module.css';
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  variable: '--font-destiny-home',
-});
-
-const elmsSans = Elms_Sans({
-  subsets: ['latin'],
-  variable: '--font-elms-sans',
-  display: 'swap',
-  adjustFontFallback: false,
-});
 
 const HOME_ARTWORK: Record<string, string> = {
   'Biryani Adda': '/home/biryani-adda.webp',
@@ -48,10 +35,7 @@ function withHomeArtwork(restaurants: RestaurantSummary[]) {
 
 export default function HomePage() {
   return (
-    <main
-      id="top"
-      className={`${styles.home} ${manrope.variable} ${elmsSans.variable}`}
-    >
+    <main id="top" className={styles.home}>
       <div className={styles.shell}>
         <section className={styles.hero} aria-labelledby="home-title">
           <div className={styles.heroCopy}>
@@ -94,6 +78,7 @@ async function DiscoverSection() {
 
   return (
     <SquadGoingSection
+      className={styles.homeSquadSection}
       restaurants={withHomeArtwork(
         applyFilters(restaurants, { sort: 'trending' }),
       )}
@@ -111,7 +96,7 @@ async function HomeSearchSection() {
       className={styles.homeSearchSection}
       aria-label="Find a restaurant or dish"
     >
-      <LiveTickerSearch index={searchIndex} />
+      <LiveTickerSearch index={searchIndex} className={styles.homeSearch} />
     </section>
   );
 }

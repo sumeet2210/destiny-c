@@ -560,7 +560,7 @@ function TickerTile({
                 } as CSSProperties
               }
             >
-              <span aria-hidden>🔥</span>
+              <FlameIcon />
             </span>
           )}
           <span className="specials-card-copy">
@@ -647,7 +647,7 @@ function TickerTile({
 
 function rotatingBadge(kind: CardKind, key: string, tick: number) {
   const offerCopy = ['Offer', 'Ending soon', "Don't sleep on this"];
-  const eventCopy = ['Live event', 'Going down rn 🔥', "Don't sleep on this"];
+  const eventCopy = ['Live event', 'Going down rn', "Don't sleep on this"];
   const choices = kind === 'offer' ? offerCopy : eventCopy;
   return choices[(mockHash(key) + tick) % choices.length];
 }
@@ -681,6 +681,18 @@ function ConfettiBurst() {
         <i key={index} />
       ))}
     </span>
+  );
+}
+
+function FlameIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M13.4 2.8c.5 3.4-1.5 4.7-3 6.3-1.4 1.4-2.5 2.8-2.5 5.1 0 1.2.4 2.3 1.2 3.1-.1-2.2 1-3.6 2.6-4.9.1 2.1 1.4 3.1 2.2 4.2.6.8.9 1.7.7 2.8 1.8-1 3-2.9 3-5.2 0-3.9-2.2-7.4-4.2-10.4Z" />
+      <path
+        className="specials-flame-core"
+        d="M12.1 14.2c.2 1.1-.4 1.8-1 2.5-.5.6-.8 1.1-.8 1.9 0 1.1.8 2 1.9 2s1.9-.9 1.9-2c0-1.5-1-2.9-2-4.4Z"
+      />
+    </svg>
   );
 }
 

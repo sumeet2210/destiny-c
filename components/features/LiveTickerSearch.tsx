@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import type { QuickSearchIndex } from '@/lib/queries/catalog';
+import { cn } from '@/lib/cn';
 import styles from './live-ticker-search.module.css';
 
 type Suggestion =
@@ -30,7 +31,13 @@ type Suggestion =
 
 const DEBOUNCE_MS = 180;
 
-export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
+export function LiveTickerSearch({
+  index,
+  className,
+}: {
+  index: QuickSearchIndex;
+  className?: string;
+}) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,15 +72,52 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
   }, []);
 
   const suggestions = useMemo(() => {
-    const needle = debouncedQuery.toLocaleLowerCase();
-    if (!needle) return [];
+    const needle = normalizeSearch(debouncedQuery);
+    if (!needle) {
+      const recommendedRestaurants: Suggestion[] = index.restaurants
+        .slice(0, 3)
+        .map((restaurant) => ({
+          key: `restaurant-${restaurant.id}`,
+          kind: 'restaurant',
+          title: restaurant.name,
+          detail: `${restaurant.area} · Popular with the squad`,
+          href: `/restaurant/${restaurant.id}?from=homepage_search`,
+        }));
+      const recommendedDishes: Suggestion[] = [...index.dishes]
+        .sort((a, b) => a.price - b.price || a.name.localeCompare(b.name))
+        .slice(0, 3)
+        .map((dish) => ({
+          key: `dish-${dish.id}`,
+          kind: 'dish',
+          title: dish.name,
+          detail: `${dish.restaurantName} · ₹${dish.price}`,
+          href: `/restaurant/${dish.restaurantId}?from=homepage_search`,
+        }));
+
+      return [...recommendedRestaurants, ...recommendedDishes];
+    }
 
     const restaurantMatches: Suggestion[] = index.restaurants
-      .filter((restaurant) =>
-        restaurant.name.toLocaleLowerCase().includes(needle),
+      .map((restaurant) => ({
+        restaurant,
+        score: searchScore(restaurant.name, needle),
+      }))
+      .filter(
+        (
+          match,
+        ): match is {
+          restaurant: (typeof index.restaurants)[number];
+          score: number;
+        } => match.score !== null,
+      )
+      .sort(
+        (a, b) =>
+          a.score - b.score ||
+          b.restaurant.trendingViews - a.restaurant.trendingViews ||
+          a.restaurant.name.localeCompare(b.restaurant.name),
       )
       .slice(0, 4)
-      .map((restaurant) => ({
+      .map(({ restaurant }) => ({
         key: `restaurant-${restaurant.id}`,
         kind: 'restaurant',
         title: restaurant.name,
@@ -82,9 +126,23 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
       }));
 
     const dishMatches: Suggestion[] = index.dishes
-      .filter((dish) => dish.name.toLocaleLowerCase().includes(needle))
+      .map((dish) => ({ dish, score: searchScore(dish.name, needle) }))
+      .filter(
+        (
+          match,
+        ): match is {
+          dish: (typeof index.dishes)[number];
+          score: number;
+        } => match.score !== null,
+      )
+      .sort(
+        (a, b) =>
+          a.score - b.score ||
+          a.dish.price - b.dish.price ||
+          a.dish.name.localeCompare(b.dish.name),
+      )
       .slice(0, 6)
-      .map((dish) => ({
+      .map(({ dish }) => ({
         key: `dish-${dish.id}`,
         kind: 'dish',
         title: dish.name,
@@ -95,14 +153,14 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
     return [...restaurantMatches, ...dishMatches];
   }, [debouncedQuery, index]);
 
-  const isLoading = query.trim() !== debouncedQuery;
-  const showDropdown = open && query.trim().length > 0;
+  const isLoading = Boolean(query.trim()) && query.trim() !== debouncedQuery;
+  const showDropdown = open;
   const activeSuggestion = suggestions[activeIndex];
 
   const clear = () => {
     setQuery('');
     setDebouncedQuery('');
-    setOpen(false);
+    setOpen(true);
     setActiveIndex(-1);
     inputRef.current?.focus();
   };
@@ -144,9 +202,25 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
   };
 
   return (
-    <div ref={rootRef} className={styles.root}>
+    <div
+      ref={rootRef}
+      className={cn(styles.root, className)}
+      onBlurCapture={(event) => {
+        const nextTarget = event.relatedTarget;
+        if (
+          nextTarget instanceof Node &&
+          event.currentTarget.contains(nextTarget)
+        ) {
+          return;
+        }
+        setOpen(false);
+        setActiveIndex(-1);
+      }}
+    >
       <form className={styles.form} role="search" onSubmit={submit}>
-        <SearchIcon />
+        <span className={styles.searchIconWrap}>
+          <SearchIcon />
+        </span>
         <input
           ref={inputRef}
           type="search"
@@ -162,9 +236,7 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
               ? `ticker-option-${activeSuggestion.key}`
               : undefined
           }
-          onFocus={() => {
-            if (query.trim()) setOpen(true);
-          }}
+          onFocus={() => setOpen(true)}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(Boolean(event.target.value.trim()));
@@ -208,11 +280,12 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
             <SuggestionGroups
               suggestions={suggestions}
               activeIndex={activeIndex}
+              recommended={!debouncedQuery}
               onChoose={navigateToSuggestion}
               onHover={setActiveIndex}
             />
           )}
-          {!isLoading && (
+          {!isLoading && Boolean(query.trim()) && (
             <button
               type="submit"
               className={styles.fullSearch}
@@ -234,23 +307,25 @@ export function LiveTickerSearch({ index }: { index: QuickSearchIndex }) {
 function SuggestionGroups({
   suggestions,
   activeIndex,
+  recommended,
   onChoose,
   onHover,
 }: {
   suggestions: Suggestion[];
   activeIndex: number;
+  recommended: boolean;
   onChoose: (suggestion: Suggestion) => void;
   onHover: (index: number) => void;
 }) {
   const groups = [
     {
       kind: 'restaurant' as const,
-      label: 'Restaurants',
+      label: recommended ? 'Recommended restaurants' : 'Restaurants',
       items: suggestions.filter((item) => item.kind === 'restaurant'),
     },
     {
       kind: 'dish' as const,
-      label: 'Dishes',
+      label: recommended ? 'Quick dish picks' : 'Dishes',
       items: suggestions.filter((item) => item.kind === 'dish'),
     },
   ];
@@ -286,7 +361,7 @@ function SuggestionGroups({
                 <small>{suggestion.detail}</small>
               </span>
               <span className={styles.typeLabel}>
-                {group.label.slice(0, -1)}
+                {group.kind === 'restaurant' ? 'Restaurant' : 'Dish'}
               </span>
             </button>
           );
@@ -294,6 +369,60 @@ function SuggestionGroups({
       </div>
     ) : null,
   );
+}
+
+function normalizeSearch(value: string) {
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function searchScore(value: string, normalizedQuery: string) {
+  const normalizedValue = normalizeSearch(value);
+  if (normalizedValue === normalizedQuery) return 0;
+  if (normalizedValue.startsWith(normalizedQuery)) return 1;
+
+  const words = normalizedValue.split(' ');
+  const queryWords = normalizedQuery.split(' ');
+  if (
+    queryWords.every((queryWord) =>
+      words.some((word) => word.startsWith(queryWord)),
+    )
+  ) {
+    return 2;
+  }
+  if (normalizedValue.includes(normalizedQuery)) return 3;
+
+  const allowedDistance = normalizedQuery.length >= 7 ? 2 : 1;
+  if (normalizedQuery.length < 3) return null;
+  const closestDistance = Math.min(
+    editDistance(normalizedValue, normalizedQuery),
+    ...words.map((word) => editDistance(word, normalizedQuery)),
+  );
+  return closestDistance <= allowedDistance ? 4 + closestDistance : null;
+}
+
+function editDistance(left: string, right: string) {
+  const previous = Array.from(
+    { length: right.length + 1 },
+    (_, index) => index,
+  );
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] +
+          (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1),
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[right.length];
 }
 
 function SearchIcon() {

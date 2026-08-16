@@ -12,7 +12,7 @@ export const metadata = { title: 'My bookings' };
 export default async function BookingsPage() {
   if (!isSupabaseConfigured()) {
     return (
-      <main className="mx-auto max-w-md px-4 py-6">
+      <main className="mx-auto max-w-md px-4 pt-16 pb-28">
         <h1 className="font-display text-paper text-2xl font-extrabold">
           My bookings
         </h1>
@@ -27,7 +27,7 @@ export default async function BookingsPage() {
   const bookings = await listStudentBookings();
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="mx-auto max-w-md space-y-4 px-4 pt-16 pb-28">
       <h1 className="font-display text-paper text-2xl font-extrabold">
         My bookings
       </h1>

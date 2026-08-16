@@ -34,9 +34,7 @@ export function ConfirmCard({
   if (confirmed) {
     return (
       <Card className="space-y-1 text-center">
-        <p aria-hidden className="text-3xl">
-          👍
-        </p>
+        <SuccessIcon />
         <p className="text-paper text-sm">
           Confirmed — the owner knows you&apos;re coming at{' '}
           <span className="font-mono">{when}</span>.
@@ -83,5 +81,18 @@ export function ConfirmCard({
         heads-up, not a broken promise.
       </p>
     </Card>
+  );
+}
+
+function SuccessIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="text-accent-primary mx-auto size-8 fill-none stroke-current stroke-2"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8 12 2.6 2.6L16.5 9" />
+    </svg>
   );
 }

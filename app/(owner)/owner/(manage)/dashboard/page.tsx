@@ -159,7 +159,7 @@ function Stat({
   return (
     <Card>
       <p className="text-text-muted text-[13px]">{label}</p>
-      <p className="text-paper mt-1 font-mono text-2xl font-bold">{value}</p>
+      <p className="font-display text-paper mt-1 text-2xl font-bold">{value}</p>
       {hint && <p className="text-text-muted mt-1 text-[11px]">{hint}</p>}
     </Card>
   );

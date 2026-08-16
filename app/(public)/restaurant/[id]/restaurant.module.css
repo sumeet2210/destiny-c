@@ -416,10 +416,6 @@
   color: #2b2b2b;
 }
 
-.eventCard :global(.event-type-icon) {
-  display: none;
-}
-
 .eventCard :global(button[data-ui-button]) {
   min-height: 2.75rem;
 }
@@ -681,7 +677,7 @@
 
 .suggestionCard :global(.restaurant-card-title) {
   color: #ededed;
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 570;
   line-height: 1;
@@ -938,4 +934,13 @@
     transition: none;
     transform: none;
   }
+}
+.heroCopy h1,
+.sectionHeading h2,
+.menuIntro h2,
+.hoursSection h2,
+.suggestionsHeading h2,
+.offerCard h3,
+.menuPhotos h3 {
+  font-family: var(--font-display);
 }

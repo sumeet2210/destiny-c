@@ -1,47 +1,26 @@
 .page {
-  min-height: calc(100svh - 4rem);
-  background: #2b2b2b;
+  min-height: calc(100svh - 6rem - env(safe-area-inset-bottom));
+  background: #101010;
   color: #ededed;
   color-scheme: dark;
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-body);
 }
 
 .shell {
+  display: flex;
   width: min(100%, 82rem);
+  min-height: calc(100svh - 6rem - env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  flex-direction: column;
   margin-inline: auto;
-  padding: clamp(2.5rem, 6vw, 5.5rem) clamp(1rem, 4vw, 3rem) 3rem;
-}
-
-.intro > span,
-.infoCard > span {
-  color: #1db954;
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.intro h1 {
-  max-width: 10ch;
-  margin: 0.55rem 0 0;
-  font-size: clamp(2.7rem, 7vw, 5.5rem);
-  font-weight: 580;
-  line-height: 0.92;
-  letter-spacing: -0.055em;
-}
-
-.intro p {
-  max-width: 38rem;
-  margin: 1rem 0 0;
-  color: #8a8a8a;
-  line-height: 1.55;
+  padding: clamp(4rem, 6vw, 5.5rem) clamp(1rem, 4vw, 3rem) 3rem;
 }
 
 .menuGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
-  margin-top: clamp(2rem, 5vw, 4rem);
+  margin-top: 0;
 }
 
 .menuCard {
@@ -54,7 +33,7 @@
   padding: 1rem;
   border: 1px solid #505050;
   border-radius: 1.25rem;
-  background: #2b2b2b;
+  background: #181818;
   color: #ededed;
   text-decoration: none;
   transition:
@@ -64,9 +43,191 @@
 }
 
 .menuCard:hover {
-  border-color: rgb(29 185 84 / 72%);
-  background: #2b2b2b;
+  border-color: rgb(237 237 237 / 62%);
+  background: #141414;
   transform: translateY(-2px);
+}
+
+.dropdownCard {
+  min-width: 0;
+}
+
+.dropdownTrigger {
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.dropdownCard .arrow {
+  transition:
+    color 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.85, 0.3, 1.2);
+}
+
+.dropdownCardOpen .menuCard {
+  border-color: rgb(237 237 237 / 48%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 16%);
+}
+
+.dropdownCardOpen .arrow {
+  color: #ededed;
+  transform: rotate(90deg);
+}
+
+.dropdownViewport {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.65rem) scale(0.985);
+  transform-origin: top;
+  transition:
+    grid-template-rows 240ms cubic-bezier(0.22, 0.8, 0.25, 1),
+    opacity 150ms ease,
+    transform 220ms cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+.dropdownCardOpen .dropdownViewport {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.dropdownViewportInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dropdownPanel {
+  position: relative;
+  display: flex;
+  overflow: visible;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.55rem 0.15rem 0.1rem;
+  padding: 1.05rem 1.1rem 1.05rem 1.35rem;
+  border: 1px solid rgb(237 237 237 / 18%);
+  border-radius: 0.3rem 1.15rem 1.15rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(237 237 237 / 9%), transparent 42%),
+    linear-gradient(125deg, rgb(18 18 18 / 94%), rgb(43 43 43 / 98%));
+  color: #8a8a8a;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  box-shadow:
+    inset 0 1px 0 rgb(237 237 237 / 6%),
+    0 12px 30px rgb(0 0 0 / 18%);
+}
+
+.dropdownPanel::before {
+  position: absolute;
+  top: -0.28rem;
+  left: 1.1rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-top: 1px solid rgb(237 237 237 / 24%);
+  border-left: 1px solid rgb(237 237 237 / 24%);
+  background: #171717;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.dropdownAccent {
+  position: absolute;
+  inset-block: 0.85rem;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, transparent, #ededed, transparent);
+  box-shadow: 0 0 16px rgb(237 237 237 / 25%);
+}
+
+.dropdownPanel p {
+  position: relative;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(0.3rem);
+  transition:
+    opacity 150ms ease,
+    transform 180ms ease;
+}
+
+.dropdownPanel p strong {
+  color: #ededed;
+}
+
+.panelKicker {
+  position: relative;
+  width: fit-content;
+  color: #ededed;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  opacity: 0;
+  transform: translateX(-0.3rem);
+  text-transform: uppercase;
+  transition:
+    opacity 140ms ease,
+    transform 180ms ease;
+}
+
+.contactLink {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.15rem;
+  color: #ededed;
+  opacity: 0;
+  text-decoration: none;
+  transform: translateY(0.3rem);
+  transition:
+    color 150ms ease,
+    opacity 150ms ease,
+    transform 180ms ease;
+}
+
+.contactLink:hover {
+  color: #fff;
+}
+
+.contactLink > svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  flex: none;
+  fill: none;
+  stroke: #ededed;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.contactLink > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.contactLink strong {
+  overflow-wrap: anywhere;
+}
+
+.contactLink small {
+  color: #8a8a8a;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.dropdownCardOpen .panelKicker,
+.dropdownCardOpen .dropdownPanel p,
+.dropdownCardOpen .contactLink {
+  opacity: 1;
+  transform: none;
+  transition-delay: 70ms;
 }
 
 .iconWrap {
@@ -75,11 +236,12 @@
   height: 3.2rem;
   place-items: center;
   border-radius: 1rem;
-  background: rgb(29 185 84 / 13%);
-  color: #1db954;
+  background: rgb(237 237 237 / 8%);
+  color: #ededed;
 }
 
 .iconWrap svg,
+.portalIconWrap svg,
 .arrow {
   width: 1.25rem;
   height: 1.25rem;
@@ -101,59 +263,116 @@
   font-size: 0.95rem;
 }
 
-.cardCopy small {
-  color: #8a8a8a;
-  font-size: 0.7rem;
-  line-height: 1.4;
-}
-
 .arrow {
   width: 1rem;
   color: #8a8a8a;
 }
 
-.infoGrid {
+.portalCard {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 2.5rem;
-  scroll-margin-top: 6rem;
+  min-height: 8.5rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.9rem, 2vw, 1.5rem);
+  margin-top: auto;
+  padding: clamp(3rem, 7vw, 5rem) 0.2rem 0.5rem;
+  border: 0;
+  background: transparent;
+  color: #ededed;
+  text-decoration: none;
 }
 
-.infoCard {
-  scroll-margin-top: 6rem;
-  padding: clamp(1.4rem, 3vw, 2.2rem);
-  border: 1px solid #505050;
-  border-radius: 1.4rem;
-  background: #2b2b2b;
+.portalCard::before {
+  position: absolute;
+  top: clamp(1.5rem, 3.5vw, 2.5rem);
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    #ededed,
+    rgb(237 237 237 / 35%) 45%,
+    transparent
+  );
+  content: '';
 }
 
-.infoCard h2 {
-  margin: 0.6rem 0 0;
-  font-size: clamp(1.35rem, 3vw, 2rem);
-  line-height: 1.05;
+.portalCard:hover {
+  color: #fff;
 }
 
-.infoCard p {
-  margin: 0.8rem 0 1rem;
+.portalIconWrap {
+  display: grid;
+  width: clamp(3.3rem, 6vw, 4.5rem);
+  height: clamp(3.3rem, 6vw, 4.5rem);
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #ededed;
+}
+
+.portalIconWrap svg {
+  width: clamp(2rem, 4vw, 2.8rem);
+  height: clamp(2rem, 4vw, 2.8rem);
+  stroke-width: 1.35;
+  transition: transform 220ms ease;
+}
+
+.portalCard:hover .portalIconWrap svg {
+  transform: translateY(-0.18rem);
+}
+
+.portalCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.portalCopy small {
   color: #8a8a8a;
-  font-size: 0.78rem;
-  line-height: 1.55;
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.infoCard a {
-  color: #1db954;
-  font-size: 0.75rem;
-  font-weight: 800;
+.portalCopy strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  transition: letter-spacing 220ms ease;
+}
+
+.portalCard:hover .portalCopy strong {
+  letter-spacing: -0.015em;
+}
+
+.portalCard > .arrow {
+  width: clamp(2.75rem, 5vw, 3.5rem);
+  height: clamp(2.75rem, 5vw, 3.5rem);
+  padding: 0.85rem;
+  border-radius: 50%;
+  background: #ededed;
+  color: #101010;
+  transition:
+    background 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.85, 0.25, 1.2);
+}
+
+.portalCard:hover > .arrow {
+  background: #fff;
+  transform: translateX(0.22rem) rotate(-8deg);
 }
 
 @media (max-width: 38.75rem) {
   .shell {
-    padding: 2.3rem 0.85rem 2rem;
+    padding: 4rem 0.85rem 2rem;
   }
 
-  .menuGrid,
-  .infoGrid {
+  .menuGrid {
     grid-template-columns: 1fr;
   }
 
@@ -163,7 +382,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .menuCard {
+  .menuCard,
+  .dropdownCard .arrow,
+  .dropdownViewport,
+  .panelKicker,
+  .dropdownPanel p,
+  .contactLink,
+  .portalCard,
+  .portalIconWrap svg,
+  .portalCopy strong,
+  .portalCard > .arrow {
     transition: none;
   }
 }

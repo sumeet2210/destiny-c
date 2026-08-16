@@ -64,6 +64,103 @@ export function isOpenAt(
 export const isOpenNow = (hours: OpeningHours | null | undefined) =>
   isOpenAt(hours, new Date());
 
+/** Whether the restaurant has any scheduled service on the IST calendar day. */
+export function isOpenToday(
+  hours: OpeningHours | null | undefined,
+  at: Date = new Date(),
+): boolean {
+  if (!hours) return false;
+  const { day } = istClock(at);
+  return (hours[DAY_KEYS[day]] ?? []).length > 0;
+}
+
+export type BookingDayOption = {
+  date: string;
+  label: string;
+  detail: string;
+  defaultTime: string;
+};
+
+/** Upcoming open dates for the booking picker, expressed as IST wall time. */
+export function bookingDayOptions(
+  hours: OpeningHours | null | undefined,
+  options: {
+    at?: Date;
+    skipToday?: boolean;
+    leadTimeMinutes?: number;
+    count?: number;
+  } = {},
+): BookingDayOption[] {
+  if (!hours) return [];
+
+  const at = options.at ?? new Date();
+  const shifted = new Date(at.getTime() + IST_OFFSET_MINUTES * 60_000);
+  const baseYear = shifted.getUTCFullYear();
+  const baseMonth = shifted.getUTCMonth();
+  const baseDate = shifted.getUTCDate();
+  const currentMinutes = shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
+  const startOffset = options.skipToday ? 1 : 0;
+  const leadTime = options.leadTimeMinutes ?? 0;
+  const count = options.count ?? 7;
+  const result: BookingDayOption[] = [];
+
+  for (
+    let offset = startOffset;
+    offset < 21 && result.length < count;
+    offset++
+  ) {
+    const calendarDate = new Date(
+      Date.UTC(baseYear, baseMonth, baseDate + offset),
+    );
+    const shifts = [...(hours[DAY_KEYS[calendarDate.getUTCDay()]] ?? [])].sort(
+      (a, b) => toMinutes(a.open) - toMinutes(b.open),
+    );
+    const earliestToday = roundUpToQuarterHour(currentMinutes + leadTime);
+    const shift = shifts.find(({ open, close }) => {
+      const opening = toMinutes(open);
+      const closing = toMinutes(close);
+      const end = closing > opening ? closing : 1440 + closing;
+      const candidate =
+        offset === 0 ? Math.max(opening, earliestToday) : opening;
+      return candidate < end && candidate < 1440;
+    });
+
+    if (!shift) continue;
+
+    const opening = toMinutes(shift.open);
+    const defaultMinutes =
+      offset === 0 ? Math.max(opening, earliestToday) : opening;
+    const year = calendarDate.getUTCFullYear();
+    const month = calendarDate.getUTCMonth() + 1;
+    const date = calendarDate.getUTCDate();
+
+    result.push({
+      date: `${year}-${pad2(month)}-${pad2(date)}`,
+      label:
+        offset === 0
+          ? 'Today'
+          : offset === 1
+            ? 'Tomorrow'
+            : calendarDate.toLocaleDateString('en-IN', {
+                weekday: 'short',
+                timeZone: 'UTC',
+              }),
+      detail: calendarDate.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+      }),
+      defaultTime: `${pad2(Math.floor(defaultMinutes / 60))}:${pad2(defaultMinutes % 60)}`,
+    });
+  }
+
+  return result;
+}
+
+const pad2 = (value: number) => String(value).padStart(2, '0');
+
+const roundUpToQuarterHour = (minutes: number) => Math.ceil(minutes / 15) * 15;
+
 /**
  * Minutes until the current shift closes, or null when closed (or when the
  * shift runs past midnight and the close is still on the far side).

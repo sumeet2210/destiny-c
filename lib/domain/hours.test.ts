@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bookingDayOptions,
   formatDayShifts,
   isOpenAt,
+  isOpenToday,
   minutesUntilClose,
   type OpeningHours,
 } from './hours';
@@ -119,6 +121,47 @@ describe('minutesUntilClose', () => {
 
   it('counts down in the after-midnight spillover', () => {
     expect(minutesUntilClose(hours, ist(WED, '01:00'))).toBe(60);
+  });
+});
+
+describe('booking availability', () => {
+  const hours: OpeningHours = {
+    mon: [{ open: '11:00', close: '23:00' }],
+    tue: [],
+    wed: [{ open: '17:00', close: '22:00' }],
+  };
+
+  it('reports whether the restaurant serves on the current IST day', () => {
+    expect(isOpenToday(hours, ist(MON, '08:00'))).toBe(true);
+    expect(isOpenToday(hours, ist(TUE, '08:00'))).toBe(false);
+  });
+
+  it('omits today and preselects the next scheduled day for later bookings', () => {
+    const days = bookingDayOptions(hours, {
+      at: ist(MON, '12:00'),
+      skipToday: true,
+      leadTimeMinutes: 60,
+    });
+
+    expect(days[0]).toMatchObject({
+      date: WED,
+      label: 'Wed',
+      defaultTime: '17:00',
+    });
+    expect(days.some((day) => day.date === MON)).toBe(false);
+  });
+
+  it('keeps today when a valid booking time remains', () => {
+    const days = bookingDayOptions(hours, {
+      at: ist(MON, '09:00'),
+      leadTimeMinutes: 60,
+    });
+
+    expect(days[0]).toMatchObject({
+      date: MON,
+      label: 'Today',
+      defaultTime: '11:00',
+    });
   });
 });
 

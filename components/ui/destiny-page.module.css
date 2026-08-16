@@ -1,9 +1,9 @@
 .page {
-  --color-canvas: #ededed;
-  --color-surface-muted: #ededed;
-  --color-surface-raised: #ededed;
+  --color-canvas: #101010;
+  --color-surface-muted: #181818;
+  --color-surface-raised: #202020;
   --color-border-hairline: #505050;
-  --color-paper: #2b2b2b;
+  --color-paper: #ededed;
   --color-text-muted: #8a8a8a;
   --color-accent-primary: #1db954;
   --color-accent-secondary: #1db954;
@@ -11,9 +11,6 @@
   --color-accent-urgent-text: #2b2b2b;
   --color-ink-on-primary: #2b2b2b;
   --color-ink-on-secondary: #2b2b2b;
-  --font-display: var(--font-destiny), Manrope, sans-serif;
-  --font-body: var(--font-destiny), Manrope, sans-serif;
-  --font-mono: var(--font-destiny), Manrope, sans-serif;
   --radius-chip: 999px;
   --radius-card: 1.2rem;
   --radius-control: 999px;
@@ -21,10 +18,10 @@
   margin-bottom: -4rem;
   padding-bottom: 4rem;
   overflow: clip;
-  background: #ededed;
-  color: #2b2b2b;
-  color-scheme: light;
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  background: #101010;
+  color: #ededed;
+  color-scheme: dark;
+  font-family: var(--font-body);
   font-feature-settings:
     'ss01' 1,
     'cv11' 1;
@@ -56,7 +53,7 @@
 }
 
 .page :global(.font-mono) {
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 

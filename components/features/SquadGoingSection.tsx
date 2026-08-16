@@ -2,10 +2,18 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState, useTransition } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
 import { CRAVINGS, type CravingTag } from '@/config/cravings';
+import { cn } from '@/lib/cn';
 import { haversineKm, formatDistance } from '@/lib/domain/distance';
 import type { RestaurantSummary } from '@/lib/queries/catalog';
 import { toggleSaved } from '@/lib/social/actions';
@@ -32,6 +40,8 @@ const EMPTY_FILTERS: SquadFilters = {
 };
 
 const NITW_CAMPUS = { lat: 17.9833, lng: 79.5308 };
+
+const CARD_FALLBACK_PHOTO = '/home/hero-campus-feast.webp';
 
 const BUDGET_OPTIONS: ReadonlyArray<{
   value: NonNullable<BudgetFilter>;
@@ -64,10 +74,12 @@ export function SquadGoingSection({
   restaurants,
   loggedIn,
   initialSavedIds,
+  className,
 }: {
   restaurants: RestaurantSummary[];
   loggedIn: boolean;
   initialSavedIds: string[];
+  className?: string;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -172,11 +184,13 @@ export function SquadGoingSection({
   };
 
   return (
-    <section className={styles.section} aria-labelledby="squad-going-title">
+    <section
+      className={cn(styles.section, className)}
+      aria-labelledby="squad-going-title"
+    >
       <div className={styles.headingRow}>
         <div>
           <h2 id="squad-going-title">Where the Squad&apos;s Going</h2>
-          <p>Real places nearby, narrowed down for the whole table.</p>
         </div>
         <button
           type="button"
@@ -196,11 +210,6 @@ export function SquadGoingSection({
           )}
         </button>
       </div>
-
-      <p className={styles.resultCount} aria-live="polite">
-        {filtered.length} {filtered.length === 1 ? 'place' : 'places'} ready for
-        the squad
-      </p>
 
       {filtered.length > 0 ? (
         <div className={styles.grid}>
@@ -353,33 +362,118 @@ function SquadPlaceCard({
   popping: boolean;
   onSave: () => void;
 }) {
+  const cardRef = useRef<HTMLElement>(null);
+  const intervalRef = useRef<number | null>(null);
+  const isCarouselVisibleRef = useRef(false);
+  const [activePhoto, setActivePhoto] = useState(0);
+  const photos = Array.from(
+    new Set(
+      restaurant.photos.length > 0 ? restaurant.photos : [CARD_FALLBACK_PHOTO],
+    ),
+  ).slice(0, 5);
   const cuisines = restaurant.cravingTags
     .map((tag) => CRAVINGS.find((craving) => craving.tag === tag)?.label)
     .filter(Boolean)
     .slice(0, 3);
 
+  const stopCarousel = useCallback((reset = true) => {
+    if (intervalRef.current !== null) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (reset) setActivePhoto(0);
+  }, []);
+
+  const startCarousel = useCallback(() => {
+    if (
+      photos.length < 2 ||
+      intervalRef.current !== null ||
+      !isCarouselVisibleRef.current ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+
+    intervalRef.current = window.setInterval(() => {
+      setActivePhoto((current) => (current + 1) % photos.length);
+    }, 1800);
+  }, [photos.length]);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (
+      !card ||
+      photos.length < 2 ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isCarouselVisibleRef.current = entry.intersectionRatio >= 0.95;
+
+        if (!isCarouselVisibleRef.current) {
+          stopCarousel();
+        } else if (!window.matchMedia('(hover: hover)').matches) {
+          startCarousel();
+        }
+      },
+      { threshold: 0.95 },
+    );
+    observer.observe(card);
+
+    return () => {
+      isCarouselVisibleRef.current = false;
+      observer.disconnect();
+      stopCarousel(false);
+    };
+  }, [photos.length, startCarousel, stopCarousel]);
+
+  useEffect(() => () => stopCarousel(false), [stopCarousel]);
+
   return (
-    <article className={styles.card}>
+    <article
+      ref={cardRef}
+      className={styles.card}
+      onMouseEnter={startCarousel}
+      onMouseLeave={() => stopCarousel()}
+      onFocusCapture={startCarousel}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) stopCarousel();
+      }}
+    >
       <Link
         href={`/restaurant/${restaurant.id}?from=friend_activity`}
         className={styles.cardLink}
         aria-label={`View ${restaurant.name}`}
       >
         <div className={styles.cardMedia}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={restaurant.photos[0] ?? '/home/hero-campus-feast.webp'}
-            alt=""
-            loading="lazy"
-          />
+          {photos.map((photo, index) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={photo}
+              src={photo}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className={cn(
+                styles.carouselImage,
+                index === activePhoto && styles.activeImage,
+              )}
+            />
+          ))}
           <span className={styles.mediaShade} aria-hidden />
-          <span
-            className={
-              restaurant.isOpen ? styles.openBadge : styles.closedBadge
-            }
-          >
-            {restaurant.isOpen ? 'Open now' : 'Closed'}
-          </span>
+          {photos.length > 1 && (
+            <span className={styles.carouselDots} aria-hidden>
+              {photos.map((photo, index) => (
+                <i
+                  key={photo}
+                  className={index === activePhoto ? styles.activeDot : ''}
+                />
+              ))}
+            </span>
+          )}
         </div>
 
         <div className={styles.cardBody}>
@@ -390,22 +484,42 @@ function SquadPlaceCard({
                 {cuisines.length > 0 ? cuisines.join(' · ') : restaurant.area}
               </p>
             </div>
-            <span className={styles.priceLevel}>
-              {priceLevel(restaurant.price_per_head)}
-            </span>
+            {(restaurant.upcomingEvent || restaurant.liveOffer) && (
+              <div className={styles.badgeStack}>
+                {restaurant.upcomingEvent && (
+                  <span
+                    className={styles.eventBadge}
+                    title={restaurant.upcomingEvent.title}
+                  >
+                    {restaurant.upcomingEvent.title}
+                  </span>
+                )}
+                {restaurant.liveOffer && (
+                  <span
+                    className={styles.offerBadge}
+                    title={restaurant.liveOffer.title}
+                  >
+                    {restaurant.liveOffer.discount_text ??
+                      restaurant.liveOffer.title}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className={styles.metaRow}>
-            <span>
+            <span className={styles.ratingMeta}>
               <StarIcon />
               {restaurant.rating?.toFixed(1) ?? 'New'}
             </span>
             <span>
+              <LocationIcon />
               {distanceKm === null
                 ? restaurant.area
                 : formatDistance(distanceKm)}
             </span>
             <span>
+              <PriceIcon />
               {restaurant.price_per_head
                 ? `~₹${restaurant.price_per_head}/person`
                 : 'Price varies'}
@@ -420,6 +534,15 @@ function SquadPlaceCard({
           </div>
         </div>
       </Link>
+
+      <div className={styles.ctaRow}>
+        <Link
+          href={`/restaurant/${restaurant.id}/book${restaurant.isOpenToday ? '' : '?later=1'}`}
+          className={styles.cardCta}
+        >
+          {restaurant.isOpenToday ? 'Reserve Now' : 'Book for Later'}
+        </Link>
+      </div>
 
       <button
         type="button"
@@ -514,12 +637,6 @@ function countActiveFilters(filters: SquadFilters) {
   ].filter(Boolean).length;
 }
 
-function priceLevel(price: number | null) {
-  if (price === null || price < 150) return '₹';
-  if (price <= 250) return '₹₹';
-  return '₹₹₹';
-}
-
 function readableTag(tag: string) {
   return tag
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -538,6 +655,23 @@ function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
       <path d="m12 3 2.75 5.58 6.16.9-4.46 4.34 1.05 6.13L12 17.06l-5.5 2.89 1.05-6.13L3.1 9.48l6.15-.9L12 3Z" />
+    </svg>
+  );
+}
+
+function LocationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M20 10c0 5.5-8 11-8 11S4 15.5 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+function PriceIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M7 5h10M7 9h10M9 5c5 0 5 7 0 7h-2l8 7" />
     </svg>
   );
 }

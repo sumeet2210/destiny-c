@@ -2,13 +2,20 @@
   min-height: calc(100svh - 4rem);
   margin-bottom: -4rem;
   padding-bottom: 4rem;
-  background: #ededed;
-  color: #2b2b2b;
-  color-scheme: light;
-  font-family: var(--font-destiny-match), Manrope, sans-serif;
+  background: #101010;
+  color: #ededed;
+  color-scheme: dark;
+  font-family: var(--font-body);
   font-feature-settings:
     'ss01' 1,
     'cv11' 1;
+}
+
+.questionCopy h1,
+.resultsHeader h1,
+.resultTitleRow h2,
+.emptyState h2 {
+  font-family: var(--font-display);
 }
 
 .finder ::selection {

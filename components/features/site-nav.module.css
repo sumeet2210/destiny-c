@@ -1,0 +1,52 @@
+.menuGlyph {
+  --menu-line-gap: 6px;
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 14px;
+}
+
+.menuGlyph > span {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 1.75px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: center;
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease;
+}
+
+.menuGlyph > span:nth-child(1) {
+  top: 0;
+}
+
+.menuGlyph > span:nth-child(2) {
+  top: var(--menu-line-gap);
+}
+
+.menuGlyph > span:nth-child(3) {
+  top: calc(var(--menu-line-gap) * 2);
+}
+
+.open .menuGlyph > span:nth-child(1) {
+  transform: translateY(var(--menu-line-gap)) rotate(45deg);
+}
+
+.open .menuGlyph > span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.35);
+}
+
+.open .menuGlyph > span:nth-child(3) {
+  transform: translateY(calc(var(--menu-line-gap) * -1)) rotate(-45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menuGlyph > span {
+    transition: none;
+  }
+}

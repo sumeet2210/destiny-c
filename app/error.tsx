@@ -10,9 +10,7 @@ export default function GlobalError({
 }) {
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-      <span aria-hidden className="text-4xl">
-        🍽️
-      </span>
+      <AlertIcon />
       <h1 className="font-display text-paper text-xl font-bold">
         Something burnt in the kitchen
       </h1>
@@ -21,5 +19,18 @@ export default function GlobalError({
       </p>
       <Button onClick={reset}>Try again</Button>
     </main>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="text-accent-primary size-10 fill-none stroke-current stroke-[1.7]"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6M12 17h.01" />
+    </svg>
   );
 }

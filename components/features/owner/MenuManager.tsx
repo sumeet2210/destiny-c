@@ -174,7 +174,7 @@ export function MenuManager({ items }: { items: Item[] }) {
                       })
                     }
                   >
-                    <span aria-hidden>{c.emoji}</span> {c.label}
+                    {c.label}
                   </Chip>
                 ))}
               </div>

@@ -61,14 +61,11 @@ export function EventCard({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-text-muted text-[12px]">
-          <span aria-hidden className="event-type-icon">
-            {meta.emoji}{' '}
-          </span>
           {meta.label}
           <span aria-hidden> · </span>
           <span className="font-mono">{time}</span>
         </p>
-        <h3 className="font-display text-paper mt-0.5 truncate text-[15px] font-bold">
+        <h3 className="font-display text-paper mt-0.5 truncate text-base font-bold">
           {title}
         </h3>
         {restaurantName &&

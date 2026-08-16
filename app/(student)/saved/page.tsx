@@ -11,7 +11,7 @@ export const metadata = { title: 'Saved' };
 export default async function SavedPage() {
   if (!isSupabaseConfigured()) {
     return (
-      <main className="mx-auto max-w-md px-4 py-6">
+      <main className="mx-auto max-w-md px-4 pt-16 pb-28">
         <h1 className="font-display text-paper text-2xl font-extrabold">
           Saved
         </h1>
@@ -30,7 +30,7 @@ export default async function SavedPage() {
   const saved = summaries.filter((r) => savedIds.has(r.id));
 
   return (
-    <main className="mx-auto max-w-5xl space-y-4 px-4 py-6">
+    <main className="mx-auto max-w-5xl space-y-4 px-4 pt-16 pb-28">
       <div>
         <h1 className="font-display text-paper text-2xl font-extrabold">
           Saved

@@ -21,6 +21,7 @@ import {
   seedReviews,
 } from '@/lib/data/seed';
 import {
+  isOpenToday,
   isOpenAt,
   minutesUntilClose,
   type OpeningHours,
@@ -122,6 +123,7 @@ export type RestaurantSummary = {
   photos: string[];
   cravingTags: string[];
   isOpen: boolean;
+  isOpenToday: boolean;
   closingInMinutes: number | null;
   rating: number | null;
   reviewCount: number;
@@ -130,6 +132,11 @@ export type RestaurantSummary = {
     title: string;
     discount_text: string | null;
     expires_at: string;
+  } | null;
+  upcomingEvent: {
+    title: string;
+    starts_at: string;
+    event_type: Tables<'events'>['event_type'];
   } | null;
 };
 
@@ -155,6 +162,16 @@ export function toSummary(
       (a, b) =>
         new Date(a.expires_at).getTime() - new Date(b.expires_at).getTime(),
     );
+  const upcomingEvents = catalog.events
+    .filter(
+      (event) =>
+        event.restaurant_id === r.id &&
+        new Date(event.starts_at).getTime() > at.getTime() - 4 * 3_600_000,
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+    );
   const cravingTags = [
     ...new Set(
       catalog.menuItems
@@ -179,6 +196,7 @@ export function toSummary(
     photos,
     cravingTags,
     isOpen: isOpenAt(hours, at),
+    isOpenToday: isOpenToday(hours, at),
     closingInMinutes: minutesUntilClose(hours, at),
     rating: ratings.length
       ? ratings.reduce((a, b) => a + b, 0) / ratings.length
@@ -190,6 +208,13 @@ export function toSummary(
           title: offers[0].title,
           discount_text: offers[0].discount_text,
           expires_at: offers[0].expires_at,
+        }
+      : null,
+    upcomingEvent: upcomingEvents[0]
+      ? {
+          title: upcomingEvents[0].title,
+          starts_at: upcomingEvents[0].starts_at,
+          event_type: upcomingEvents[0].event_type,
         }
       : null,
   };
@@ -380,6 +405,7 @@ export type QuickSearchIndex = {
     id: string;
     name: string;
     area: string;
+    trendingViews: number;
   }>;
   dishes: Array<{
     id: string;
@@ -403,8 +429,12 @@ export async function listQuickSearchIndex(): Promise<QuickSearchIndex> {
         id: restaurant.id,
         name: restaurant.name,
         area: restaurant.area,
+        trendingViews: catalog.trendingViews.get(restaurant.id) ?? 0,
       }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
+      .sort(
+        (a, b) =>
+          b.trendingViews - a.trendingViews || a.name.localeCompare(b.name),
+      ),
     dishes: catalog.menuItems
       .filter((item) => item.is_available)
       .flatMap((item) => {

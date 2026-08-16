@@ -11,9 +11,6 @@
   --color-accent-urgent-text: #2b2b2b;
   --color-ink-on-primary: #2b2b2b;
   --color-ink-on-secondary: #2b2b2b;
-  --font-display: var(--font-destiny), Manrope, sans-serif;
-  --font-body: var(--font-destiny), Manrope, sans-serif;
-  --font-mono: var(--font-destiny), Manrope, sans-serif;
   --radius-chip: 999px;
   --radius-card: 1.2rem;
   --radius-control: 999px;
@@ -22,10 +19,15 @@
   background: #ededed;
   color: #2b2b2b;
   color-scheme: light;
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-body);
   font-feature-settings:
     'ss01' 1,
     'cv11' 1;
+}
+
+.mediaCopy h2,
+.heading h1 {
+  font-family: var(--font-display);
 }
 
 .inAppShell {
@@ -234,7 +236,7 @@
 }
 
 .page .codeField {
-  font-family: var(--font-destiny), Manrope, sans-serif;
+  font-family: var(--font-body);
   font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
   font-weight: 750;

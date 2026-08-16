@@ -1,14 +1,8 @@
 import type { Metadata } from 'next';
-import { Manrope } from 'next/font/google';
 import { listRestaurantSummaries } from '@/lib/queries/catalog';
 import type { RestaurantSummary } from '@/lib/queries/catalog';
 import { MatchFinder } from './MatchFinder';
 import styles from './quiz.module.css';
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  variable: '--font-destiny-match',
-});
 
 const MATCH_ARTWORK: Record<string, string> = {
   'Biryani Adda': '/home/biryani-adda.webp',
@@ -37,7 +31,7 @@ export default async function QuizPage() {
   const restaurants = withMatchArtwork(await listRestaurantSummaries());
 
   return (
-    <main className={`${styles.finder} ${manrope.variable}`}>
+    <main className={styles.finder}>
       <MatchFinder restaurants={restaurants} />
     </main>
   );

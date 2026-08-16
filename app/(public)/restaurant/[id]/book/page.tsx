@@ -4,6 +4,8 @@ import { getRestaurantDetail } from '@/lib/queries/catalog';
 import { requireStudent } from '@/lib/auth/session';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/Card';
+import { BOOKING } from '@/config/booking';
+import { bookingDayOptions, type OpeningHours } from '@/lib/domain/hours';
 
 export const metadata = { title: 'Let them know' };
 
@@ -11,11 +13,23 @@ export default async function BookPage(
   props: PageProps<'/restaurant/[id]/book'>,
 ) {
   const { id } = await props.params;
+  const query = await props.searchParams;
+  const bookForLater = query.later === '1';
   const detail = await getRestaurantDetail(id);
   if (!detail) notFound();
 
+  const bookingDays = bookingDayOptions(
+    detail.row.opening_hours as OpeningHours | null,
+    {
+      skipToday: bookForLater,
+      leadTimeMinutes: BOOKING.minLeadTimeMinutes,
+    },
+  );
+
   if (isSupabaseConfigured()) {
-    await requireStudent(`/restaurant/${id}/book`);
+    await requireStudent(
+      `/restaurant/${id}/book${bookForLater ? '?later=1' : ''}`,
+    );
   }
 
   return (
@@ -37,7 +51,12 @@ export default async function BookPage(
         </Card>
       )}
 
-      <BookingForm restaurantId={id} restaurantName={detail.row.name} />
+      <BookingForm
+        restaurantId={id}
+        restaurantName={detail.row.name}
+        bookingDays={bookingDays}
+        bookForLater={bookForLater}
+      />
     </main>
   );
 }

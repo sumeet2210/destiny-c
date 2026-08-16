@@ -68,9 +68,6 @@ export function CravingExplorer({
             active={craving === c.tag}
             onClick={() => pick(c.tag)}
           >
-            <span aria-hidden className="craving-emoji">
-              {c.emoji}
-            </span>{' '}
             {c.label}
           </Chip>
         ))}

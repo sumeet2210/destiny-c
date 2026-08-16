@@ -194,6 +194,7 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export function MobileTabBar() {
   const pathname = usePathname();
+  const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
   const [hidden, setHidden] = useState(false);
   const lastScrollYRef = useRef(0);
   const frameRef = useRef<number | null>(null);
@@ -203,6 +204,7 @@ export function MobileTabBar() {
   );
 
   useEffect(() => {
+    if (onRestaurantProfile) return;
     lastScrollYRef.current = window.scrollY;
 
     const onScroll = () => {
@@ -233,15 +235,18 @@ export function MobileTabBar() {
         window.cancelAnimationFrame(frameRef.current);
       }
     };
-  }, []);
+  }, [onRestaurantProfile]);
 
   useEffect(() => {
+    if (onRestaurantProfile) return;
     const frame = window.requestAnimationFrame(() => {
       setHidden(false);
       lastScrollYRef.current = window.scrollY;
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [pathname]);
+  }, [onRestaurantProfile, pathname]);
+
+  if (onRestaurantProfile) return null;
 
   return (
     <nav

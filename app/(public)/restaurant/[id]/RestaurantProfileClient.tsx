@@ -104,6 +104,8 @@ export function ProfileMenu({
   const [view, setView] = useState<'items' | 'photos'>(
     items.length > 0 ? 'items' : 'photos',
   );
+  const [showAllItems, setShowAllItems] = useState(false);
+  const visibleItems = showAllItems ? items : items.slice(0, 3);
 
   if (items.length === 0 && photos.length === 0) {
     return (
@@ -117,45 +119,47 @@ export function ProfileMenu({
 
   return (
     <div>
-      {items.length > 0 && photos.length > 0 ? (
-        <div
-          className={styles.menuToggle}
-          aria-label="Menu display"
-          role="group"
+      {photos.length > 0 && items.length > 0 ? (
+        <button
+          type="button"
+          className={styles.menuPhotoToggle}
+          aria-pressed={view === 'photos'}
+          onClick={() =>
+            setView((current) => (current === 'items' ? 'photos' : 'items'))
+          }
         >
-          <button
-            type="button"
-            aria-pressed={view === 'items'}
-            onClick={() => setView('items')}
-          >
-            Text Menu
-          </button>
-          <button
-            type="button"
-            aria-pressed={view === 'photos'}
-            onClick={() => setView('photos')}
-          >
-            Photo Menu
-          </button>
-        </div>
+          {view === 'photos' ? 'View Dish List' : 'View Menu'}
+        </button>
       ) : null}
       {view === 'items' && items.length > 0 ? (
-        <div className={styles.menuGrid}>
-          {items.map((item) => (
-            <article
-              key={item.id}
-              className={styles.menuItem}
-              data-unavailable={!item.available || undefined}
+        <>
+          <div className={styles.menuGrid}>
+            {visibleItems.map((item) => (
+              <article
+                key={item.id}
+                className={styles.menuItem}
+                data-unavailable={!item.available || undefined}
+              >
+                <div>
+                  <VegMark isVeg={item.isVeg} />
+                  <h3>{item.name}</h3>
+                </div>
+                <strong>₹{item.price}</strong>
+                {!item.available ? <small>Not available today</small> : null}
+              </article>
+            ))}
+          </div>
+          {items.length > 3 ? (
+            <button
+              type="button"
+              className={styles.menuExpand}
+              aria-expanded={showAllItems}
+              onClick={() => setShowAllItems((current) => !current)}
             >
-              <div>
-                <VegMark isVeg={item.isVeg} />
-                <h3>{item.name}</h3>
-              </div>
-              <strong>₹{item.price}</strong>
-              {!item.available ? <small>Not available today</small> : null}
-            </article>
-          ))}
-        </div>
+              {showAllItems ? 'Show less' : `View full menu (${items.length})`}
+            </button>
+          ) : null}
+        </>
       ) : null}
       {view === 'photos' && photos.length > 0 ? (
         <div className={styles.menuPhotoGrid}>

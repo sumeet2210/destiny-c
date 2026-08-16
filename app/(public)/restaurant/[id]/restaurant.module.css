@@ -25,12 +25,10 @@
   z-index: 3;
   top: 14px;
   left: 14px;
-  display: inline-flex;
+  display: grid;
   width: 2.75rem;
   height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  place-items: center;
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 13px;
   background: rgb(16 16 16 / 68%);
@@ -38,13 +36,19 @@
     inset 0 1px 0 rgb(255 255 255 / 12%),
     0 8px 24px rgb(0 0 0 / 32%);
   color: #fff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-decoration: none;
   backdrop-filter: blur(12px);
   transition:
     background 160ms ease,
     transform 120ms ease;
+}
+.backLink svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .backLink:hover {
   background: rgb(16 16 16 / 90%);
@@ -53,8 +57,41 @@
 .backLink:active {
   transform: scale(0.96);
 }
-.backLink svg,
-.actionRail svg,
+.coverActions {
+  position: absolute;
+  z-index: 3;
+  top: 14px;
+  right: 14px;
+  display: flex;
+}
+.coverActions :global(.save-toggle) {
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none;
+  color: #fff !important;
+  filter: brightness(1.3) drop-shadow(0 2px 4px rgb(0 0 0 / 70%));
+  backdrop-filter: none !important;
+  transition: transform 120ms ease;
+}
+.coverActions :global(.save-toggle[aria-pressed='true']) {
+  background: transparent !important;
+  color: #fff !important;
+}
+.coverActions :global(.save-toggle svg) {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+.coverActions :global(.save-toggle:hover) {
+  transform: scale(1.08);
+}
+.coverActions :global(.save-toggle:active) {
+  transform: scale(0.94);
+}
 .infoCard > svg {
   width: 1rem;
   height: 1rem;
@@ -63,11 +100,6 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-.backLink svg {
-  width: 1.3rem;
-  height: 1.3rem;
-  stroke-width: 2.15;
 }
 
 .profileHead {
@@ -292,58 +324,6 @@
   font-weight: 700;
 }
 
-.actionRail {
-  display: flex;
-  gap: 0.55rem;
-  margin-top: 0.75rem;
-  overflow-x: auto;
-  padding: 0.1rem 0 0.3rem;
-  scrollbar-width: none;
-}
-.actionRail::-webkit-scrollbar {
-  display: none;
-}
-.actionRail > a,
-.actionRail > button {
-  display: inline-flex;
-  min-width: max-content;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0 0.9rem;
-  border: 1px solid var(--line) !important;
-  border-radius: 11px !important;
-  background: var(--surface) !important;
-  color: var(--paper) !important;
-  font-family: var(--font-body);
-  font-size: 0.73rem;
-  font-weight: 750;
-  text-decoration: none;
-  backdrop-filter: none;
-  transition:
-    filter 160ms ease,
-    transform 100ms ease;
-}
-.actionRail > .bookAction {
-  border-color: var(--chili) !important;
-  background: var(--chili) !important;
-  color: #fff !important;
-}
-.actionRail :global(.save-toggle[aria-pressed='true']) {
-  border-color: var(--marigold) !important;
-  background: var(--marigold) !important;
-  color: #17120a !important;
-}
-.actionRail > a:hover,
-.actionRail > button:hover {
-  filter: brightness(1.1);
-}
-.actionRail > a:active,
-.actionRail > button:active {
-  transform: scale(0.97);
-}
-
 .section {
   padding: 26px 20px 0;
 }
@@ -359,11 +339,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-}
-.sectionTitle > span {
-  color: var(--marigold);
-  font-size: 0.68rem;
-  font-weight: 800;
 }
 .emptyLine {
   margin: 0.85rem 0 0;
@@ -402,35 +377,34 @@
   font-size: 0.65rem;
 }
 
-.menuToggle {
+.menuPhotoToggle {
   display: inline-flex;
-  gap: 0.25rem;
-  margin-top: 0.75rem;
-  padding: 0.2rem;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: var(--surface);
-}
-.menuToggle button {
   min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  margin: -1.8rem 0 0.75rem auto;
   padding-inline: 0.8rem;
-  border: 0;
-  border-radius: 8px;
-  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--marigold);
   font-size: 0.68rem;
-  font-weight: 750;
+  font-weight: 800;
   transition:
+    border-color 160ms ease,
     filter 160ms ease,
     transform 100ms ease;
 }
-.menuToggle button[aria-pressed='true'] {
+.menuPhotoToggle[aria-pressed='true'] {
+  border-color: var(--marigold);
   background: var(--marigold);
   color: #17120a;
 }
-.menuToggle button:hover {
+.menuPhotoToggle:hover {
+  border-color: var(--marigold);
   filter: brightness(1.08);
 }
-.menuToggle button:active {
+.menuPhotoToggle:active {
   transform: scale(0.97);
 }
 .menuGrid {
@@ -471,6 +445,29 @@
 }
 .menuItem[data-unavailable='true'] {
   opacity: 0.52;
+}
+.menuExpand {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.7rem;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--paper);
+  font-size: 0.7rem;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    transform 100ms ease;
+}
+.menuExpand:hover {
+  border-color: var(--marigold);
+}
+.menuExpand:active {
+  transform: scale(0.97);
 }
 .menuPhotoGrid {
   display: grid;
@@ -714,6 +711,51 @@
   background: var(--surface);
 }
 
+.profileDock {
+  position: fixed;
+  z-index: 40;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  left: 1rem;
+  display: grid;
+  width: min(calc(100% - 2rem), 20rem);
+  grid-template-columns: 1fr;
+  margin-inline: auto;
+  padding: 0.5rem;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 18px;
+  background: rgb(24 24 24 / 90%);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 48%);
+  backdrop-filter: blur(16px);
+}
+.profileDock a {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    filter 160ms ease,
+    transform 100ms ease;
+}
+.profileDock a:first-child {
+  border-color: var(--chili);
+  background: var(--chili);
+  color: #fff;
+}
+.profileDock a:hover {
+  filter: brightness(1.1);
+}
+.profileDock a:active {
+  transform: scale(0.97);
+}
+
 @media (min-width: 40rem) {
   .shell {
     width: min(100% - 2rem, 72rem);
@@ -756,9 +798,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .actionRail > a,
-  .actionRail > button,
-  .menuToggle button,
+  .menuPhotoToggle,
+  .profileDock a,
   .coverTrack,
   .coverImage,
   .coverDots button {

@@ -46,10 +46,11 @@ export function SaveToggle({
     >
       <svg viewBox="0 0 24 24" aria-hidden className="size-4 fill-current">
         <path
-          d="M6.75 4.5A1.75 1.75 0 0 1 8.5 2.75h7A1.75 1.75 0 0 1 17.25 4.5v16l-5.25-3-5.25 3v-16Z"
+          d="M12 20.25S3.75 15.6 3.75 9.15A4.4 4.4 0 0 1 12 6.98a4.4 4.4 0 0 1 8.25 2.17C20.25 15.6 12 20.25 12 20.25Z"
           fill={saved ? 'currentColor' : 'none'}
           stroke="currentColor"
           strokeWidth="1.8"
+          strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>

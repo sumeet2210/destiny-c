@@ -6,7 +6,6 @@ import { RestaurantCard } from '@/components/features/RestaurantCard';
 import { ReviewForm } from '@/components/features/ReviewForm';
 import { ReviewList } from '@/components/features/ReviewList';
 import { SaveToggle } from '@/components/features/SaveToggle';
-import { ShareButton } from '@/components/features/ShareButton';
 import { DestinyPage } from '@/components/ui/DestinyPage';
 import { VIBES } from '@/config/vibes';
 import { getSessionUser } from '@/lib/auth/session';
@@ -71,11 +70,6 @@ export default async function RestaurantPage(
           ),
         )
       : row.area;
-  const directionsHref =
-    summary.lat !== null && summary.lng !== null
-      ? `https://www.google.com/maps/dir/?api=1&destination=${summary.lat},${summary.lng}`
-      : null;
-  const bookingLabel = summary.isOpenToday ? 'Book Table' : 'Book for Later';
   const hours = row.opening_hours as OpeningHours | null;
   const todayKey = new Date()
     .toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Kolkata' })
@@ -113,6 +107,12 @@ export default async function RestaurantPage(
             >
               <BackIcon />
             </Link>
+            <div className={styles.coverActions}>
+              <SaveToggle
+                restaurantId={id}
+                initialSaved={isStudent && savedIds.has(id)}
+              />
+            </div>
             <ProfileCoverCarousel
               photos={photos.slice(0, 4)}
               restaurantName={row.name}
@@ -150,29 +150,6 @@ export default async function RestaurantPage(
           </div>
         </header>
 
-        <nav className={styles.actionRail} aria-label="Restaurant actions">
-          <Link href={`/restaurant/${id}/book`} className={styles.bookAction}>
-            {bookingLabel}
-          </Link>
-          {directionsHref ? (
-            <a href={directionsHref} target="_blank" rel="noopener noreferrer">
-              <DirectionIcon />
-              Get Directions
-            </a>
-          ) : null}
-          <SaveToggle
-            restaurantId={id}
-            initialSaved={isStudent && savedIds.has(id)}
-            showLabel
-          />
-          <ShareButton
-            title={row.name}
-            text={`${row.name} — ${row.area}. Found it on Destiny.`}
-            className={styles.shareAction}
-            showIcon
-          />
-        </nav>
-
         <section className={styles.section} aria-labelledby="gallery-title">
           <h2 id="gallery-title">Gallery</h2>
           {photos.length ? (
@@ -197,7 +174,6 @@ export default async function RestaurantPage(
         <section className={styles.section} aria-labelledby="menu-title">
           <div className={styles.sectionTitle}>
             <h2 id="menu-title">Menu</h2>
-            <span>View Menu</span>
           </div>
           <ProfileMenu
             restaurantName={row.name}
@@ -309,6 +285,12 @@ export default async function RestaurantPage(
 
         <SimilarRestaurants id={id} />
       </div>
+      <aside
+        className={styles.profileDock}
+        aria-label="Restaurant quick actions"
+      >
+        <Link href={`/restaurant/${id}/book`}>Reserve</Link>
+      </aside>
     </DestinyPage>
   );
 }
@@ -370,6 +352,15 @@ function InfoCard({
   );
 }
 
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="m10 6-6 6 6 6" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
 function formatEventDate(iso: string) {
   return new Date(iso).toLocaleString('en-IN', {
     day: 'numeric',
@@ -378,22 +369,6 @@ function formatEventDate(iso: string) {
     minute: '2-digit',
     timeZone: 'Asia/Kolkata',
   });
-}
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="m10 6-6 6 6 6" />
-      <path d="M5 12h14" />
-    </svg>
-  );
-}
-function DirectionIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="m12 3 9 9-9 9-9-9 9-9Z" />
-      <path d="M8.5 12h7M13 8.5l3.5 3.5-3.5 3.5" />
-    </svg>
-  );
 }
 function StarIcon() {
   return (

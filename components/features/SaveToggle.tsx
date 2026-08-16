@@ -9,9 +9,11 @@ import { cn } from '@/lib/cn';
 export function SaveToggle({
   restaurantId,
   initialSaved,
+  showLabel = false,
 }: {
   restaurantId: string;
   initialSaved: boolean;
+  showLabel?: boolean;
 }) {
   const [saved, setSaved] = useState(initialSaved);
   const [, startTransition] = useTransition();
@@ -35,7 +37,8 @@ export function SaveToggle({
         });
       }}
       className={cn(
-        'save-toggle rounded-chip flex size-9 items-center justify-center border text-base backdrop-blur',
+        'save-toggle rounded-chip flex items-center justify-center border text-base backdrop-blur',
+        showLabel ? 'h-9 gap-2 px-3' : 'size-9',
         saved
           ? 'border-accent-primary bg-accent-primary text-ink-on-primary'
           : 'border-border-hairline bg-canvas/70 text-paper',
@@ -50,7 +53,9 @@ export function SaveToggle({
           strokeLinejoin="round"
         />
       </svg>
-      <span className="sr-only">{saved ? 'Saved' : 'Save'}</span>
+      <span className={showLabel ? '' : 'sr-only'}>
+        {saved ? 'Saved' : 'Save'}
+      </span>
     </button>
   );
 }

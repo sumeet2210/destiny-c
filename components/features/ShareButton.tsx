@@ -9,11 +9,13 @@ export function ShareButton({
   text,
   className,
   showIcon = false,
+  iconOnly = false,
 }: {
   title: string;
   text: string;
   className?: string;
   showIcon?: boolean;
+  iconOnly?: boolean;
 }) {
   const toast = useToast();
   return (
@@ -21,6 +23,7 @@ export function ShareButton({
       variant="outline"
       size="sm"
       className={cn(className)}
+      aria-label={iconOnly ? 'Share this restaurant' : undefined}
       onClick={async () => {
         const url = window.location.href.split('?')[0];
         try {
@@ -36,7 +39,7 @@ export function ShareButton({
       }}
     >
       {showIcon ? <ShareIcon /> : null}
-      Share
+      {iconOnly ? null : 'Share'}
     </Button>
   );
 }

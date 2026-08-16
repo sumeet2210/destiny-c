@@ -10,6 +10,7 @@ export type ReviewItem = {
   rating: number;
   comment: string | null;
   created_at: string;
+  reviewerName?: string;
 };
 
 type Sort = 'newest' | 'highest' | 'lowest';
@@ -23,6 +24,7 @@ export function ReviewList({
   appearance?: 'default' | 'destiny';
 }) {
   const [sort, setSort] = useState<Sort>('newest');
+  const [expanded, setExpanded] = useState(false);
   const destiny = appearance === 'destiny';
 
   const sorted = useMemo(() => {
@@ -55,40 +57,56 @@ export function ReviewList({
             key={sortOption}
             active={sort === sortOption}
             onClick={() => setSort(sortOption)}
-            className="capitalize"
+            className="review-sort-button"
           >
-            {sortOption}
+            {sortOption === 'newest'
+              ? 'Newest'
+              : sortOption === 'highest'
+                ? 'Highest Rated'
+                : 'Lowest Rated'}
           </Chip>
         ))}
       </div>
 
       <div className="review-items space-y-3">
-        {sorted.map((review) => (
+        {(expanded ? sorted : sorted.slice(0, 4)).map((review) => (
           <Card key={review.id} className="review-card space-y-1">
-            <p className="review-meta flex items-center gap-2 text-[13px]">
-              {destiny ? (
-                <span className="review-rating inline-flex items-center gap-1 font-bold tabular-nums">
-                  <StarIcon />
-                  {review.rating.toFixed(1)}
-                </span>
-              ) : (
-                <span className="text-accent-primary font-mono font-bold">
-                  {'★'.repeat(review.rating)}
-                  <span className="text-text-muted">
-                    {'★'.repeat(5 - review.rating)}
+            <div className="review-card-head flex items-center gap-3">
+              <span className="review-avatar" aria-hidden>
+                {(review.reviewerName ?? 'NITW diner')
+                  .split(' ')
+                  .map((part) => part[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </span>
+              <div>
+                <strong className="review-author block text-[13px]">
+                  {review.reviewerName ?? 'NITW diner'}
+                </strong>
+                <p className="review-meta flex items-center gap-2 text-[13px]">
+                  {destiny ? (
+                    <span className="review-rating inline-flex items-center gap-1 font-bold tabular-nums">
+                      <StarIcon />
+                      {review.rating.toFixed(1)}
+                    </span>
+                  ) : (
+                    <span className="text-accent-primary font-mono font-bold">
+                      {'★'.repeat(review.rating)}
+                      <span className="text-text-muted">
+                        {'★'.repeat(5 - review.rating)}
+                      </span>
+                    </span>
+                  )}
+                  <span className="review-date text-text-muted">
+                    {new Date(review.created_at).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
                   </span>
-                </span>
-              )}
-              <span className="review-date text-text-muted">
-                {new Date(review.created_at).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                })}
-              </span>
-              <span className="review-verified rounded-chip border-accent-secondary text-accent-secondary border px-2 py-px text-[11px]">
-                Verified visit
-              </span>
-            </p>
+                </p>
+              </div>
+            </div>
             {review.comment ? (
               <p className="review-comment text-paper text-sm">
                 {review.comment}
@@ -97,6 +115,15 @@ export function ReviewList({
           </Card>
         ))}
       </div>
+      {sorted.length > 4 && !expanded ? (
+        <button
+          type="button"
+          className="review-show-more"
+          onClick={() => setExpanded(true)}
+        >
+          Show more
+        </button>
+      ) : null}
     </div>
   );
 }

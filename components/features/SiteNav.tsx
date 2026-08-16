@@ -28,6 +28,7 @@ export function SiteHeader({
   const pathname = usePathname();
   const router = useRouter();
   const onHome = pathname === '/';
+  const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
   const onOthers = pathname === '/others' || pathname.startsWith('/others/');
   const onToolboxChild = ['/saved', '/bookings'].some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
@@ -68,6 +69,8 @@ export function SiteHeader({
       menuNavigationTimerRef.current = null;
     }, 120);
   };
+
+  if (onRestaurantProfile) return null;
 
   if (onHome) {
     return (

@@ -1,30 +1,29 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { EventCard } from '@/components/features/EventCard';
-import { FlagOfferButton } from '@/components/features/FlagOfferButton';
-import { OfferBadge } from '@/components/features/OfferBadge';
 import { ProfileViewLogger } from '@/components/features/ProfileViewLogger';
 import { RestaurantCard } from '@/components/features/RestaurantCard';
+import { ReviewForm } from '@/components/features/ReviewForm';
 import { ReviewList } from '@/components/features/ReviewList';
-import { RsvpButton } from '@/components/features/RsvpButton';
 import { SaveToggle } from '@/components/features/SaveToggle';
 import { ShareButton } from '@/components/features/ShareButton';
 import { DestinyPage } from '@/components/ui/DestinyPage';
-import { MenuRow } from '@/components/ui/MenuRow';
-import { PhotoCarousel } from '@/components/ui/PhotoCarousel';
 import { VIBES } from '@/config/vibes';
 import { getSessionUser } from '@/lib/auth/session';
+import { canReview } from '@/lib/domain/booking';
+import { formatDistance, haversineKm } from '@/lib/domain/distance';
 import {
-  DAY_LABELS,
-  WEEK,
   formatDayShifts,
+  type DayKey,
   type OpeningHours,
 } from '@/lib/domain/hours';
+import { listStudentBookings } from '@/lib/queries/bookings';
 import { alsoLike, getRestaurantDetail } from '@/lib/queries/catalog';
-import { getMyRsvpIds, getSavedIds } from '@/lib/queries/social';
+import { getSavedIds } from '@/lib/queries/social';
+import { ProfileCoverCarousel, ProfileMenu } from './RestaurantProfileClient';
 import styles from './restaurant.module.css';
 
+const NITW_CAMPUS = { lat: 17.9833, lng: 79.5308 };
 const DETAIL_ARTWORK: Record<string, string> = {
   'Biryani Adda': '/home/biryani-adda.webp',
   'Momo Nation': '/home/momo-nation.webp',
@@ -32,6 +31,7 @@ const DETAIL_ARTWORK: Record<string, string> = {
   'Southern Spice Tiffins': '/home/southern-spice.webp',
   'Scoops & Stories': '/home/scoops-stories.webp',
 };
+const PHOTO_LABELS = ['Cover', 'Food', 'Interior', 'Ambience', 'Kitchen'];
 
 export async function generateMetadata(
   props: PageProps<'/restaurant/[id]'>,
@@ -46,354 +46,288 @@ export default async function RestaurantPage(
 ) {
   const { id } = await props.params;
   const search = await props.searchParams;
-  const [detail, user, savedIds, myRsvps] = await Promise.all([
+  const [detail, user, savedIds, bookings] = await Promise.all([
     getRestaurantDetail(id),
     getSessionUser(),
     getSavedIds(),
-    getMyRsvpIds(),
+    listStudentBookings(),
   ]);
   if (!detail) notFound();
 
-  const isStudent = user?.role === 'student';
   const { summary, row, menu, menuPhotos, offers, events, reviews } = detail;
-  const from = typeof search.from === 'string' ? search.from : 'direct';
-  const hours = row.opening_hours as OpeningHours | null;
-  const vibeLabel = (tag: string) =>
-    VIBES.find((vibe) => vibe.tag === tag)?.label ?? tag;
+  const artwork = DETAIL_ARTWORK[row.name];
+  const photos = artwork
+    ? [artwork, ...summary.photos.filter((photo) => photo !== artwork)]
+    : summary.photos;
+  const isStudent = user?.role === 'student';
+  const distance =
+    summary.lat !== null && summary.lng !== null
+      ? formatDistance(
+          haversineKm(
+            NITW_CAMPUS.lat,
+            NITW_CAMPUS.lng,
+            summary.lat,
+            summary.lng,
+          ),
+        )
+      : row.area;
   const directionsHref =
     summary.lat !== null && summary.lng !== null
       ? `https://www.google.com/maps/dir/?api=1&destination=${summary.lat},${summary.lng}`
       : null;
-  const artwork = DETAIL_ARTWORK[row.name];
-  const heroPhotos = artwork
-    ? [artwork, ...summary.photos.filter((photo) => photo !== artwork)]
-    : summary.photos;
-  const availability = summary.isOpen
-    ? summary.closingInMinutes !== null && summary.closingInMinutes <= 45
-      ? {
-          state: 'closing',
-          label: `Closing in ${summary.closingInMinutes}m`,
-        }
-      : { state: 'open', label: 'Open now' }
-    : { state: 'closed', label: 'Closed right now' };
+  const bookingLabel = summary.isOpenToday ? 'Book Table' : 'Book for Later';
+  const hours = row.opening_hours as OpeningHours | null;
+  const todayKey = new Date()
+    .toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Kolkata' })
+    .toLowerCase() as DayKey;
+  const todayHours = hours ? formatDayShifts(hours[todayKey]) : 'Not listed';
+  const cuisine =
+    summary.cravingTags.slice(0, 2).join(' · ') ||
+    row.vibe_tags
+      .slice(0, 2)
+      .map((tag) => VIBES.find((vibe) => vibe.tag === tag)?.label ?? tag)
+      .join(' · ') ||
+    'Local favourite';
+  const reviewableBooking = isStudent
+    ? bookings.find(
+        (booking) =>
+          booking.restaurant_id === id &&
+          canReview(booking) &&
+          !booking.alreadyReviewed,
+      )
+    : undefined;
 
   return (
     <DestinyPage className={styles.restaurantPage}>
-      <ProfileViewLogger restaurantId={id} source={from} />
-
+      <ProfileViewLogger
+        restaurantId={id}
+        source={typeof search.from === 'string' ? search.from : 'direct'}
+      />
       <div className={styles.shell}>
-        <section className={styles.hero} aria-labelledby="restaurant-name">
-          <div className={styles.heroMedia}>
-            <PhotoCarousel
-              photos={heroPhotos}
-              alt={row.name}
-              aspect="restaurant-detail-hero"
-              className={styles.heroCarousel}
-              emptyFallback={<PhotoPlaceholderIcon />}
-              showControls
+        <header className={styles.profileHead}>
+          <div className={styles.cover}>
+            <Link
+              href="/"
+              className={styles.backLink}
+              aria-label="Back to home"
+            >
+              <BackIcon />
+            </Link>
+            <ProfileCoverCarousel
+              photos={photos.slice(0, 4)}
+              restaurantName={row.name}
+            />
+            <div className={styles.coverShade} aria-hidden />
+          </div>
+          <div className={styles.headBox}>
+            <div className={styles.titleLine}>
+              <div className={styles.nameGroup}>
+                <h1>{row.name}</h1>
+                <span
+                  className={styles.statusBadge}
+                  data-open={summary.isOpen || undefined}
+                >
+                  {summary.isOpen ? 'Open now' : 'Closed'}
+                </span>
+              </div>
+              <strong
+                className={styles.ratingValue}
+                aria-label="Restaurant rating"
+              >
+                <StarIcon />
+                {summary.rating?.toFixed(1) ?? 'New'}
+              </strong>
+            </div>
+            <div className={styles.metaRow}>
+              <span>{cuisine}</span>
+              <span>{distance}</span>
+            </div>
+            <p className={styles.openingTime}>
+              <ClockIcon />
+              <span>Today</span>
+              <strong>{todayHours}</strong>
+            </p>
+          </div>
+        </header>
+
+        <nav className={styles.actionRail} aria-label="Restaurant actions">
+          <Link href={`/restaurant/${id}/book`} className={styles.bookAction}>
+            {bookingLabel}
+          </Link>
+          {directionsHref ? (
+            <a href={directionsHref} target="_blank" rel="noopener noreferrer">
+              <DirectionIcon />
+              Get Directions
+            </a>
+          ) : null}
+          <SaveToggle
+            restaurantId={id}
+            initialSaved={isStudent && savedIds.has(id)}
+            showLabel
+          />
+          <ShareButton
+            title={row.name}
+            text={`${row.name} — ${row.area}. Found it on Destiny.`}
+            className={styles.shareAction}
+            showIcon
+          />
+        </nav>
+
+        <section className={styles.section} aria-labelledby="gallery-title">
+          <h2 id="gallery-title">Gallery</h2>
+          {photos.length ? (
+            <div className={styles.galleryRail}>
+              {photos.map((photo, index) => (
+                <figure key={`${photo}-${index}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- restaurant storage images are resized on upload. */}
+                  <img src={photo} alt="" loading="lazy" />
+                  <figcaption>
+                    {PHOTO_LABELS[index] ?? `Photo ${index + 1}`}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.emptyLine}>
+              Photos have not been published yet.
+            </p>
+          )}
+        </section>
+
+        <section className={styles.section} aria-labelledby="menu-title">
+          <div className={styles.sectionTitle}>
+            <h2 id="menu-title">Menu</h2>
+            <span>View Menu</span>
+          </div>
+          <ProfileMenu
+            restaurantName={row.name}
+            items={menu.map((item) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              isVeg: item.is_veg,
+              available: item.is_available,
+            }))}
+            photos={menuPhotos}
+          />
+        </section>
+
+        <section className={styles.section} aria-labelledby="about-title">
+          <h2 id="about-title">About</h2>
+          <p className={styles.description}>
+            {row.description ||
+              `${row.name} is a neighbourhood favourite for relaxed meals and easy group plans.`}
+          </p>
+          <div className={styles.infoGrid}>
+            <InfoCard
+              icon={<ClockIcon />}
+              label="Hours today"
+              value={todayHours}
+            />
+            <InfoCard
+              icon={<PinIcon />}
+              label="Address"
+              value={row.address || row.area}
+            />
+            <InfoCard
+              icon={<PhoneIcon />}
+              label="Phone"
+              value={row.phone || 'Not listed'}
+            />
+            <InfoCard
+              icon={<PlateIcon />}
+              label="Service"
+              value={
+                [row.dine_in && 'Dine-in', row.takeaway && 'Takeaway']
+                  .filter(Boolean)
+                  .join(' + ') || 'Visit venue'
+              }
             />
           </div>
+        </section>
 
-          <div className={styles.heroContent}>
-            <Link href="/search" className={styles.backLink}>
-              <BackIcon />
-              Back to restaurants
-            </Link>
+        <section className={styles.section} aria-labelledby="offers-title">
+          <h2 id="offers-title">Special Offers</h2>
+          {offers[0] ? (
+            <article className={styles.offerCard}>
+              <strong>{offers[0].discount_text || offers[0].title}</strong>
+              {offers[0].discount_text ? <span>{offers[0].title}</span> : null}
+              {offers[0].description ? <p>{offers[0].description}</p> : null}
+            </article>
+          ) : (
+            <p className={styles.emptyLine}>
+              No special offers running right now.
+            </p>
+          )}
+        </section>
 
-            <div className={styles.heroCopy}>
-              <span
-                className={styles.availability}
-                data-state={availability.state}
-              >
-                <span aria-hidden />
-                {availability.label}
-              </span>
-
-              <h1 id="restaurant-name">{row.name}</h1>
-
-              <p className={styles.heroFacts}>
-                <span>{row.area}</span>
-                {summary.rating !== null ? (
-                  <>
-                    <span aria-hidden>•</span>
-                    <span className={styles.rating}>
-                      <StarIcon />
-                      {summary.rating.toFixed(1)}
-                      <span>({summary.reviewCount})</span>
-                    </span>
-                  </>
-                ) : null}
-                {summary.price_per_head ? (
-                  <>
-                    <span aria-hidden>•</span>
-                    <span className={styles.price}>
-                      ₹{summary.price_per_head} per head
-                    </span>
-                  </>
-                ) : null}
-              </p>
-
-              {row.description ? (
-                <p className={styles.description}>{row.description}</p>
-              ) : null}
-
-              <div className={styles.tags} aria-label="Restaurant features">
-                {row.is_veg_only ? <Tag tone="accent">Pure veg</Tag> : null}
-                {row.student_discount ? (
-                  <Tag tone="accent">Student discount</Tag>
-                ) : null}
-                {row.has_ac ? <Tag>AC</Tag> : null}
-                {row.dine_in ? <Tag>Dine-in</Tag> : null}
-                {row.takeaway ? <Tag>Takeaway</Tag> : null}
-                {row.vibe_tags.map((tag) => (
-                  <Tag key={tag}>{vibeLabel(tag)}</Tag>
-                ))}
-              </div>
+        <section className={styles.section} aria-labelledby="events-title">
+          <h2 id="events-title">Upcoming Events</h2>
+          {events.length ? (
+            <div className={styles.eventList}>
+              {events.map((event) => (
+                <article key={event.id}>
+                  <strong>{event.title}</strong>
+                  <time dateTime={event.starts_at}>
+                    {formatEventDate(event.starts_at)}
+                  </time>
+                </article>
+              ))}
             </div>
+          ) : (
+            <p className={styles.emptyLine}>
+              Nothing scheduled yet. Check back soon.
+            </p>
+          )}
+        </section>
 
-            <div className={styles.utilityActions}>
-              {isStudent ? (
-                <SaveToggle restaurantId={id} initialSaved={savedIds.has(id)} />
-              ) : null}
-
-              {directionsHref ? (
-                <a
-                  href={directionsHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.utilityAction}
-                >
-                  <DirectionsIcon />
-                  Directions
-                </a>
-              ) : null}
-
-              <ShareButton
-                title={row.name}
-                text={`${row.name} — ${row.area}. Found it on Destiny.`}
-                className={styles.utilityButton}
-                showIcon
+        <section
+          className={`${styles.section} ${styles.reviewsSection}`}
+          aria-labelledby="reviews-title"
+        >
+          <h2 id="reviews-title">Reviews</h2>
+          {reviewableBooking ? (
+            <div className={styles.writeReview}>
+              <span>You visited this place.</span>
+              <ReviewForm
+                bookingId={reviewableBooking.id}
+                restaurantName={row.name}
               />
             </div>
-
-            <div className={styles.bookingBlock}>
-              <Link
-                href={`/restaurant/${id}/book`}
-                className={styles.bookingAction}
-              >
-                Let them know you&apos;re coming
-                <ArrowIcon />
-              </Link>
-              <p>
-                A heads-up, not a reservation — the owner sees your group is
-                likely coming.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {offers.length > 0 || events.length > 0 ? (
-          <div
-            className={styles.liveGrid}
-            data-columns={
-              offers.length > 0 && events.length > 0 ? 'two' : 'one'
-            }
-          >
-            {offers.length > 0 ? (
-              <section
-                className={styles.offersSection}
-                aria-labelledby="offers-title"
-              >
-                <div className={styles.sectionHeading}>
-                  <h2 id="offers-title">Live offers</h2>
-                  <p>Current specials listed by this restaurant.</p>
-                </div>
-
-                <div className={styles.offerList}>
-                  {offers.map((offer) => (
-                    <article key={offer.id} className={styles.offerCard}>
-                      <OfferBadge
-                        title={offer.title}
-                        discountText={offer.discount_text}
-                        expiresAt={offer.expires_at}
-                        className={styles.offerBadge}
-                      />
-                      <h3>{offer.title}</h3>
-                      {offer.description ? <p>{offer.description}</p> : null}
-                      <FlagOfferButton offerId={offer.id} />
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {events.length > 0 ? (
-              <section
-                className={styles.eventsSection}
-                aria-labelledby="events-title"
-              >
-                <div className={styles.sectionHeading}>
-                  <h2 id="events-title">Upcoming here</h2>
-                  <p>Events currently scheduled at this restaurant.</p>
-                </div>
-
-                <div className={styles.eventList}>
-                  {events.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      title={event.title}
-                      eventType={event.event_type}
-                      startsAt={event.starts_at}
-                      description={event.description}
-                      className={styles.eventCard}
-                      rsvpSlot={
-                        <RsvpButton
-                          eventId={event.id}
-                          initialGoing={myRsvps.has(event.id)}
-                          loggedIn={isStudent}
-                        />
-                      }
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-          </div>
-        ) : null}
-
-        <section className={styles.menuSection} aria-labelledby="menu-title">
-          <div className={styles.menuIntro}>
-            <h2 id="menu-title">Menu</h2>
-            <p>Browse listed dishes and current menu photos before you go.</p>
-          </div>
-
-          <div className={styles.menuContent}>
-            {menu.length === 0 && menuPhotos.length === 0 ? (
-              <div className={styles.emptyState}>
-                <MenuIcon />
-                <p>
-                  Menu&apos;s not up yet — the owner is probably still typing it
-                  in.
-                </p>
-              </div>
-            ) : (
-              <>
-                {menu.length > 0 ? (
-                  <div className={styles.menuPanel}>
-                    {menu.map((item) => (
-                      <MenuRow
-                        key={item.id}
-                        name={item.name}
-                        price={item.price}
-                        isVeg={item.is_veg}
-                        unavailable={!item.is_available}
-                        appearance="destiny"
-                      />
-                    ))}
-                  </div>
-                ) : null}
-
-                {menuPhotos.length > 0 ? (
-                  <div className={styles.menuPhotos}>
-                    <h3>Menu photos</h3>
-                    <PhotoCarousel
-                      photos={menuPhotos}
-                      alt={`${row.name} menu`}
-                      className={styles.menuCarousel}
-                      emptyFallback={<PhotoPlaceholderIcon />}
-                      showControls
-                    />
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-        </section>
-
-        <div
-          className={styles.detailsGrid}
-          data-columns={hours ? 'two' : 'one'}
-        >
-          {hours ? (
-            <section
-              className={styles.hoursSection}
-              aria-labelledby="hours-title"
-            >
-              <h2 id="hours-title">Hours</h2>
-              <div className={styles.hoursList}>
-                {WEEK.map((day) => (
-                  <div key={day} className={styles.hoursRow}>
-                    <span>{DAY_LABELS[day]}</span>
-                    <strong>{formatDayShifts(hours[day])}</strong>
-                  </div>
-                ))}
-              </div>
-            </section>
           ) : null}
+          <ReviewList
+            appearance="destiny"
+            reviews={reviews.map((review) => ({
+              id: review.id,
+              rating: review.rating,
+              comment: review.comment,
+              created_at: review.created_at,
+              reviewerName: 'NITW Diner',
+            }))}
+          />
+        </section>
 
-          <section
-            className={styles.reviewsSection}
-            aria-labelledby="reviews-title"
-          >
-            <div className={styles.sectionHeading}>
-              <h2 id="reviews-title">Reviews</h2>
-              <p>Verified feedback from completed student visits.</p>
-            </div>
-            <ReviewList
-              appearance="destiny"
-              reviews={reviews.map((review) => ({
-                id: review.id,
-                rating: review.rating,
-                comment: review.comment,
-                created_at: review.created_at,
-              }))}
-            />
-          </section>
-        </div>
-
-        <AlsoLike id={id} />
+        <SimilarRestaurants id={id} />
       </div>
     </DestinyPage>
   );
 }
 
-function Tag({
-  children,
-  tone = 'neutral',
-}: {
-  children: React.ReactNode;
-  tone?: 'neutral' | 'accent';
-}) {
-  return (
-    <span className={styles.tag} data-tone={tone}>
-      {children}
-    </span>
-  );
-}
-
-async function AlsoLike({ id }: { id: string }) {
-  const suggestions = await alsoLike(id);
-  if (suggestions.length === 0) return null;
-
+async function SimilarRestaurants({ id }: { id: string }) {
+  const restaurants = await alsoLike(id);
+  if (!restaurants.length) return null;
   return (
     <section
-      className={styles.suggestionsSection}
-      aria-labelledby="suggestions-title"
+      className={`${styles.section} ${styles.similarSection}`}
+      aria-labelledby="similar-title"
     >
-      <div className={styles.suggestionsHeading}>
-        <h2 id="suggestions-title">You may also like</h2>
-        <Link href="/search">
-          Browse all
-          <ArrowIcon />
-        </Link>
-      </div>
-      <div className={styles.suggestionsGrid}>
-        {suggestions.map((restaurant) => (
+      <h2 id="similar-title">Similar Restaurants</h2>
+      <div className={styles.similarGrid}>
+        {restaurants.map((restaurant) => (
           <RestaurantCard
             key={restaurant.id}
-            restaurant={withDetailArtwork(restaurant)}
-            source="direct"
-            className={styles.suggestionCard}
+            restaurant={withArtwork(restaurant)}
+            source="similar"
           />
         ))}
       </div>
@@ -401,45 +335,66 @@ async function AlsoLike({ id }: { id: string }) {
   );
 }
 
-function withDetailArtwork<T extends { name: string; photos: string[] }>(
+function withArtwork<T extends { name: string; photos: string[] }>(
   restaurant: T,
 ): T {
   const artwork = DETAIL_ARTWORK[restaurant.name];
-  if (!artwork) return restaurant;
-  return {
-    ...restaurant,
-    photos: [
-      artwork,
-      ...restaurant.photos.filter((photo) => photo !== artwork),
-    ],
-  };
+  return artwork
+    ? {
+        ...restaurant,
+        photos: [
+          artwork,
+          ...restaurant.photos.filter((photo) => photo !== artwork),
+        ],
+      }
+    : restaurant;
 }
 
+function InfoCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className={styles.infoCard}>
+      {icon}
+      <span>
+        <small>{label}</small>
+        <strong>{value}</strong>
+      </span>
+    </div>
+  );
+}
+
+function formatEventDate(iso: string) {
+  return new Date(iso).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
+}
 function BackIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <path d="M19 12H5m6-6-6 6 6 6" />
+    <svg viewBox="0 0 24 24">
+      <path d="m10 6-6 6 6 6" />
+      <path d="M5 12h14" />
     </svg>
   );
 }
-
-function ArrowIcon() {
+function DirectionIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <path d="M5 12h14m-6-6 6 6-6 6" />
-    </svg>
-  );
-}
-
-function DirectionsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden>
+    <svg viewBox="0 0 24 24">
       <path d="m12 3 9 9-9 9-9-9 9-9Z" />
       <path d="M8.5 12h7M13 8.5l3.5 3.5-3.5 3.5" />
     </svg>
   );
 }
-
 function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
@@ -447,19 +402,34 @@ function StarIcon() {
     </svg>
   );
 }
-
-function PhotoPlaceholderIcon() {
+function ClockIcon() {
   return (
-    <svg viewBox="0 0 48 48" aria-hidden>
-      <path d="M8 10h32v28H8zM8 32l9-9 7 7 5-5 11 11M31 19h.01" />
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
     </svg>
   );
 }
-
-function MenuIcon() {
+function PinIcon() {
   return (
-    <svg viewBox="0 0 48 48" aria-hidden>
-      <path d="M10 8h28v32H10zM16 17h16M16 24h16M16 31h10" />
+    <svg viewBox="0 0 24 24">
+      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24">
+      <path d="M7 3 4 5c0 8 7 15 15 15l2-3-5-3-2 2c-3-1-5-3-6-6l2-2-3-5Z" />
+    </svg>
+  );
+}
+function PlateIcon() {
+  return (
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4.5" />
     </svg>
   );
 }

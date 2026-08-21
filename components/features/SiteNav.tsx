@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { type CSSProperties, useEffect, useId, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
 import styles from './site-nav.module.css';
 
-type NavIconName = 'home' | 'events' | 'others';
+type NavIconName = 'home' | 'events' | 'profile';
 
 const tabs: ReadonlyArray<{
   href: string;
@@ -15,7 +15,7 @@ const tabs: ReadonlyArray<{
 }> = [
   { href: '/', label: 'Home', icon: 'home' },
   { href: '/events', label: 'Events', icon: 'events' },
-  { href: '/others', label: 'Others', icon: 'others' },
+  { href: '/account', label: 'Profile', icon: 'profile' },
 ];
 
 export function SiteHeader({
@@ -26,135 +26,321 @@ export function SiteHeader({
   accountLabel: string;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const onHome = pathname === '/';
+  const onSaved = pathname === '/saved' || pathname.startsWith('/saved/');
+  const onEvents = pathname === '/events' || pathname.startsWith('/events/');
   const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
-  const onOthers = pathname === '/others' || pathname.startsWith('/others/');
-  const onToolboxChild = ['/saved', '/bookings'].some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-  const toolboxOpen = onOthers || onToolboxChild;
-  const [menuOpen, setMenuOpen] = useState(toolboxOpen);
-  const menuNavigationTimerRef = useRef<number | null>(null);
+  const onBookingPage = /^\/restaurant\/[^/]+\/book\/?$/.test(pathname);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setMenuOpen(toolboxOpen));
+    const frame = window.requestAnimationFrame(() => setMenuOpen(false));
     return () => window.cancelAnimationFrame(frame);
-  }, [toolboxOpen]);
+  }, [pathname]);
 
-  useEffect(
-    () => () => {
-      if (menuNavigationTimerRef.current !== null) {
-        window.clearTimeout(menuNavigationTimerRef.current);
-      }
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [menuOpen]);
 
-  const toggleMorePage = () => {
-    if (onToolboxChild) {
-      router.push('/others');
-      return;
-    }
+  if (onEvents || onRestaurantProfile || onBookingPage) return null;
 
-    const nextOpen = !onOthers;
-    setMenuOpen(nextOpen);
-
-    if (menuNavigationTimerRef.current !== null) {
-      window.clearTimeout(menuNavigationTimerRef.current);
-    }
-
-    menuNavigationTimerRef.current = window.setTimeout(() => {
-      router.push(nextOpen ? '/others' : '/');
-      menuNavigationTimerRef.current = null;
-    }, 120);
-  };
-
-  if (onRestaurantProfile) return null;
-
-  if (onHome) {
+  if (onHome || onSaved) {
     return (
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
-        <div className="mx-auto flex h-24 max-w-[100rem] items-start justify-end px-3 pt-10 sm:px-5 sm:pt-12 lg:px-8">
-          <button
-            type="button"
-            aria-label="Open more options"
-            aria-expanded={menuOpen}
-            onClick={toggleMorePage}
+      <>
+        <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
+          <div
             className={cn(
-              menuOpen && styles.open,
-              'pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-[#505050] bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95',
+              'mx-auto flex max-w-[100rem] items-start justify-end px-3 sm:px-5 lg:px-8',
+              onHome ? 'h-24 pt-10 sm:pt-12' : 'h-16 pt-3',
             )}
           >
-            <AnimatedMenuIcon />
-          </button>
-        </div>
-      </header>
-    );
-  }
-
-  if (toolboxOpen) {
-    return (
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">
-        <div className="mx-auto flex h-14 max-w-[100rem] items-start justify-end px-3 pt-2 sm:px-5 lg:px-8">
-          <button
-            type="button"
-            aria-label={
-              onToolboxChild ? 'Close toolbox page' : 'Close Destiny Toolbox'
-            }
-            aria-expanded={menuOpen}
-            onClick={toggleMorePage}
-            className={cn(
-              menuOpen && styles.open,
-              'pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-[#505050] bg-black text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95',
-            )}
-          >
-            <AnimatedMenuIcon />
-          </button>
-        </div>
-      </header>
+            <MenuButton
+              open={menuOpen}
+              onClick={() => setMenuOpen((current) => !current)}
+            />
+          </div>
+        </header>
+        <NavigationDrawer
+          open={menuOpen}
+          accountHref={accountHref}
+          onClose={() => setMenuOpen(false)}
+        />
+      </>
     );
   }
 
   return (
-    <header
-      className="sticky top-0 z-40 border-b border-[#505050] bg-[#EDEDED] text-black"
-      style={{ fontFamily: 'var(--font-body)' }}
-    >
-      <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
-        <Wordmark />
+    <>
+      <header
+        className="sticky top-0 z-40 border-b border-[#505050] bg-[#EDEDED] text-black"
+        style={{ fontFamily: 'var(--font-body)' }}
+      >
+        <div className="mx-auto flex h-16 max-w-[100rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+          <Wordmark />
 
-        <nav
-          aria-label="Primary navigation"
-          className="hidden items-center gap-1 rounded-full border border-[#505050] bg-white p-1 lg:flex"
-        >
-          {tabs.slice(1).map((tab) => (
-            <NavLink key={tab.href} href={tab.href} label={tab.label} />
+          <nav
+            aria-label="Primary navigation"
+            className="hidden items-center gap-1 rounded-full border border-[#505050] bg-white p-1 lg:flex"
+          >
+            {tabs.slice(1).map((tab) => (
+              <NavLink
+                key={tab.href}
+                href={tab.href}
+                label={tab.label}
+                icon={tab.icon}
+              />
+            ))}
+            <NavLink href="/friends" label="Friends" />
+          </nav>
+
+          <Link
+            href={accountHref}
+            className="hidden min-h-11 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-[#1DB954] hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:inline-flex"
+          >
+            {accountLabel}
+          </Link>
+
+          <div className="lg:hidden">
+            <MenuButton
+              open={menuOpen}
+              onClick={() => setMenuOpen((current) => !current)}
+            />
+          </div>
+        </div>
+      </header>
+      <NavigationDrawer
+        open={menuOpen}
+        accountHref={accountHref}
+        onClose={() => setMenuOpen(false)}
+      />
+    </>
+  );
+}
+
+function MenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label="Open Destiny menu"
+      aria-expanded={open}
+      aria-controls="destiny-navigation-drawer"
+      onClick={onClick}
+      className={cn(
+        open && styles.open,
+        'pointer-events-auto grid h-10 w-10 place-items-center rounded-[12px] border border-white/15 bg-[#171717]/95 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-[background,transform] hover:bg-[#232323] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] active:scale-95',
+      )}
+    >
+      <AnimatedMenuIcon />
+    </button>
+  );
+}
+
+function NavigationDrawer({
+  open,
+  accountHref,
+  onClose,
+}: {
+  open: boolean;
+  accountHref: string;
+  onClose: () => void;
+}) {
+  const pathname = usePathname();
+  const contactPanelId = useId();
+  const aboutPanelId = useId();
+  const [contactOpen, setContactOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const portalHref =
+    accountHref === '/owner/dashboard' ? '/owner/dashboard' : '/owner/login';
+  const links = [{ href: '/saved', label: 'Saved' }];
+
+  const isActive = (href: string) =>
+    href === '/'
+      ? pathname === '/'
+      : pathname === href || pathname.startsWith(`${href}/`);
+
+  return (
+    <div
+      className={cn(styles.drawerLayer, open && styles.drawerLayerOpen)}
+      aria-hidden={!open}
+    >
+      <button
+        type="button"
+        className={styles.drawerOverlay}
+        tabIndex={open ? 0 : -1}
+        aria-label="Close menu"
+        onClick={onClose}
+      />
+      <aside
+        id="destiny-navigation-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Destiny navigation"
+        inert={open ? undefined : true}
+        className={styles.drawerPanel}
+      >
+        <div className={styles.drawerHeader}>
+          <button
+            type="button"
+            className={cn(styles.drawerClose, styles.open)}
+            onClick={onClose}
+            aria-label="Close Destiny menu"
+          >
+            <AnimatedMenuIcon />
+          </button>
+        </div>
+
+        <nav className={styles.drawerNav} aria-label="Destiny menu links">
+          {links.map((link, index) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={onClose}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              className={cn(
+                styles.drawerLink,
+                isActive(link.href) && styles.drawerLinkActive,
+              )}
+              style={{ '--menu-index': index } as CSSProperties}
+            >
+              <span>{link.label}</span>
+            </Link>
           ))}
-          <NavLink href="/friends" label="Friends" />
+
+          <div
+            className={cn(
+              styles.contactItem,
+              contactOpen && styles.contactItemOpen,
+            )}
+          >
+            <button
+              type="button"
+              className={styles.contactTrigger}
+              aria-expanded={contactOpen}
+              aria-controls={contactPanelId}
+              onClick={() => setContactOpen((current) => !current)}
+            >
+              <span>Contact Us</span>
+              <ChevronIcon />
+            </button>
+            <div
+              id={contactPanelId}
+              className={styles.contactPanel}
+              aria-hidden={!contactOpen}
+              inert={contactOpen ? undefined : true}
+            >
+              <div>
+                <ContactLink
+                  href="mailto:hello@destiny.app"
+                  label="Email"
+                  value="hello@destiny.app"
+                />
+                <ContactLink
+                  href="mailto:partners@destiny.app"
+                  label="Partnerships"
+                  value="partners@destiny.app"
+                />
+                <ContactLink
+                  href="tel:+919848000000"
+                  label="Phone"
+                  value="+91 98480 00000"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              styles.contactItem,
+              aboutOpen && styles.contactItemOpen,
+            )}
+          >
+            <button
+              type="button"
+              className={styles.contactTrigger}
+              aria-expanded={aboutOpen}
+              aria-controls={aboutPanelId}
+              onClick={() => setAboutOpen((current) => !current)}
+            >
+              <span>About</span>
+              <ChevronIcon />
+            </button>
+            <div
+              id={aboutPanelId}
+              className={styles.contactPanel}
+              aria-hidden={!aboutOpen}
+              inert={aboutOpen ? undefined : true}
+            >
+              <div className={styles.aboutContent}>
+                <strong>Made for the NITW scene.</strong>
+                <p>
+                  Destiny puts nearby restaurants, live offers, events and
+                  squad-worthy plans in one quick place.
+                </p>
+                <span>Student-first · Local · Always fresh</span>
+              </div>
+            </div>
+          </div>
         </nav>
 
-        <Link
-          href={accountHref}
-          className="hidden min-h-11 items-center justify-center rounded-full border border-[#1DB954] bg-[#1DB954] px-4 text-[13px] font-extrabold text-black transition-colors hover:border-[#1DB954] hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:inline-flex"
-        >
-          {accountLabel}
+        <div className={styles.drawerDivider} aria-hidden />
+        <Link href={portalHref} onClick={onClose} className={styles.portalCta}>
+          <span className={styles.portalIcon} aria-hidden>
+            <PortalIcon />
+          </span>
+          <span className={styles.portalCopy}>
+            <small>For restaurant partners</small>
+            <strong>Restaurant Portal</strong>
+          </span>
+          <b className={styles.portalArrow} aria-hidden>
+            →
+          </b>
         </Link>
+      </aside>
+    </div>
+  );
+}
 
-        <button
-          type="button"
-          aria-label="Open more options"
-          aria-expanded={menuOpen}
-          onClick={toggleMorePage}
-          className={cn(
-            menuOpen && styles.open,
-            'grid h-11 w-11 place-items-center rounded-full bg-black text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954] lg:hidden',
-          )}
-        >
-          <AnimatedMenuIcon />
-        </button>
-      </div>
-    </header>
+function ContactLink({
+  href,
+  label,
+  value,
+}: {
+  href: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <a href={href} className={styles.contactLink}>
+      <small>{label}</small>
+      <strong>{value}</strong>
+    </a>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg className={styles.contactChevron} viewBox="0 0 24 24" aria-hidden>
+      <path d="m7 9.5 5 5 5-5" />
+    </svg>
+  );
+}
+
+function PortalIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M4 10h16M5.5 10v10h13V10M7 4h10l3 6H4l3-6Z" />
+      <path d="M9 20v-5h6v5M8 10v2M12 10v2M16 10v2" />
+    </svg>
   );
 }
 
@@ -175,7 +361,15 @@ function Wordmark() {
   );
 }
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({
+  href,
+  label,
+  icon,
+}: {
+  href: string;
+  label: string;
+  icon?: NavIconName;
+}) {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(`${href}/`);
   return (
@@ -183,10 +377,15 @@ function NavLink({ href, label }: { href: string; label: string }) {
       href={href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'inline-flex min-h-10 items-center rounded-full px-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]',
-        active ? 'bg-black text-white' : 'text-black hover:bg-[#EDEDED]',
+        'inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1DB954]',
+        active && href === '/events'
+          ? 'bg-[#1DB954] text-black'
+          : active
+            ? 'bg-black text-white'
+            : 'text-black hover:bg-[#EDEDED]',
       )}
     >
+      {icon ? <NavIcon name={icon} /> : null}
       {label}
     </Link>
   );
@@ -321,8 +520,7 @@ function isTabActive(pathname: string, href: string) {
     return pathname === '/events' || pathname.startsWith('/events/');
   }
   return [
-    '/others',
-    '/saved',
+    '/account',
     '/bookings',
     '/friends',
     '/account',
@@ -367,6 +565,14 @@ function NavIcon({ name }: { name: NavIconName }) {
       <svg {...common}>
         <rect x="3" y="5" width="18" height="16" rx="2" />
         <path d="M16 3v4M8 3v4M3 10h18" />
+      </svg>
+    );
+  }
+  if (name === 'profile') {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
       </svg>
     );
   }

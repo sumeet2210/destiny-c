@@ -3,7 +3,11 @@
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { canConfirm, type BookingStatus } from '@/lib/domain/booking';
+import {
+  canConfirm,
+  formatBookingWindow,
+  type BookingStatus,
+} from '@/lib/domain/booking';
 import { confirmBooking } from '@/lib/bookings/actions';
 
 export function ConfirmCard({
@@ -13,6 +17,7 @@ export function ConfirmCard({
     id: string;
     restaurantName: string;
     booking_time: string;
+    booking_end_time: string;
     headcount: number;
     status: BookingStatus;
     reminder_sent_at: string | null;
@@ -24,12 +29,10 @@ export function ConfirmCard({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const when = new Date(booking.booking_time).toLocaleString('en-IN', {
-    weekday: 'short',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: 'Asia/Kolkata',
-  });
+  const when = formatBookingWindow(
+    booking.booking_time,
+    booking.booking_end_time,
+  );
 
   if (confirmed) {
     return (
@@ -56,9 +59,9 @@ export function ConfirmCard({
   }
 
   return (
-    <Card className="space-y-3 text-center">
-      <p className="text-text-muted text-sm">
-        <span className="font-mono">{when}</span> ·{' '}
+      <Card className="space-y-3 text-center">
+        <p className="text-text-muted text-sm">
+          <span className="font-mono">{when}</span> ·{' '}
         <span className="font-mono">{booking.headcount}</span> people
       </p>
       {error && <p className="text-accent-urgent-text text-[13px]">{error}</p>}
@@ -77,8 +80,8 @@ export function ConfirmCard({
         {pending ? 'Confirming…' : "Yes, we're coming"}
       </Button>
       <p className="text-text-muted text-[11px]">
-        Not going to make it? Just leave this — the owner sees an unconfirmed
-        heads-up, not a broken promise.
+        Not going to make it? Cancel from My bookings so the restaurant can
+        release the table.
       </p>
     </Card>
   );

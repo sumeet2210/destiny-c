@@ -12,11 +12,13 @@ export function RsvpButton({
   initialGoing,
   loggedIn,
   friendsGoing,
+  onInterestedChange,
 }: {
   eventId: string;
   initialGoing: boolean;
   loggedIn: boolean;
   friendsGoing?: string[];
+  onInterestedChange?: (interested: boolean) => void;
 }) {
   const router = useRouter();
   const [going, setGoing] = useState(initialGoing);
@@ -37,21 +39,30 @@ export function RsvpButton({
           }
           const next = !going;
           setGoing(next);
+          onInterestedChange?.(next);
           startTransition(async () => {
             const res = await toggleRsvp(eventId);
             if (!res.ok) {
               setGoing(!next);
+              onInterestedChange?.(!next);
               toast(res.message ?? 'Could not RSVP', 'error');
+              return;
+            }
+            if (next) {
+              toast(
+                "You're in! We'll remind you before the event.",
+                'positive',
+              );
             }
           });
         }}
       >
         {going ? (
           <>
-            I&apos;m going <CheckIcon />
+            Interested <CheckIcon />
           </>
         ) : (
-          "I'm going"
+          'Interested'
         )}
       </Button>
 

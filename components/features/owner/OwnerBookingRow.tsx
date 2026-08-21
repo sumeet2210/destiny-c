@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import type { BookingStatus } from '@/lib/domain/booking';
-import { setOwnerNote } from '@/lib/bookings/actions';
+import { respondToBooking, setOwnerNote } from '@/lib/bookings/actions';
 import { cn } from '@/lib/cn';
 
 // Owner-facing status copy: what the owner knows, not what's promised.
@@ -31,6 +31,8 @@ export function OwnerBookingRow({
     status: BookingStatus;
     confirmed_at: string | null;
     owner_note: string | null;
+    offerTitle: string | null;
+    eventTitle: string | null;
   };
 }) {
   const [noteOpen, setNoteOpen] = useState(false);
@@ -68,10 +70,56 @@ export function OwnerBookingRow({
       {booking.special_request && (
         <p className="text-paper text-[13px]">“{booking.special_request}”</p>
       )}
+      {booking.offerTitle && (
+        <p className="text-text-muted text-[12px]">
+          Offer: <span className="text-paper">{booking.offerTitle}</span>
+        </p>
+      )}
+      {booking.eventTitle && (
+        <p className="text-text-muted text-[12px]">
+          Event: <span className="text-paper">{booking.eventTitle}</span>
+        </p>
+      )}
       {booking.studentNoShows >= 3 && (
         <p className="text-text-muted text-[12px]">
           Has missed a few confirmations before — take the headcount as a maybe.
         </p>
+      )}
+
+      {booking.status === 'requested' && (
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <Button
+            size="sm"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                const res = await respondToBooking(booking.id, 'accept');
+                toast(
+                  res.ok ? 'Reservation accepted' : (res.message ?? 'Failed'),
+                  res.ok ? 'positive' : 'error',
+                );
+              })
+            }
+          >
+            Accept
+          </Button>
+          <Button
+            variant="urgent-text"
+            size="sm"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                const res = await respondToBooking(booking.id, 'reject');
+                toast(
+                  res.ok ? 'Reservation rejected' : (res.message ?? 'Failed'),
+                  res.ok ? 'default' : 'error',
+                );
+              })
+            }
+          >
+            Reject
+          </Button>
+        </div>
       )}
 
       {booking.owner_note && !noteOpen && (

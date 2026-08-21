@@ -125,7 +125,7 @@ export default async function OwnerDashboard() {
         <QuickLink
           href="/owner/bookings"
           title="Bookings"
-          body="Heads-up notices from student groups. You can leave a note; nothing to accept or decline."
+          body="Review incoming reservation requests, accept or reject them, and leave a note for the student."
         />
       </div>
     </div>

@@ -183,11 +183,33 @@ export async function upsertEvent(input: {
   event_type: string;
   starts_at: string;
   ends_at?: string | null;
+  entry_fee?: number | null;
+  location_details?: string;
+  ticket_url?: string;
   is_cancelled?: boolean;
 }): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const owned = await ownedRestaurantId();
   if (!owned.ok) return owned;
+  const startsAt = new Date(input.starts_at);
+  const publishLimit = Date.now() + 15 * 24 * 60 * 60 * 1000;
+  if (!Number.isFinite(startsAt.getTime())) {
+    return { ok: false, message: 'Choose a valid event date and time.' };
+  }
+  if (startsAt.getTime() > publishLimit) {
+    return {
+      ok: false,
+      message: 'Events can be scheduled up to 15 days ahead.',
+    };
+  }
+  if (input.ticket_url) {
+    try {
+      const ticketUrl = new URL(input.ticket_url);
+      if (!['http:', 'https:'].includes(ticketUrl.protocol)) throw new Error();
+    } catch {
+      return { ok: false, message: 'Ticket link must be a valid web address.' };
+    }
+  }
   const supabase = await createClient();
   const { id, ...fields } = input;
   const payload = {
@@ -195,6 +217,9 @@ export async function upsertEvent(input: {
     event_type: fields.event_type as TablesInsert<'events'>['event_type'],
     description: fields.description || null,
     ends_at: fields.ends_at || null,
+    entry_fee: fields.entry_fee ?? null,
+    location_details: fields.location_details || null,
+    ticket_url: fields.ticket_url || null,
   };
   const { error } = id
     ? await supabase.from('events').update(payload).eq('id', id)

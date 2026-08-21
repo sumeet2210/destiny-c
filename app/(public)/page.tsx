@@ -46,7 +46,9 @@ export default function HomePage() {
             <h1 id="home-title" className="sr-only">
               Find a restaurant with Destiny
             </h1>
-            <p className={styles.heroTagline}>NITW&apos;s favorite question</p>
+            <p className={styles.heroTagline}>
+              <strong>NITW</strong>, this one&apos;s for you
+            </p>
             <HeroRotatingCta />
           </div>
         </section>
@@ -102,11 +104,9 @@ async function HomeSearchSection() {
 }
 
 async function TickerSection() {
-  const [offers, events, user, savedIds] = await Promise.all([
+  const [offers, events] = await Promise.all([
     listTickerOffers(),
     listUpcomingEvents(),
-    getSessionUser(),
-    getSavedIds(),
   ]);
 
   return (
@@ -119,8 +119,6 @@ async function TickerSection() {
         Catch It Before It&apos;s Gone
       </h2>
       <SpecialsTicker
-        loggedIn={user?.role === 'student'}
-        initialSavedIds={[...savedIds]}
         offers={offers.map((offer) => ({
           id: offer.id,
           restaurant_id: offer.restaurant_id,

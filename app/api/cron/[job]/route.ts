@@ -180,7 +180,7 @@ async function sendReminderEmail(
         from: 'Destiny <noreply@destiny.local>',
         to,
         subject: `Still on for ${when}?`,
-        text: `Your table heads-up is coming up at ${when}. Tap to confirm you're still coming: ${site}/bookings/confirm/${bookingId}\n\nIf plans changed, no stress — just don't confirm and the owner will know it's a maybe.`,
+        text: `Your accepted reservation is coming up at ${when}. Tap to confirm you're still coming: ${site}/bookings/confirm/${bookingId}\n\nIf plans changed, cancel it from My bookings so the restaurant can release the table.`,
       }),
     });
   } catch {

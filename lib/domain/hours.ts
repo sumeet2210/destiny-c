@@ -78,7 +78,10 @@ export type BookingDayOption = {
   date: string;
   label: string;
   detail: string;
+  hours: string;
   defaultTime: string;
+  defaultEndTime: string;
+  slots: string[];
 };
 
 /** Upcoming open dates for the booking picker, expressed as IST wall time. */
@@ -127,12 +130,26 @@ export function bookingDayOptions(
 
     if (!shift) continue;
 
-    const opening = toMinutes(shift.open);
-    const defaultMinutes =
-      offset === 0 ? Math.max(opening, earliestToday) : opening;
     const year = calendarDate.getUTCFullYear();
     const month = calendarDate.getUTCMonth() + 1;
     const date = calendarDate.getUTCDate();
+
+    const slots = shifts.flatMap(({ open, close }) => {
+      const opening = toMinutes(open);
+      const closingRaw = toMinutes(close);
+      const closing = closingRaw > opening ? closingRaw : 1440 + closingRaw;
+      const earliest = offset === 0 ? earliestToday : opening;
+      const firstSlot =
+        opening + Math.max(0, Math.ceil((earliest - opening) / 60)) * 60;
+      const values: string[] = [];
+      for (let minutes = firstSlot; minutes + 60 <= closing; minutes += 60) {
+        if (minutes >= 1440 || minutes + 60 > 1440) break;
+        values.push(formatTime(minutes));
+      }
+      return values;
+    });
+
+    if (!slots.length) continue;
 
     result.push({
       date: `${year}-${pad2(month)}-${pad2(date)}`,
@@ -150,7 +167,10 @@ export function bookingDayOptions(
         month: 'short',
         timeZone: 'UTC',
       }),
-      defaultTime: `${pad2(Math.floor(defaultMinutes / 60))}:${pad2(defaultMinutes % 60)}`,
+      hours: formatDayShifts(shifts),
+      defaultTime: slots[0],
+      defaultEndTime: addHour(slots[0]),
+      slots,
     });
   }
 
@@ -158,6 +178,11 @@ export function bookingDayOptions(
 }
 
 const pad2 = (value: number) => String(value).padStart(2, '0');
+
+const formatTime = (minutes: number) =>
+  `${pad2(Math.floor(minutes / 60))}:${pad2(minutes % 60)}`;
+
+const addHour = (value: string) => formatTime(toMinutes(value) + 60);
 
 const roundUpToQuarterHour = (minutes: number) => Math.ceil(minutes / 15) * 15;
 

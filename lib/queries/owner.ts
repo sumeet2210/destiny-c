@@ -63,6 +63,8 @@ export const getOwnerBundle = cache(async (): Promise<OwnerBundle | null> => {
 export type OwnerBooking = Tables<'bookings'> & {
   studentName: string | null;
   studentNoShows: number;
+  offerTitle: string | null;
+  eventTitle: string | null;
 };
 
 export async function listOwnerBookings(): Promise<OwnerBooking[]> {
@@ -84,10 +86,39 @@ export async function listOwnerBookings(): Promise<OwnerBooking[]> {
     .in('id', studentIds);
   const byId = new Map((students ?? []).map((s) => [s.id, s]));
 
+  const offerIds = bookings.flatMap((booking) =>
+    booking.offer_id ? [booking.offer_id] : [],
+  );
+  const eventIds = bookings.flatMap((booking) =>
+    booking.event_id ? [booking.event_id] : [],
+  );
+  const [offersResult, eventsResult] = await Promise.all([
+    offerIds.length
+      ? supabase
+          .from('offers')
+          .select('id, title, discount_text')
+          .in('id', offerIds)
+      : Promise.resolve({ data: [] }),
+    eventIds.length
+      ? supabase.from('events').select('id, title').in('id', eventIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const offerNames = new Map(
+    (offersResult.data ?? []).map((offer) => [
+      offer.id,
+      offer.discount_text || offer.title,
+    ]),
+  );
+  const eventNames = new Map(
+    (eventsResult.data ?? []).map((event) => [event.id, event.title]),
+  );
+
   return bookings.map((b) => ({
     ...b,
     studentName: byId.get(b.student_id)?.full_name ?? null,
     studentNoShows: byId.get(b.student_id)?.no_show_count ?? 0,
+    offerTitle: b.offer_id ? (offerNames.get(b.offer_id) ?? null) : null,
+    eventTitle: b.event_id ? (eventNames.get(b.event_id) ?? null) : null,
   }));
 }
 

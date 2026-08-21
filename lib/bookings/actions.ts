@@ -38,7 +38,28 @@ export async function cancelBooking(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
-/** Owner leaves a note — note only, never a status change (PRD §5.7). */
+export async function respondToBooking(
+  id: string,
+  decision: 'accept' | 'reject',
+): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('bookings')
+    .update({
+      status: decision === 'accept' ? 'confirmed' : 'cancelled',
+      owner_decided_at: new Date().toISOString(),
+      owner_response: decision === 'accept' ? 'accepted' : 'rejected',
+    })
+    .eq('id', id)
+    .eq('status', 'requested');
+  if (error) return { ok: false, message: error.message };
+  revalidatePath('/owner/bookings');
+  revalidatePath('/bookings');
+  return { ok: true };
+}
+
+/** Owner can add context before or after deciding a reservation. */
 export async function setOwnerNote(
   id: string,
   note: string,

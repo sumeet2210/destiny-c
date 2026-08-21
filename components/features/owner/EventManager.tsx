@@ -16,6 +16,9 @@ type OwnerEvent = {
   event_type: string;
   starts_at: string;
   ends_at: string | null;
+  entry_fee: number | null;
+  location_details: string | null;
+  ticket_url: string | null;
   is_cancelled: boolean;
 };
 
@@ -31,6 +34,7 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
   const [mountedAt] = useState(() => Date.now());
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  const publishLimit = new Date(mountedAt + 15 * 24 * 60 * 60 * 1000);
 
   const upcoming = events.filter(
     (e) =>
@@ -42,6 +46,9 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
   return (
     <div className="space-y-5">
       <Button onClick={() => setEditing({})}>+ Post an event</Button>
+      <p className="text-text-muted text-[13px]">
+        Events can be scheduled up to 15 days ahead.
+      </p>
 
       {upcoming.length === 0 && (
         <p className="text-text-muted text-sm">No upcoming events.</p>
@@ -123,6 +130,11 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   event_type: String(fd.get('event_type')),
                   starts_at: new Date(starts).toISOString(),
                   ends_at: ends ? new Date(ends).toISOString() : null,
+                  entry_fee: fd.get('entry_fee')
+                    ? Number(fd.get('entry_fee'))
+                    : null,
+                  location_details: String(fd.get('location_details') || ''),
+                  ticket_url: String(fd.get('ticket_url') || ''),
                 });
                 toast(
                   res.ok ? 'Event saved' : (res.message ?? 'Failed'),
@@ -164,6 +176,8 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   name="starts_at"
                   type="datetime-local"
                   required
+                  min={toLocalInput(new Date(mountedAt).toISOString())}
+                  max={toLocalInput(publishLimit.toISOString())}
                   className="font-mono"
                   defaultValue={toLocalInput(editing.starts_at ?? null)}
                 />
@@ -178,6 +192,39 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   defaultValue={toLocalInput(editing.ends_at ?? null)}
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ev-fee">Entry fee</Label>
+                <Input
+                  id="ev-fee"
+                  name="entry_fee"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  placeholder="0 for free"
+                  defaultValue={editing.entry_fee ?? ''}
+                />
+              </div>
+              <div>
+                <Label htmlFor="ev-location">Location note</Label>
+                <Input
+                  id="ev-location"
+                  name="location_details"
+                  placeholder="Rooftop, first floor..."
+                  defaultValue={editing.location_details ?? ''}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="ev-ticket">Ticket link (optional)</Label>
+              <Input
+                id="ev-ticket"
+                name="ticket_url"
+                type="url"
+                placeholder="https://"
+                defaultValue={editing.ticket_url ?? ''}
+              />
             </div>
             <div>
               <Label htmlFor="ev-desc">Description</Label>

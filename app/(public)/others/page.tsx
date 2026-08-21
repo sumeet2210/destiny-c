@@ -5,7 +5,7 @@ import styles from './others.module.css';
 
 export const metadata = { title: 'Others' };
 
-type MenuIconName = 'saved' | 'bookings' | 'portal';
+type MenuIconName = 'saved' | 'portal';
 
 export default async function OthersPage() {
   const user = await getSessionUser();
@@ -17,11 +17,6 @@ export default async function OthersPage() {
     label: string;
     icon: MenuIconName;
   }> = [
-    {
-      href: '/bookings',
-      label: 'My Bookings',
-      icon: 'bookings',
-    },
     {
       href: '/saved',
       label: 'Saved',
@@ -86,13 +81,6 @@ function MenuIcon({ name }: { name: MenuIconName }) {
     return (
       <svg {...common}>
         <path d="M6.5 4.5A1.5 1.5 0 0 1 8 3h8a1.5 1.5 0 0 1 1.5 1.5V21L12 17.8 6.5 21V4.5Z" />
-      </svg>
-    );
-  }
-  if (name === 'bookings') {
-    return (
-      <svg {...common}>
-        <path d="M7 3v5M4.5 3v3.5A2.5 2.5 0 0 0 7 9v12M9.5 3v3.5A2.5 2.5 0 0 1 7 9M16 3v18M16 3c3 1.6 4.5 4 4.5 7.2H16" />
       </svg>
     );
   }

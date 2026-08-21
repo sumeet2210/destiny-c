@@ -13,29 +13,31 @@ import {
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
 import { CRAVINGS, type CravingTag } from '@/config/cravings';
+import { PRICE_BUCKETS, type PriceBucketKey } from '@/config/price-buckets';
 import { cn } from '@/lib/cn';
 import { haversineKm, formatDistance } from '@/lib/domain/distance';
 import type { RestaurantSummary } from '@/lib/queries/catalog';
 import { toggleSaved } from '@/lib/social/actions';
 import styles from './squad-going-section.module.css';
 
-type BudgetFilter = 'under-150' | '150-250' | '250-plus' | null;
-type DistanceFilter = 'under-3' | 'under-6' | null;
-type GroupFilter = 'solo' | 'duo' | 'small' | 'large' | null;
+type BudgetFilter = PriceBucketKey | null;
+type DistanceFilter = 'under-3' | 'under-6' | 'under-8' | null;
 
 type SquadFilters = {
-  cuisine: CravingTag | null;
+  cuisines: CravingTag[];
   budget: BudgetFilter;
   distance: DistanceFilter;
-  group: GroupFilter;
+  vegOnly: boolean;
+  hasLive: boolean;
   openNow: boolean;
 };
 
 const EMPTY_FILTERS: SquadFilters = {
-  cuisine: null,
+  cuisines: [],
   budget: null,
   distance: null,
-  group: null,
+  vegOnly: false,
+  hasLive: false,
   openNow: false,
 };
 
@@ -43,31 +45,13 @@ const NITW_CAMPUS = { lat: 17.9833, lng: 79.5308 };
 
 const CARD_FALLBACK_PHOTO = '/home/hero-campus-feast.webp';
 
-const BUDGET_OPTIONS: ReadonlyArray<{
-  value: NonNullable<BudgetFilter>;
-  label: string;
-}> = [
-  { value: 'under-150', label: 'Under ₹150' },
-  { value: '150-250', label: '₹150–₹250' },
-  { value: '250-plus', label: '₹250+' },
-];
-
 const DISTANCE_OPTIONS: ReadonlyArray<{
   value: NonNullable<DistanceFilter>;
   label: string;
 }> = [
   { value: 'under-3', label: 'Within 3 km' },
   { value: 'under-6', label: 'Within 6 km' },
-];
-
-const GROUP_OPTIONS: ReadonlyArray<{
-  value: NonNullable<GroupFilter>;
-  label: string;
-}> = [
-  { value: 'solo', label: 'Solo' },
-  { value: 'duo', label: 'Two people' },
-  { value: 'small', label: '3–4 people' },
-  { value: 'large', label: '5+ people' },
+  { value: 'under-8', label: 'Within 8 km' },
 ];
 
 export function SquadGoingSection({
@@ -121,8 +105,10 @@ export function SquadGoingSection({
     () =>
       decorated.filter(({ restaurant, distanceKm }) => {
         if (
-          filters.cuisine &&
-          !restaurant.cravingTags.includes(filters.cuisine)
+          filters.cuisines.length > 0 &&
+          !filters.cuisines.some((cuisine) =>
+            restaurant.cravingTags.includes(cuisine),
+          )
         ) {
           return false;
         }
@@ -130,7 +116,14 @@ export function SquadGoingSection({
           return false;
         }
         if (!matchesDistance(distanceKm, filters.distance)) return false;
-        if (!matchesGroup(restaurant, filters.group)) return false;
+        if (filters.vegOnly && !restaurant.is_veg_only) return false;
+        if (
+          filters.hasLive &&
+          restaurant.liveOffer === null &&
+          restaurant.upcomingEvent === null
+        ) {
+          return false;
+        }
         if (filters.openNow && !restaurant.isOpen) return false;
         return true;
       }),
@@ -237,11 +230,10 @@ export function SquadGoingSection({
       <Sheet
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        title="Refine the squad picks"
         className={styles.filterSheet}
       >
-        <div className={styles.filterIntro}>
-          <p>Set the plan once. Your choices stay applied in this section.</p>
+        <div className={styles.filterHeader}>
+          <h2>Refine the squad picks</h2>
           <button type="button" onClick={clearFilters}>
             Clear all
           </button>
@@ -251,11 +243,13 @@ export function SquadGoingSection({
           {availableCuisines.map((craving) => (
             <FilterChip
               key={craving.tag}
-              active={draft.cuisine === craving.tag}
+              active={draft.cuisines.includes(craving.tag)}
               onClick={() =>
                 setDraft((current) => ({
                   ...current,
-                  cuisine: current.cuisine === craving.tag ? null : craving.tag,
+                  cuisines: current.cuisines.includes(craving.tag)
+                    ? current.cuisines.filter((tag) => tag !== craving.tag)
+                    : [...current.cuisines, craving.tag],
                 }))
               }
             >
@@ -264,15 +258,15 @@ export function SquadGoingSection({
           ))}
         </FilterGroup>
 
-        <FilterGroup legend="Price / budget">
-          {BUDGET_OPTIONS.map((option) => (
+        <FilterGroup legend="Budget">
+          {PRICE_BUCKETS.map((option) => (
             <FilterChip
-              key={option.value}
-              active={draft.budget === option.value}
+              key={option.key}
+              active={draft.budget === option.key}
               onClick={() =>
                 setDraft((current) => ({
                   ...current,
-                  budget: current.budget === option.value ? null : option.value,
+                  budget: current.budget === option.key ? null : option.key,
                 }))
               }
             >
@@ -299,22 +293,25 @@ export function SquadGoingSection({
           ))}
         </FilterGroup>
 
-        <FilterGroup legend="Group size">
-          {GROUP_OPTIONS.map((option) => (
-            <FilterChip
-              key={option.value}
-              active={draft.group === option.value}
-              onClick={() =>
-                setDraft((current) => ({
-                  ...current,
-                  group: current.group === option.value ? null : option.value,
-                }))
+        <fieldset className={styles.checkGroup}>
+          <legend>Preferences</legend>
+          <div>
+            <FilterCheckbox
+              label="Veg only"
+              checked={draft.vegOnly}
+              onChange={(checked) =>
+                setDraft((current) => ({ ...current, vegOnly: checked }))
               }
-            >
-              {option.label}
-            </FilterChip>
-          ))}
-        </FilterGroup>
+            />
+            <FilterCheckbox
+              label="Has live event/offer"
+              checked={draft.hasLive}
+              onChange={(checked) =>
+                setDraft((current) => ({ ...current, hasLive: checked }))
+              }
+            />
+          </div>
+        </fieldset>
 
         <label className={styles.openToggle}>
           <span>
@@ -595,44 +592,52 @@ function FilterChip({
   );
 }
 
+function FilterCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className={styles.checkOption}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <strong>{label}</strong>
+    </label>
+  );
+}
+
 function matchesBudget(price: number | null, budget: BudgetFilter) {
   if (!budget) return true;
   if (price === null) return false;
-  if (budget === 'under-150') return price < 150;
-  if (budget === '150-250') return price >= 150 && price <= 250;
-  return price > 250;
+  const bucket = PRICE_BUCKETS.find((option) => option.key === budget);
+  return Boolean(
+    bucket &&
+    price >= bucket.min &&
+    (bucket.max === null || price < bucket.max),
+  );
 }
 
 function matchesDistance(distanceKm: number | null, distance: DistanceFilter) {
   if (!distance) return true;
   if (distanceKm === null) return false;
-  return distanceKm <= (distance === 'under-3' ? 3 : 6);
-}
-
-function matchesGroup(restaurant: RestaurantSummary, group: GroupFilter) {
-  if (!group) return true;
-  if (group === 'solo') {
-    return (
-      restaurant.takeaway ||
-      restaurant.vibe_tags.some((tag) =>
-        ['quick', 'study', 'chill'].includes(tag),
-      )
-    );
-  }
-  if (group === 'duo') return restaurant.dine_in || restaurant.takeaway;
-  if (group === 'small') return restaurant.dine_in;
-  return (
-    restaurant.dine_in &&
-    restaurant.vibe_tags.some((tag) => ['group', 'celebration'].includes(tag))
-  );
+  const limit = distance === 'under-3' ? 3 : distance === 'under-6' ? 6 : 8;
+  return distanceKm <= limit;
 }
 
 function countActiveFilters(filters: SquadFilters) {
   return [
-    filters.cuisine,
+    filters.cuisines.length ? 'cuisine' : null,
     filters.budget,
     filters.distance,
-    filters.group,
+    filters.vegOnly ? 'veg' : null,
+    filters.hasLive ? 'live' : null,
     filters.openNow ? 'open' : null,
   ].filter(Boolean).length;
 }

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { VegMark } from '@/components/ui/VegMark';
+import { useEffect, useId, useState } from 'react';
 import styles from './restaurant.module.css';
 
 export function ProfileCoverCarousel({
@@ -84,104 +83,357 @@ export function ProfileCoverCarousel({
   );
 }
 
+export function ProfileGalleryButton({
+  photos,
+  restaurantName,
+  labels,
+}: {
+  photos: string[];
+  restaurantName: string;
+  labels: string[];
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dialogId = useId();
+  const titleId = `${dialogId}-title`;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  if (!photos.length) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.coverActionButton}
+        aria-expanded={isOpen}
+        aria-controls={dialogId}
+        aria-label="Open gallery"
+        onClick={() => setIsOpen(true)}
+      >
+        <GalleryIcon />
+      </button>
+      {isOpen ? (
+        <div
+          id={dialogId}
+          className={styles.galleryOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setIsOpen(false);
+          }}
+        >
+          <div className={styles.galleryOverlaySheet}>
+            <div className={styles.galleryOverlayHeader}>
+              <button
+                type="button"
+                className={styles.galleryBackButton}
+                onClick={() => setIsOpen(false)}
+              >
+                <BackIcon />
+                <span>Back</span>
+              </button>
+              <div className={styles.galleryHeading}>
+                <p>Gallery</p>
+                <h2 id={titleId}>{restaurantName}</h2>
+              </div>
+              <span className={styles.galleryCount}>
+                {photos.length} photos
+              </span>
+            </div>
+            <div className={styles.galleryOverlayGrid}>
+              {photos.map((photo, index) => (
+                <figure
+                  key={`${photo}-${index}`}
+                  className={styles.galleryTile}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- restaurant storage images are resized on upload. */}
+                  <img src={photo} alt="" loading="lazy" />
+                  <figcaption>
+                    {labels[index] ?? `Photo ${index + 1}`}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 type MenuItem = {
   id: string;
   name: string;
   price: number;
-  isVeg: boolean;
-  available: boolean;
 };
 
-export function ProfileMenu({
+export function ProfileMenuButton({
   items,
-  photos,
+  menuPhotos,
   restaurantName,
 }: {
   items: MenuItem[];
-  photos: string[];
+  menuPhotos: string[];
   restaurantName: string;
 }) {
-  const [view, setView] = useState<'items' | 'photos'>(
-    items.length > 0 ? 'items' : 'photos',
-  );
-  const [showAllItems, setShowAllItems] = useState(false);
-  const visibleItems = showAllItems ? items : items.slice(0, 3);
+  const [isOpen, setIsOpen] = useState(false);
+  const dialogId = useId();
+  const titleId = `${dialogId}-title`;
 
-  if (items.length === 0 && photos.length === 0) {
-    return (
-      <div className={styles.emptyState}>
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.menuButton}
+        aria-expanded={isOpen}
+        aria-controls={dialogId}
+        onClick={() => setIsOpen(true)}
+      >
         <MenuIcon />
-        <strong>The menu is being plated.</strong>
-        <p>No menu has been published yet. Check back soon.</p>
+        <span>Menu</span>
+      </button>
+      {isOpen ? (
+        <div
+          id={dialogId}
+          className={styles.menuOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setIsOpen(false);
+          }}
+        >
+          <div className={styles.menuOverlaySheet}>
+            <div className={styles.menuOverlayHeader}>
+              <div>
+                <p>Explore the menu</p>
+                <h2 id={titleId}>{restaurantName}</h2>
+              </div>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={() => setIsOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <ProfileMenu items={items} menuPhotos={menuPhotos} />
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+export function ProfileMenu({
+  items,
+  menuPhotos,
+}: {
+  items: MenuItem[];
+  menuPhotos: string[];
+}) {
+  const [query, setQuery] = useState('');
+  const [showPhotos, setShowPhotos] = useState(false);
+  const [showAllItems, setShowAllItems] = useState(false);
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (items.length === 0) {
+    return (
+      <div className={styles.menuEmptyState}>
+        <p>Menu not published yet — check back soon.</p>
       </div>
     );
   }
 
+  const filteredItems = normalizedQuery
+    ? items.filter((item) => item.name.toLowerCase().includes(normalizedQuery))
+    : items;
+  const previewItems = showAllItems ? filteredItems : filteredItems.slice(0, 2);
+  const photoSources = menuPhotos.length ? menuPhotos : MENU_PLACEHOLDER_IMAGES;
+
   return (
-    <div>
-      {photos.length > 0 && items.length > 0 ? (
-        <button
-          type="button"
-          className={styles.menuPhotoToggle}
-          aria-pressed={view === 'photos'}
-          onClick={() =>
-            setView((current) => (current === 'items' ? 'photos' : 'items'))
-          }
-        >
-          {view === 'photos' ? 'View Dish List' : 'View Menu'}
-        </button>
-      ) : null}
-      {view === 'items' && items.length > 0 ? (
-        <>
-          <div className={styles.menuGrid}>
-            {visibleItems.map((item) => (
-              <article
-                key={item.id}
-                className={styles.menuItem}
-                data-unavailable={!item.available || undefined}
-              >
-                <div>
-                  <VegMark isVeg={item.isVeg} />
-                  <h3>{item.name}</h3>
-                </div>
-                <strong>₹{item.price}</strong>
-                {!item.available ? <small>Not available today</small> : null}
-              </article>
-            ))}
+    <div className={styles.menuPanel}>
+      <div className={styles.menuHeader}>
+        <div className={styles.menuHeadingCopy}>
+          <h2>Menu</h2>
+        </div>
+        <div className={styles.menuToolbar}>
+          <label className={styles.menuSearch}>
+            <SearchIcon />
+            <input
+              type="search"
+              value={query}
+              placeholder="Search dish"
+              aria-label="Search dish"
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className={styles.menuToggle}
+            aria-pressed={showPhotos}
+            onClick={() => setShowPhotos((current) => !current)}
+          >
+            {showPhotos ? 'Hide Menu' : 'View Menu'}
+          </button>
+        </div>
+      </div>
+      {showPhotos ? (
+        <div className={styles.menuPhotoShell}>
+          <div className={styles.menuPhotoGrid}>
+            {filteredItems.length ? (
+              filteredItems.map((item, index) => (
+                <DishPhotoCard
+                  key={item.id}
+                  name={item.name}
+                  imageSrc={photoSources[index % photoSources.length]}
+                  altIndex={index}
+                />
+              ))
+            ) : (
+              <p className={styles.menuEmptyState}>
+                No dishes match “{query.trim()}”.
+              </p>
+            )}
           </div>
-          {items.length > 3 ? (
+        </div>
+      ) : (
+        <div className={styles.menuListWrap}>
+          <div className={styles.menuGrid}>
+            {previewItems.length ? (
+              previewItems.map((item) => (
+                <article key={item.id} className={styles.menuCard}>
+                  <strong>{item.name}</strong>
+                  <span>₹{item.price}</span>
+                </article>
+              ))
+            ) : (
+              <p className={styles.menuEmptyState}>
+                No dishes match “{query.trim()}”.
+              </p>
+            )}
+          </div>
+          {filteredItems.length > 2 ? (
             <button
               type="button"
-              className={styles.menuExpand}
+              className={styles.menuMoreButton}
               aria-expanded={showAllItems}
               onClick={() => setShowAllItems((current) => !current)}
             >
-              {showAllItems ? 'Show less' : `View full menu (${items.length})`}
+              {showAllItems ? 'Show Less' : 'View More'}
             </button>
           ) : null}
-        </>
-      ) : null}
-      {view === 'photos' && photos.length > 0 ? (
-        <div className={styles.menuPhotoGrid}>
-          {photos.map((photo, index) => (
-            // eslint-disable-next-line @next/next/no-img-element -- storage images are resized on upload.
-            <img
-              key={`${photo}-${index}`}
-              src={photo}
-              alt={`${restaurantName} menu, page ${index + 1}`}
-              loading="lazy"
-            />
-          ))}
         </div>
-      ) : null}
+      )}
     </div>
+  );
+}
+
+function DishPhotoCard({
+  name,
+  imageSrc,
+  altIndex,
+}: {
+  name: string;
+  imageSrc: string;
+  altIndex: number;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <article className={styles.menuPhotoCard}>
+      <div className={styles.menuPhotoMedia} data-failed={failed || undefined}>
+        {failed ? (
+          <div className={styles.menuPhotoFallback}>
+            <span>{name.slice(0, 1)}</span>
+            <small>Photo unavailable</small>
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- restaurant menu images are uploaded or remote placeholders.
+          <img
+            src={imageSrc}
+            alt={name}
+            loading="lazy"
+            onError={() => setFailed(true)}
+          />
+        )}
+      </div>
+      <strong>{name}</strong>
+      <small>Photo #{altIndex + 1}</small>
+    </article>
+  );
+}
+
+const MENU_PLACEHOLDER_IMAGES = [
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1432139509613-5c4255815697?auto=format&fit=crop&w=1200&q=80',
+];
+
+function GalleryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <rect x="4" y="5" width="16" height="14" rx="2.5" />
+      <path d="M8 13l2.5-2.5L15 15" />
+      <circle cx="10" cy="9" r="1.4" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
   );
 }
 
 function MenuIcon() {
   return (
-    <svg viewBox="0 0 48 48">
-      <path d="M10 8h28v32H10zM16 17h16M16 24h16M16 31h10" />
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M5 6h14M5 12h14M5 18h9" />
+    </svg>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="m10 6-6 6 6 6" />
+      <path d="M5 12h14" />
     </svg>
   );
 }

@@ -45,8 +45,386 @@
   transform: translateY(calc(var(--menu-line-gap) * -1)) rotate(-45deg);
 }
 
+.drawerLayer {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  font-family: var(--font-body);
+  transition: visibility 0s linear 300ms;
+}
+
+.drawerLayerOpen {
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.drawerOverlay {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 58%);
+  opacity: 0;
+  backdrop-filter: blur(3px);
+  transition: opacity 280ms ease;
+}
+
+.drawerPanel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  width: min(280px, 82vw);
+  flex-direction: column;
+  overflow-y: auto;
+  padding: max(1.25rem, env(safe-area-inset-top)) 1.15rem
+    max(1.35rem, env(safe-area-inset-bottom));
+  border-left: 1px solid rgb(255 255 255 / 11%);
+  background: linear-gradient(155deg, #191919, #090909 72%);
+  color: #ededed;
+  box-shadow: -24px 0 65px rgb(0 0 0 / 38%);
+  transform: translateX(102%);
+  will-change: transform;
+  transition: transform 300ms cubic-bezier(0.22, 0.75, 0.18, 1);
+}
+
+.drawerLayerOpen .drawerOverlay {
+  opacity: 1;
+}
+
+.drawerLayerOpen .drawerPanel {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid rgb(255 255 255 / 11%);
+}
+
+.drawerClose {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 7%);
+  color: #ededed;
+  cursor: pointer;
+}
+
+.drawerNav {
+  display: grid;
+  padding: 0.7rem 0;
+}
+
+.drawerLink {
+  position: relative;
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-block: 0.08rem;
+  padding: 0.7rem 0.7rem 0.7rem 0.8rem;
+  border-left: 2px solid transparent;
+  border-radius: 0 0.65rem 0.65rem 0;
+  color: #ededed;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateX(0.7rem);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 180ms ease,
+    transform 240ms ease;
+}
+
+.drawerLayerOpen .drawerLink {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: calc(45ms + var(--menu-index) * 24ms);
+}
+
+.drawerLink > span,
+.contactTrigger > span {
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.drawerLink:hover {
+  background: rgb(255 255 255 / 5%);
+  color: #1db954;
+}
+
+.drawerLinkActive {
+  border-left-color: #1db954;
+  background: rgb(29 185 84 / 8%);
+  color: #1db954;
+}
+
+.contactItem {
+  border-left: 2px solid transparent;
+}
+
+.contactTrigger {
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.7rem 0.7rem 0.8rem;
+  border: 0;
+  border-radius: 0 0.65rem 0.65rem 0;
+  background: transparent;
+  color: #ededed;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.contactTrigger:hover,
+.contactItemOpen .contactTrigger {
+  background: rgb(255 255 255 / 5%);
+  color: #1db954;
+}
+
+.contactChevron {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 260ms ease;
+}
+
+.contactItemOpen .contactChevron {
+  transform: rotate(180deg);
+}
+
+.contactPanel {
+  display: grid;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 300ms ease,
+    opacity 220ms ease;
+}
+
+.contactPanel > div {
+  display: grid;
+  gap: 0.38rem;
+  padding: 0.25rem 0 0.65rem 0.8rem;
+}
+
+.contactItemOpen .contactPanel {
+  max-height: 14rem;
+  opacity: 1;
+}
+
+.aboutContent {
+  gap: 0.42rem !important;
+  padding: 0.7rem 0.75rem 0.85rem 0.8rem !important;
+  border-left: 1px solid rgb(255 255 255 / 11%);
+}
+
+.aboutContent strong {
+  color: #ededed;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.aboutContent p {
+  margin: 0;
+  color: #a2a2a2;
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.aboutContent span {
+  color: #737373;
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.contactLink {
+  display: grid;
+  gap: 0.05rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 0.58rem;
+  background: rgb(255 255 255 / 3%);
+  color: #ededed;
+  text-decoration: none;
+}
+
+.contactLink:hover {
+  border-color: rgb(29 185 84 / 42%);
+  color: #1db954;
+}
+
+.contactLink small {
+  color: #888;
+  font-size: 0.57rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contactLink strong {
+  overflow: hidden;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerDivider {
+  height: 1px;
+  margin-top: auto;
+  margin-bottom: 0.9rem;
+  background: rgb(255 255 255 / 12%);
+}
+
+.portalCta {
+  position: relative;
+  display: flex;
+  min-height: 5.15rem;
+  align-items: center;
+  gap: 0.7rem;
+  overflow: hidden;
+  padding: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 1rem;
+  background: #e8e5de;
+  color: #111;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 75%),
+    0 12px 28px rgb(0 0 0 / 34%);
+  text-decoration: none;
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.portalCta::after {
+  position: absolute;
+  right: 1rem;
+  bottom: 0;
+  left: 1rem;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, transparent, #111, transparent);
+  content: '';
+  opacity: 0.35;
+}
+
+.portalCta:hover {
+  border-color: #fff;
+  background: #f4f1ea;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 17px 36px rgb(0 0 0 / 46%);
+  transform: translateY(-2px);
+}
+
+.portalIcon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid #111;
+  border-radius: 0.78rem;
+  background: #171717;
+  color: #f3f0e9;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+}
+
+.portalIcon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.portalCopy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.12rem;
+}
+
+.portalCopy small {
+  color: #5e5b55;
+  font-size: 0.56rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.portalCopy strong {
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portalArrow {
+  display: grid;
+  width: 1.85rem;
+  height: 1.85rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid #111;
+  border-radius: 50%;
+  background: #171717;
+  color: #f3f0e9;
+  font-size: 0.9rem;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.portalCta:hover .portalArrow {
+  background: #343434;
+  color: #fff;
+  transform: translateX(0.12rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .menuGlyph > span {
+  .menuGlyph > span,
+  .drawerLayer,
+  .drawerOverlay,
+  .drawerPanel,
+  .drawerLink,
+  .contactChevron,
+  .contactPanel,
+  .portalCta {
     transition: none;
   }
 }

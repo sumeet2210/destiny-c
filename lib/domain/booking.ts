@@ -2,7 +2,7 @@
 // (rule 0.4). The enforceable rules live in the booking-flow skill and
 // architecture.md §4 — this file must match them exactly.
 //
-//   requested → confirmed (system: "accepted into the queue", not "table held")
+//   requested → confirmed or cancelled (restaurant owner decision)
 //     at booking_time - window → reminder sent
 //     student confirms  → confirmed_at set, stays 'confirmed'
 //     no response       → 'unconfirmed' (never 'cancelled'), no_show_count += 1
@@ -17,6 +17,7 @@ export type BookingStatus =
 export type BookingLike = {
   status: BookingStatus;
   booking_time: string;
+  booking_end_time?: string | null;
   reminder_sent_at: string | null;
   confirmed_at: string | null;
 };
@@ -39,6 +40,28 @@ export function validateLeadTime(
       reason: `Bookings need at least ${BOOKING.minLeadTimeMinutes} minutes notice so the owner actually sees it coming.`,
     };
   }
+  return { ok: true };
+}
+
+export function validateBookingWindow(
+  bookingTime: Date,
+  bookingEndTime: Date,
+  now: Date = new Date(),
+): { ok: true } | { ok: false; reason: string } {
+  const startCheck = validateLeadTime(bookingTime, now);
+  if (!startCheck.ok) return startCheck;
+
+  if (Number.isNaN(bookingEndTime.getTime())) {
+    return { ok: false, reason: 'Pick a valid end time.' };
+  }
+
+  if (bookingEndTime.getTime() <= bookingTime.getTime()) {
+    return {
+      ok: false,
+      reason: 'The end time needs to be after the start time.',
+    };
+  }
+
   return { ok: true };
 }
 
@@ -135,13 +158,37 @@ export function canReview(booking: BookingLike): boolean {
   return booking.status === 'completed' && booking.confirmed_at !== null;
 }
 
+export function formatBookingWindow(
+  bookingTime: string,
+  bookingEndTime?: string | null,
+): string {
+  const start = new Date(bookingTime);
+  const startText = start.toLocaleString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
+
+  if (!bookingEndTime) return startText;
+
+  const end = new Date(bookingEndTime);
+  return `${startText} – ${end.toLocaleTimeString('en-IN', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  })}`;
+}
+
 /**
  * Rule 4 lives in copy as much as code: statuses phrase what the owner knows,
  * never what the platform guarantees.
  */
 export const STATUS_LABELS: Record<BookingStatus, string> = {
-  requested: 'Sending to the owner',
-  confirmed: 'Owner notified',
+  requested: 'Awaiting owner',
+  confirmed: 'Accepted by owner',
   unconfirmed: 'Likely no-show',
   completed: 'Visit over',
   cancelled: 'Cancelled',

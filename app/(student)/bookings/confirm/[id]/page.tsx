@@ -25,6 +25,7 @@ export default async function ConfirmPage(
           id: booking.id,
           restaurantName: booking.restaurantName,
           booking_time: booking.booking_time,
+          booking_end_time: booking.booking_end_time,
           headcount: booking.headcount,
           status: booking.status,
           reminder_sent_at: booking.reminder_sent_at,

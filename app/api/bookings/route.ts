@@ -1,7 +1,7 @@
 // P6-3: booking creation. The server-side lead-time check here is the source
 // of truth — the form's check is only fast feedback (booking-flow rule 1).
 import { NextResponse } from 'next/server';
-import { validateLeadTime } from '@/lib/domain/booking';
+import { validateBookingWindow } from '@/lib/domain/booking';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
@@ -18,8 +18,11 @@ export async function POST(request: Request) {
   let body: {
     restaurantId?: string;
     bookingTime?: string;
+    bookingEndTime?: string;
     headcount?: number;
     specialRequest?: string;
+    offerId?: string | null;
+    eventId?: string | null;
   };
   try {
     body = await request.json();
@@ -30,10 +33,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const { restaurantId, bookingTime, headcount, specialRequest } = body;
-  if (!restaurantId || !bookingTime || !headcount || headcount < 1) {
+  const {
+    restaurantId,
+    bookingTime,
+    bookingEndTime,
+    headcount,
+    specialRequest,
+    offerId,
+    eventId,
+  } = body;
+  if (
+    !restaurantId ||
+    !bookingTime ||
+    !bookingEndTime ||
+    !headcount ||
+    headcount < 1 ||
+    headcount > 15
+  ) {
     return NextResponse.json(
       { ok: false, error: 'Missing booking details.' },
+      { status: 400 },
+    );
+  }
+
+  if (offerId && eventId) {
+    return NextResponse.json(
+      { ok: false, error: 'Choose either one offer or one event.' },
       { status: 400 },
     );
   }
@@ -60,7 +85,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const check = validateLeadTime(new Date(bookingTime));
+  const check = validateBookingWindow(
+    new Date(bookingTime),
+    new Date(bookingEndTime),
+  );
   if (!check.ok) {
     return NextResponse.json(
       { ok: false, error: check.reason },
@@ -68,17 +96,46 @@ export async function POST(request: Request) {
     );
   }
 
-  // requested → validated → confirmed by the system: "accepted into the
-  // queue", never "table held" (architecture.md §4).
+  const [offerResult, eventResult] = await Promise.all([
+    offerId
+      ? supabase
+          .from('offers')
+          .select('id')
+          .eq('id', offerId)
+          .eq('restaurant_id', restaurantId)
+          .eq('is_active', true)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    eventId
+      ? supabase
+          .from('events')
+          .select('id')
+          .eq('id', eventId)
+          .eq('restaurant_id', restaurantId)
+          .eq('is_cancelled', false)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  if ((offerId && !offerResult.data) || (eventId && !eventResult.data)) {
+    return NextResponse.json(
+      { ok: false, error: 'That offer or event is no longer available.' },
+      { status: 422 },
+    );
+  }
+
   const { data, error } = await supabase
     .from('bookings')
     .insert({
       student_id: user.id,
       restaurant_id: restaurantId,
       booking_time: new Date(bookingTime).toISOString(),
+      booking_end_time: new Date(bookingEndTime).toISOString(),
       headcount: Math.floor(headcount),
       special_request: specialRequest?.slice(0, 500) || null,
-      status: 'confirmed',
+      offer_id: offerId || null,
+      event_id: eventId || null,
+      status: 'requested',
     })
     .select('id')
     .single();

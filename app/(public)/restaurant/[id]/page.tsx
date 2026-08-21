@@ -19,7 +19,11 @@ import {
 import { listStudentBookings } from '@/lib/queries/bookings';
 import { alsoLike, getRestaurantDetail } from '@/lib/queries/catalog';
 import { getSavedIds } from '@/lib/queries/social';
-import { ProfileCoverCarousel, ProfileMenu } from './RestaurantProfileClient';
+import {
+  ProfileCoverCarousel,
+  ProfileGalleryButton,
+  ProfileMenuButton,
+} from './RestaurantProfileClient';
 import styles from './restaurant.module.css';
 
 const NITW_CAMPUS = { lat: 17.9833, lng: 79.5308 };
@@ -82,6 +86,7 @@ export default async function RestaurantPage(
       .map((tag) => VIBES.find((vibe) => vibe.tag === tag)?.label ?? tag)
       .join(' · ') ||
     'Local favourite';
+  const address = row.address || row.area;
   const reviewableBooking = isStudent
     ? bookings.find(
         (booking) =>
@@ -108,6 +113,13 @@ export default async function RestaurantPage(
               <BackIcon />
             </Link>
             <div className={styles.coverActions}>
+              {photos.length > 0 ? (
+                <ProfileGalleryButton
+                  photos={photos}
+                  restaurantName={row.name}
+                  labels={PHOTO_LABELS}
+                />
+              ) : null}
               <SaveToggle
                 restaurantId={id}
                 initialSaved={isStudent && savedIds.has(id)}
@@ -122,113 +134,66 @@ export default async function RestaurantPage(
           <div className={styles.headBox}>
             <div className={styles.titleLine}>
               <div className={styles.nameGroup}>
-                <h1>{row.name}</h1>
-                <span
-                  className={styles.statusBadge}
-                  data-open={summary.isOpen || undefined}
-                >
-                  {summary.isOpen ? 'Open now' : 'Closed'}
-                </span>
+                <div className={styles.nameRow}>
+                  <h1>{row.name}</h1>
+                </div>
+                <p className={styles.cuisineLine}>{cuisine}</p>
+                <p className={styles.locationLine}>
+                  <span className={styles.addressLine}>
+                    <PinIcon />
+                    <span>{address}</span>
+                  </span>
+                  <span className={styles.distancePill}>{distance}</span>
+                </p>
               </div>
-              <strong
-                className={styles.ratingValue}
-                aria-label="Restaurant rating"
-              >
-                <StarIcon />
-                {summary.rating?.toFixed(1) ?? 'New'}
-              </strong>
+              <div className={styles.ratingStack}>
+                <strong
+                  className={styles.ratingValue}
+                  aria-label="Restaurant rating"
+                >
+                  <StarIcon />
+                  {summary.rating?.toFixed(1) ?? 'New'}
+                </strong>
+              </div>
             </div>
-            <div className={styles.metaRow}>
-              <span>{cuisine}</span>
-              <span>{distance}</span>
+            <div className={styles.headFooter}>
+              <p className={styles.openingTime}>
+                <ClockIcon />
+                <span>Today</span>
+                <strong>{todayHours}</strong>
+              </p>
+              <ProfileMenuButton
+                restaurantName={row.name}
+                items={menu.map((item) => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                }))}
+                menuPhotos={menuPhotos}
+              />
             </div>
-            <p className={styles.openingTime}>
-              <ClockIcon />
-              <span>Today</span>
-              <strong>{todayHours}</strong>
-            </p>
           </div>
         </header>
 
-        <section className={styles.section} aria-labelledby="gallery-title">
-          <h2 id="gallery-title">Gallery</h2>
-          {photos.length ? (
-            <div className={styles.galleryRail}>
-              {photos.map((photo, index) => (
-                <figure key={`${photo}-${index}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- restaurant storage images are resized on upload. */}
-                  <img src={photo} alt="" loading="lazy" />
-                  <figcaption>
-                    {PHOTO_LABELS[index] ?? `Photo ${index + 1}`}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          ) : (
-            <p className={styles.emptyLine}>
-              Photos have not been published yet.
-            </p>
-          )}
-        </section>
-
-        <section className={styles.section} aria-labelledby="menu-title">
-          <div className={styles.sectionTitle}>
-            <h2 id="menu-title">Menu</h2>
-          </div>
-          <ProfileMenu
-            restaurantName={row.name}
-            items={menu.map((item) => ({
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              isVeg: item.is_veg,
-              available: item.is_available,
-            }))}
-            photos={menuPhotos}
-          />
-        </section>
-
-        <section className={styles.section} aria-labelledby="about-title">
-          <h2 id="about-title">About</h2>
-          <p className={styles.description}>
-            {row.description ||
-              `${row.name} is a neighbourhood favourite for relaxed meals and easy group plans.`}
-          </p>
-          <div className={styles.infoGrid}>
-            <InfoCard
-              icon={<ClockIcon />}
-              label="Hours today"
-              value={todayHours}
-            />
-            <InfoCard
-              icon={<PinIcon />}
-              label="Address"
-              value={row.address || row.area}
-            />
-            <InfoCard
-              icon={<PhoneIcon />}
-              label="Phone"
-              value={row.phone || 'Not listed'}
-            />
-            <InfoCard
-              icon={<PlateIcon />}
-              label="Service"
-              value={
-                [row.dine_in && 'Dine-in', row.takeaway && 'Takeaway']
-                  .filter(Boolean)
-                  .join(' + ') || 'Visit venue'
-              }
-            />
-          </div>
-        </section>
-
         <section className={styles.section} aria-labelledby="offers-title">
-          <h2 id="offers-title">Special Offers</h2>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 id="offers-title">Special Offers</h2>
+            </div>
+          </div>
           {offers[0] ? (
             <article className={styles.offerCard}>
+              <div className={styles.offerTopline}>
+                <span className={styles.offerKicker}>Live now</span>
+                <time dateTime={offers[0].starts_at}>
+                  {formatOfferWindow(offers[0].starts_at, offers[0].expires_at)}
+                </time>
+              </div>
               <strong>{offers[0].discount_text || offers[0].title}</strong>
-              {offers[0].discount_text ? <span>{offers[0].title}</span> : null}
-              {offers[0].description ? <p>{offers[0].description}</p> : null}
+              {offers[0].discount_text ? <p>{offers[0].title}</p> : null}
+              {offers[0].description ? (
+                <div className={styles.offerBody}>{offers[0].description}</div>
+              ) : null}
             </article>
           ) : (
             <p className={styles.emptyLine}>
@@ -238,15 +203,36 @@ export default async function RestaurantPage(
         </section>
 
         <section className={styles.section} aria-labelledby="events-title">
-          <h2 id="events-title">Upcoming Events</h2>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 id="events-title">Upcoming Events</h2>
+            </div>
+          </div>
           {events.length ? (
             <div className={styles.eventList}>
               {events.map((event) => (
-                <article key={event.id}>
+                <article
+                  key={event.id}
+                  className={styles.eventCard}
+                  data-event-type={event.event_type}
+                >
+                  <div className={styles.eventTopline}>
+                    <span className={styles.eventTypePill}>
+                      {formatEventType(event.event_type)}
+                    </span>
+                    <time dateTime={event.starts_at}>
+                      {formatEventDate(event.starts_at)}
+                    </time>
+                  </div>
                   <strong>{event.title}</strong>
-                  <time dateTime={event.starts_at}>
-                    {formatEventDate(event.starts_at)}
-                  </time>
+                  <p>{event.description}</p>
+                  <div className={styles.eventFooter}>
+                    <span>
+                      {event.ends_at
+                        ? `Until ${formatEventTime(event.ends_at)}`
+                        : 'Starts soon'}
+                    </span>
+                  </div>
                 </article>
               ))}
             </div>
@@ -283,7 +269,7 @@ export default async function RestaurantPage(
           />
         </section>
 
-        <SimilarRestaurants id={id} />
+        <RecommendedRestaurants id={id} />
       </div>
       <aside
         className={styles.profileDock}
@@ -295,15 +281,15 @@ export default async function RestaurantPage(
   );
 }
 
-async function SimilarRestaurants({ id }: { id: string }) {
+async function RecommendedRestaurants({ id }: { id: string }) {
   const restaurants = await alsoLike(id);
   if (!restaurants.length) return null;
   return (
     <section
       className={`${styles.section} ${styles.similarSection}`}
-      aria-labelledby="similar-title"
+      aria-labelledby="recommended-title"
     >
-      <h2 id="similar-title">Similar Restaurants</h2>
+      <h2 id="recommended-title">Recommended</h2>
       <div className={styles.similarGrid}>
         {restaurants.map((restaurant) => (
           <RestaurantCard
@@ -332,26 +318,6 @@ function withArtwork<T extends { name: string; photos: string[] }>(
     : restaurant;
 }
 
-function InfoCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className={styles.infoCard}>
-      {icon}
-      <span>
-        <small>{label}</small>
-        <strong>{value}</strong>
-      </span>
-    </div>
-  );
-}
-
 function BackIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
@@ -370,6 +336,66 @@ function formatEventDate(iso: string) {
     timeZone: 'Asia/Kolkata',
   });
 }
+function formatEventTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-IN', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
+}
+
+function formatOfferWindow(startsAt: string, expiresAt: string) {
+  const start = new Date(startsAt);
+  const end = new Date(expiresAt);
+  const now = new Date();
+  const active = now >= start && now <= end;
+
+  if (active) {
+    return `Live ${start.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata',
+    })} – ${end.toLocaleTimeString('en-IN', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata',
+    })}`;
+  }
+
+  return `${start.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  })} – ${end.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  })}`;
+}
+
+function formatEventType(eventType: string) {
+  switch (eventType) {
+    case 'live_music':
+      return 'Live music';
+    case 'open_mic':
+      return 'Open mic';
+    case 'quiz':
+      return 'Quiz night';
+    case 'screening':
+      return 'Screening';
+    case 'food_festival':
+      return 'Food festival';
+    default:
+      return 'Event';
+  }
+}
+
 function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
@@ -379,7 +405,7 @@ function StarIcon() {
 }
 function ClockIcon() {
   return (
-    <svg viewBox="0 0 24 24">
+    <svg viewBox="0 0 24 24" aria-hidden>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
     </svg>
@@ -387,24 +413,9 @@ function ClockIcon() {
 }
 function PinIcon() {
   return (
-    <svg viewBox="0 0 24 24">
+    <svg viewBox="0 0 24 24" aria-hidden>
       <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
       <circle cx="12" cy="10" r="2.5" />
-    </svg>
-  );
-}
-function PhoneIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M7 3 4 5c0 8 7 15 15 15l2-3-5-3-2 2c-3-1-5-3-6-6l2-2-3-5Z" />
-    </svg>
-  );
-}
-function PlateIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="4.5" />
     </svg>
   );
 }

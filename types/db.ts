@@ -20,12 +20,17 @@ export type Database = {
       bookings: {
         Row: {
           booking_time: string;
+          booking_end_time: string;
           confirmed_at: string | null;
           created_at: string;
+          event_id: string | null;
           headcount: number;
           id: string;
           owner_note: string | null;
           owner_note_at: string | null;
+          owner_decided_at: string | null;
+          owner_response: string | null;
+          offer_id: string | null;
           reminder_sent_at: string | null;
           restaurant_id: string;
           special_request: string | null;
@@ -34,12 +39,17 @@ export type Database = {
         };
         Insert: {
           booking_time: string;
+          booking_end_time: string;
           confirmed_at?: string | null;
           created_at?: string;
+          event_id?: string | null;
           headcount: number;
           id?: string;
           owner_note?: string | null;
           owner_note_at?: string | null;
+          owner_decided_at?: string | null;
+          owner_response?: string | null;
+          offer_id?: string | null;
           reminder_sent_at?: string | null;
           restaurant_id: string;
           special_request?: string | null;
@@ -48,12 +58,17 @@ export type Database = {
         };
         Update: {
           booking_time?: string;
+          booking_end_time?: string;
           confirmed_at?: string | null;
           created_at?: string;
+          event_id?: string | null;
           headcount?: number;
           id?: string;
           owner_note?: string | null;
           owner_note_at?: string | null;
+          owner_decided_at?: string | null;
+          owner_response?: string | null;
+          offer_id?: string | null;
           reminder_sent_at?: string | null;
           restaurant_id?: string;
           special_request?: string | null;
@@ -61,6 +76,20 @@ export type Database = {
           student_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'bookings_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'bookings_offer_id_fkey';
+            columns: ['offer_id'];
+            isOneToOne: false;
+            referencedRelation: 'offers';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'bookings_restaurant_id_fkey';
             columns: ['restaurant_id'];
@@ -118,36 +147,45 @@ export type Database = {
           cover_image_url: string | null;
           created_at: string;
           description: string | null;
+          entry_fee: number | null;
           ends_at: string | null;
           event_type: Database['public']['Enums']['event_type'];
           id: string;
           is_cancelled: boolean;
+          location_details: string | null;
           restaurant_id: string;
           starts_at: string;
+          ticket_url: string | null;
           title: string;
         };
         Insert: {
           cover_image_url?: string | null;
           created_at?: string;
           description?: string | null;
+          entry_fee?: number | null;
           ends_at?: string | null;
           event_type?: Database['public']['Enums']['event_type'];
           id?: string;
           is_cancelled?: boolean;
+          location_details?: string | null;
           restaurant_id: string;
           starts_at: string;
+          ticket_url?: string | null;
           title: string;
         };
         Update: {
           cover_image_url?: string | null;
           created_at?: string;
           description?: string | null;
+          entry_fee?: number | null;
           ends_at?: string | null;
           event_type?: Database['public']['Enums']['event_type'];
           id?: string;
           is_cancelled?: boolean;
+          location_details?: string | null;
           restaurant_id?: string;
           starts_at?: string;
+          ticket_url?: string | null;
           title?: string;
         };
         Relationships: [
@@ -538,6 +576,7 @@ export type Database = {
           id: string;
           nitw_verified: boolean;
           no_show_count: number;
+          phone: string | null;
           role: Database['public']['Enums']['user_role'];
           share_activity: boolean;
         };
@@ -549,6 +588,7 @@ export type Database = {
           id: string;
           nitw_verified?: boolean;
           no_show_count?: number;
+          phone?: string | null;
           role?: Database['public']['Enums']['user_role'];
           share_activity?: boolean;
         };
@@ -560,6 +600,7 @@ export type Database = {
           id?: string;
           nitw_verified?: boolean;
           no_show_count?: number;
+          phone?: string | null;
           role?: Database['public']['Enums']['user_role'];
           share_activity?: boolean;
         };
@@ -567,6 +608,13 @@ export type Database = {
       };
     };
     Views: {
+      event_interest_counts: {
+        Row: {
+          event_id: string | null;
+          interest_count: number | null;
+        };
+        Relationships: [];
+      };
       friend_edges: {
         Row: {
           friend_id: string | null;
@@ -638,11 +686,16 @@ export type Database = {
       booking_status:
         'requested' | 'confirmed' | 'unconfirmed' | 'completed' | 'cancelled';
       event_type:
+        | 'dj_night'
         | 'live_music'
+        | 'comedy'
+        | 'party'
         | 'open_mic'
         | 'quiz'
         | 'screening'
         | 'food_festival'
+        | 'gaming'
+        | 'cultural'
         | 'other';
       friendship_status: 'pending' | 'accepted' | 'blocked';
       photo_kind: 'gallery' | 'menu_photo';
@@ -783,11 +836,16 @@ export const Constants = {
         'cancelled',
       ],
       event_type: [
+        'dj_night',
         'live_music',
+        'comedy',
+        'party',
         'open_mic',
         'quiz',
         'screening',
         'food_festival',
+        'gaming',
+        'cultural',
         'other',
       ],
       friendship_status: ['pending', 'accepted', 'blocked'],

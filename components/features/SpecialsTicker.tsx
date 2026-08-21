@@ -1,15 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  type CSSProperties,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
-import { useToast } from '@/components/ui/Toast';
-import { toggleSaved } from '@/lib/social/actions';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 type TickerOffer = {
   id: string;
@@ -68,33 +60,24 @@ const FLIP_AUTO_RESET_MS = 5000;
 export function SpecialsTicker({
   offers,
   events = [],
-  loggedIn = false,
-  initialSavedIds = [],
 }: {
   offers: TickerOffer[];
   events?: TickerEvent[];
-  loggedIn?: boolean;
-  initialSavedIds?: string[];
 }) {
   const router = useRouter();
-  const toast = useToast();
   const railRef = useRef<HTMLDivElement>(null);
   const duplicateCycleRef = useRef<HTMLDivElement>(null);
   const loopAtRef = useRef(0);
   const draggedRef = useRef(false);
   const pointerGestureRef = useRef<PointerGesture | null>(null);
   const flipAutoResetAtRef = useRef(0);
-  const celebrationTimerRef = useRef<number | null>(null);
   const [dragging, setDragging] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [inView, setInView] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [flippedCard, setFlippedCard] = useState<string | null>(null);
-  const [savedIds, setSavedIds] = useState(() => new Set(initialSavedIds));
-  const [celebratingCard, setCelebratingCard] = useState<string | null>(null);
   const [badgeTick, setBadgeTick] = useState(0);
-  const [, startTransition] = useTransition();
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -152,14 +135,6 @@ export function SpecialsTicker({
     document.addEventListener('pointerdown', resetFlippedCard);
     return () => document.removeEventListener('pointerdown', resetFlippedCard);
   }, [flippedCard]);
-
-  useEffect(
-    () => () => {
-      if (celebrationTimerRef.current)
-        window.clearTimeout(celebrationTimerRef.current);
-    },
-    [],
-  );
 
   useEffect(() => {
     if (
@@ -236,48 +211,6 @@ export function SpecialsTicker({
     router.push(card.detailsHref);
   };
 
-  const saveRestaurant = (
-    restaurantId: string,
-    cardKey: string,
-    nextPath: string,
-  ) => {
-    if (!loggedIn) {
-      router.push(`/login?next=${encodeURIComponent(nextPath)}`);
-      return;
-    }
-
-    const wasSaved = savedIds.has(restaurantId);
-    setSavedIds((current) => {
-      const next = new Set(current);
-      if (wasSaved) next.delete(restaurantId);
-      else next.add(restaurantId);
-      return next;
-    });
-
-    if (!wasSaved && !reduceMotion) {
-      setCelebratingCard(cardKey);
-      if (celebrationTimerRef.current)
-        window.clearTimeout(celebrationTimerRef.current);
-      celebrationTimerRef.current = window.setTimeout(
-        () => setCelebratingCard(null),
-        650,
-      );
-    }
-
-    startTransition(async () => {
-      const result = await toggleSaved(restaurantId);
-      if (!result.ok) {
-        setSavedIds((current) => {
-          const next = new Set(current);
-          if (wasSaved) next.add(restaurantId);
-          else next.delete(restaurantId);
-          return next;
-        });
-        toast(result.message ?? 'Could not save this place', 'error');
-      }
-    });
-  };
-
   if (offers.length === 0 && events.length === 0) {
     return (
       <div className="rounded-card border-border-hairline bg-surface-muted text-text-muted border p-4 text-sm">
@@ -288,13 +221,10 @@ export function SpecialsTicker({
 
   const sharedTileProps = {
     badgeTick,
-    celebratingCard,
     flippedCard,
     onFlip: toggleCard,
     onOpenBooking: openBooking,
     onOpenDetail: openDetail,
-    onSave: saveRestaurant,
-    savedIds,
   };
 
   return (
@@ -430,14 +360,11 @@ export function SpecialsTicker({
 
 type SharedTileProps = {
   badgeTick: number;
-  celebratingCard: string | null;
   duplicate?: boolean;
   flippedCard: string | null;
   onFlip: (card: TickerCard) => void;
   onOpenBooking: (card: TickerCard) => void;
   onOpenDetail: (card: TickerCard) => void;
-  onSave: (restaurantId: string, cardKey: string, nextPath: string) => void;
-  savedIds: Set<string>;
 };
 
 function EventTile({
@@ -503,16 +430,12 @@ function OfferTile({
 function TickerTile({
   card,
   badgeTick,
-  celebratingCard,
   duplicate = false,
   flippedCard,
   onFlip,
   onOpenBooking,
   onOpenDetail,
-  onSave,
-  savedIds,
 }: { card: TickerCard } & SharedTileProps) {
-  const saved = savedIds.has(card.restaurantId);
   const contentKey = card.key.replace(/^duplicate-/, '');
   const heat = mockHeat(contentKey);
   const isFlipped = flippedCard === card.key;
@@ -606,30 +529,6 @@ function TickerTile({
             <button
               type="button"
               tabIndex={duplicate || !isFlipped ? -1 : undefined}
-              aria-pressed={saved}
-              onClick={(event) => {
-                event.stopPropagation();
-                onSave(card.restaurantId, card.key, card.detailsHref);
-              }}
-              className={saved ? 'specials-save is-saved' : 'specials-save'}
-            >
-              <HeartIcon filled={saved} />
-              <span>{saved ? 'Saved' : 'Save'}</span>
-              {celebratingCard === card.key && <ConfettiBurst />}
-            </button>
-            <a
-              href={directionsUrl(card)}
-              target="_blank"
-              rel="noopener noreferrer"
-              tabIndex={duplicate || !isFlipped ? -1 : undefined}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <DirectionsIcon />
-              <span>Directions</span>
-            </a>
-            <button
-              type="button"
-              tabIndex={duplicate || !isFlipped ? -1 : undefined}
               onClick={(event) => {
                 event.stopPropagation();
                 onOpenDetail(card);
@@ -664,26 +563,6 @@ function mockHash(value: string) {
   return hash;
 }
 
-function directionsUrl(card: TickerCard) {
-  if (card.restaurantLat !== null && card.restaurantLng !== null) {
-    return `https://www.google.com/maps/dir/?api=1&destination=${card.restaurantLat},${card.restaurantLng}`;
-  }
-  const query = encodeURIComponent(
-    `${card.restaurantName}, Warangal, Telangana`,
-  );
-  return `https://www.google.com/maps/search/?api=1&query=${query}`;
-}
-
-function ConfettiBurst() {
-  return (
-    <span className="specials-confetti" aria-hidden>
-      {[...Array(6)].map((_, index) => (
-        <i key={index} />
-      ))}
-    </span>
-  );
-}
-
 function FlameIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
@@ -709,26 +588,6 @@ function CalendarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
       <path d="M6 3v3M18 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" />
-    </svg>
-  );
-}
-
-function DirectionsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <path d="m12 3 9 9-9 9-9-9 9-9Z" />
-      <path d="M8 14v-2h8M14 10l2 2-2 2" />
-    </svg>
-  );
-}
-
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <path
-        d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z"
-        fill={filled ? 'currentColor' : 'none'}
-      />
     </svg>
   );
 }

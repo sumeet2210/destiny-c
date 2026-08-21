@@ -1,18 +1,20 @@
-import type { CSSProperties } from 'react';
-import Link from 'next/link';
 import { Suspense } from 'react';
-import { RsvpButton } from '@/components/features/RsvpButton';
+import Link from 'next/link';
 import { DestinyPage } from '@/components/ui/DestinyPage';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { EVENT_TYPES, type EventTypeKey } from '@/config/events';
 import { getSessionUser } from '@/lib/auth/session';
-import { listUpcomingEvents } from '@/lib/queries/catalog';
+import {
+  listEventInterestCounts,
+  listUpcomingEvents,
+} from '@/lib/queries/catalog';
 import { getFriendActivity, getMyRsvpIds } from '@/lib/queries/social';
+import { EventsExplorer, type SceneEvent } from './EventsExplorer';
 import styles from './events.module.css';
 
-export const metadata = { title: 'Events' };
-
-const IST = 'Asia/Kolkata';
+export const metadata = {
+  title: 'The Scene',
+  description: 'Discover what is happening around NIT Warangal.',
+};
 
 const RESTAURANT_ARTWORK: Record<string, string> = {
   'Biryani Adda': '/home/biryani-adda.webp',
@@ -23,246 +25,141 @@ const RESTAURANT_ARTWORK: Record<string, string> = {
   "Hunter's Grill": '/home/hero-campus-feast.webp',
 };
 
-const typeMeta = (key: string) =>
-  EVENT_TYPES.find((type) => type.key === (key as EventTypeKey)) ??
-  EVENT_TYPES[EVENT_TYPES.length - 1];
-
-function dateParts(iso: string) {
-  const date = new Date(iso);
-  return {
-    day: date.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      timeZone: IST,
-    }),
-    month: date.toLocaleDateString('en-IN', {
-      month: 'short',
-      timeZone: IST,
-    }),
-    weekday: date.toLocaleDateString('en-IN', {
-      weekday: 'long',
-      timeZone: IST,
-    }),
-    time: date.toLocaleTimeString('en-IN', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: IST,
-    }),
-  };
-}
-
 function eventArtwork(restaurantName: string, coverImageUrl: string | null) {
   if (coverImageUrl && !coverImageUrl.startsWith('/seed/')) {
     return coverImageUrl;
   }
-
   return RESTAURANT_ARTWORK[restaurantName] ?? '/home/hero-campus-feast.webp';
 }
 
-export default function EventsPage() {
+function heroDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'Asia/Kolkata',
+  });
+}
+
+export default async function EventsPage() {
+  const heroEvents = (await listUpcomingEvents()).slice(0, 2);
+
   return (
     <DestinyPage className={styles.eventsPage}>
-      <div className={styles.shell}>
-        <header className={styles.intro}>
-          <div className={styles.introCopy}>
-            <h1>What&apos;s on.</h1>
-            <p>
-              Live music, open mics, screenings and food gatherings from the
-              places around campus.
-            </p>
+      <header className={styles.hero}>
+        <div className={styles.heroGlow} aria-hidden="true" />
+        <div className={styles.heroInner}>
+          <h1>
+            <span>The</span>
+            <span>Scene</span>
+          </h1>
+          <p className={styles.heroSubtitle}>
+            What&apos;s happening around NITW?
+          </p>
+        </div>
+        {heroEvents.length ? (
+          <div
+            className={styles.heroDeck}
+            aria-label="Upcoming event highlights"
+          >
+            {heroEvents.map((event) => (
+              <Link
+                key={event.id}
+                href={`/events/${event.id}`}
+                className={styles.heroPoster}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={eventArtwork(
+                    event.restaurantName,
+                    event.cover_image_url,
+                  )}
+                  alt=""
+                />
+                <span>{heroDate(event.starts_at)}</span>
+                <div>
+                  <strong>{event.title}</strong>
+                  <small>{event.restaurantName}</small>
+                </div>
+              </Link>
+            ))}
           </div>
+        ) : null}
+      </header>
 
-          <a className={styles.calendarLink} href="#event-list">
-            <CalendarIcon />
-            <span>See the calendar</span>
-            <ArrowDownIcon />
-          </a>
-        </header>
-
+      <div className={styles.shell}>
         <Suspense fallback={<EventsLoading />}>
-          <EventsList />
+          <EventsData />
         </Suspense>
       </div>
     </DestinyPage>
   );
 }
 
-async function EventsList() {
-  const [events, user, myRsvps, activity] = await Promise.all([
+async function EventsData() {
+  const [events, user, myRsvps, activity, interestCounts] = await Promise.all([
     listUpcomingEvents(),
     getSessionUser(),
     getMyRsvpIds(),
     getFriendActivity(),
+    listEventInterestCounts(),
   ]);
-  const isStudent = user?.role === 'student';
 
-  if (events.length === 0) {
-    return <EventsEmpty />;
+  if (!events.length) {
+    return (
+      <section className={styles.emptyState}>
+        <p className={styles.sectionKicker}>The Scene</p>
+        <h2>Quiet for now. Not for long.</h2>
+        <p>
+          Restaurants are lining up their next drops. Check back before the
+          weekend or browse places around campus now.
+        </p>
+        <a href="/search">Browse restaurants</a>
+      </section>
+    );
   }
 
+  const sceneEvents: SceneEvent[] = events.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    eventType: event.event_type,
+    startsAt: event.starts_at,
+    endsAt: event.ends_at,
+    restaurantId: event.restaurant_id,
+    restaurantName: event.restaurantName,
+    area: 'Near NIT Warangal',
+    artwork: eventArtwork(event.restaurantName, event.cover_image_url),
+    entryFee: event.entry_fee,
+    location: event.location_details,
+    ticketUrl: event.ticket_url,
+    interestCount: interestCounts.get(event.id) ?? 0,
+    initiallyInterested: myRsvps.has(event.id),
+    friendsInterested: activity.goingTo.get(event.id) ?? [],
+  }));
+
   return (
-    <section
-      id="event-list"
-      className={styles.eventField}
-      aria-labelledby="event-list-title"
-    >
-      <div className={styles.sectionHeading}>
-        <h2 id="event-list-title">Upcoming near campus</h2>
-        <p>
-          {events.length} {events.length === 1 ? 'event' : 'events'} on the
-          calendar
-        </p>
-      </div>
-
-      <div className={styles.eventList}>
-        {events.map((event) => {
-          const meta = typeMeta(event.event_type);
-          const { day, month, weekday, time } = dateParts(event.starts_at);
-          const artwork = eventArtwork(
-            event.restaurantName,
-            event.cover_image_url,
-          );
-          const artworkStyle = {
-            '--event-artwork': `url(${JSON.stringify(artwork)})`,
-          } as CSSProperties;
-
-          return (
-            <article key={event.id} className={styles.eventCard}>
-              <div
-                className={styles.eventMedia}
-                style={artworkStyle}
-                aria-hidden="true"
-              >
-                <span className={styles.eventType}>{meta.label}</span>
-                <time className={styles.dateBlock} dateTime={event.starts_at}>
-                  <span>{month}</span>
-                  <strong>{day}</strong>
-                </time>
-              </div>
-
-              <div className={styles.eventContent}>
-                <p className={styles.eventTiming}>
-                  <CalendarSmallIcon />
-                  <span>{weekday}</span>
-                  <span aria-hidden>·</span>
-                  <time dateTime={event.starts_at}>{time}</time>
-                </p>
-
-                <div className={styles.titleRow}>
-                  <h3>{event.title}</h3>
-                  <div className={styles.rsvpSlot}>
-                    <RsvpButton
-                      eventId={event.id}
-                      initialGoing={myRsvps.has(event.id)}
-                      loggedIn={isStudent}
-                      friendsGoing={activity.goingTo.get(event.id)}
-                    />
-                  </div>
-                </div>
-
-                {event.restaurantName ? (
-                  <p className={styles.venueLine}>
-                    At{' '}
-                    <Link href={`/restaurant/${event.restaurant_id}`}>
-                      {event.restaurantName}
-                    </Link>
-                  </p>
-                ) : null}
-
-                {event.description ? (
-                  <p className={styles.description}>{event.description}</p>
-                ) : null}
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
+    <EventsExplorer
+      events={sceneEvents}
+      loggedIn={user?.role === 'student'}
+      rangeStart={new Date().toISOString()}
+    />
   );
 }
 
 function EventsLoading() {
   return (
-    <section
-      id="event-list"
-      className={styles.eventField}
-      aria-label="Loading upcoming events"
-    >
-      <div className={styles.sectionHeading}>
-        <h2>Upcoming near campus</h2>
-        <Skeleton className={styles.countSkeleton} />
+    <div className={styles.loadingState} aria-label="Loading The Scene">
+      <Skeleton className={styles.dateSkeleton} />
+      <div className={styles.loadingHeading}>
+        <Skeleton />
+        <Skeleton />
       </div>
-      <div className={styles.eventList}>
-        {[...Array(3)].map((_, index) => (
-          <div key={index} className={styles.eventSkeleton}>
-            <Skeleton className={styles.mediaSkeleton} />
-            <div className={styles.copySkeleton}>
-              <Skeleton className={styles.lineShort} />
-              <div className={styles.titleSkeletonRow}>
-                <Skeleton className={styles.lineTitle} />
-                <Skeleton className={styles.actionSkeleton} />
-              </div>
-              <Skeleton className={styles.lineBody} />
-            </div>
-          </div>
+      <div className={styles.loadingRail}>
+        {[0, 1, 2].map((item) => (
+          <Skeleton key={item} />
         ))}
       </div>
-    </section>
-  );
-}
-
-function EventsEmpty() {
-  return (
-    <section
-      id="event-list"
-      className={styles.emptyState}
-      aria-labelledby="empty-events-title"
-    >
-      <CalendarIcon />
-      <div>
-        <h2 id="empty-events-title">The calendar is quiet.</h2>
-        <p>
-          Nothing is scheduled right now. Restaurants post new events here, so
-          check back before the weekend.
-        </p>
-      </div>
-      <Link href="/search" className={styles.browseLink}>
-        Browse restaurants
-        <ArrowUpRightIcon />
-      </Link>
-    </section>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 48 48" aria-hidden="true">
-      <path d="M12 8v7M36 8v7M8 19h32M11 12h26a3 3 0 0 1 3 3v24H8V15a3 3 0 0 1 3-3Z" />
-      <path d="m17 29 5 5 10-11" />
-    </svg>
-  );
-}
-
-function CalendarSmallIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v13H4V7a2 2 0 0 1 2-2Z" />
-    </svg>
-  );
-}
-
-function ArrowDownIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 4v16M6 14l6 6 6-6" />
-    </svg>
-  );
-}
-
-function ArrowUpRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 17 17 7M8 7h9v9" />
-    </svg>
+    </div>
   );
 }

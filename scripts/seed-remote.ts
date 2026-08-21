@@ -134,6 +134,9 @@ async function main() {
           restaurant_id: r.restaurant_id,
           headcount: 2 + (i % 3),
           booking_time: r.created_at,
+          booking_end_time: new Date(
+            new Date(r.created_at).getTime() + 60 * 60_000,
+          ).toISOString(),
           status: 'completed' as const,
           reminder_sent_at: r.created_at,
           confirmed_at: r.created_at,

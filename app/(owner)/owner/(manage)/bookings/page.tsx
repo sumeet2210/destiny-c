@@ -13,17 +13,14 @@ export default async function OwnerBookingsPage() {
           Bookings
         </h1>
         <p className="text-text-muted mt-1 text-[13px]">
-          Heads-up notices from student groups. &ldquo;Likely no-show&rdquo;
-          means they didn&apos;t confirm the reminder — they may still turn up.
-          You can leave a note they&apos;ll see; there&apos;s nothing to accept
-          or decline.
+          Review incoming table requests, then accept or reject each one. You
+          can also leave a note the student will see.
         </p>
       </div>
 
       {bookings.length === 0 ? (
         <p className="text-text-muted text-sm">
-          No bookings yet. They&apos;ll appear here the moment a group sends a
-          heads-up.
+          No reservations yet. New requests will appear here.
         </p>
       ) : (
         <div className="space-y-3">
@@ -40,6 +37,8 @@ export default async function OwnerBookingsPage() {
                 status: b.status,
                 confirmed_at: b.confirmed_at,
                 owner_note: b.owner_note,
+                offerTitle: b.offerTitle,
+                eventTitle: b.eventTitle,
               }}
             />
           ))}

@@ -166,6 +166,7 @@ export async function toggleRsvp(
       .eq('id', existing.id);
     if (error) return { ok: false, message: error.message };
     revalidatePath('/events');
+    revalidatePath('/saved');
     return { ok: true, going: false };
   }
   const { error } = await supabase
@@ -173,5 +174,6 @@ export async function toggleRsvp(
     .insert({ student_id: uid, event_id: eventId });
   if (error) return { ok: false, message: error.message };
   revalidatePath('/events');
+  revalidatePath('/saved');
   return { ok: true, going: true };
 }

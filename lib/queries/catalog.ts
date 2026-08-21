@@ -376,8 +376,12 @@ export async function listTickerOffers() {
 export async function listUpcomingEvents() {
   const catalog = await getCatalog();
   const cutoff = Date.now() - 4 * 3_600_000;
+  const horizon = Date.now() + 15 * 24 * 3_600_000;
   return catalog.events
-    .filter((e) => new Date(e.starts_at).getTime() > cutoff)
+    .filter((e) => {
+      const startsAt = new Date(e.starts_at).getTime();
+      return startsAt > cutoff && startsAt <= horizon;
+    })
     .sort(
       (a, b) =>
         new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
@@ -393,6 +397,51 @@ export async function listUpcomingEvents() {
         restaurantLng: restaurant?.lng ?? null,
       };
     });
+}
+
+/** Public aggregate only; individual student interest remains protected by RLS. */
+export async function listEventInterestCounts(): Promise<Map<string, number>> {
+  if (!isConfigured()) {
+    const fallbackCounts = [42, 28, 19, 16, 37, 31];
+    return new Map(
+      seedEvents.map((event, index) => [event.id, fallbackCounts[index] ?? 0]),
+    );
+  }
+
+  const supabase = await publicClient();
+  const { data } = await supabase
+    .from('event_interest_counts')
+    .select('event_id, interest_count');
+  return new Map(
+    (data ?? [])
+      .filter((row) => row.event_id)
+      .map((row) => [row.event_id!, row.interest_count ?? 0]),
+  );
+}
+
+export async function getEventDetail(id: string) {
+  const catalog = await getCatalog();
+  const event = catalog.events.find((item) => item.id === id);
+  if (!event || event.is_cancelled) return null;
+  const restaurant = catalog.restaurants.find(
+    (item) => item.id === event.restaurant_id,
+  );
+  if (!restaurant) return null;
+  const moreEvents = catalog.events
+    .filter(
+      (item) =>
+        item.id !== id &&
+        item.restaurant_id === restaurant.id &&
+        !item.is_cancelled &&
+        new Date(item.starts_at).getTime() > Date.now() - 4 * 3_600_000,
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+    )
+    .slice(0, 3);
+
+  return { event, restaurant, moreEvents };
 }
 
 export type DishHit = {

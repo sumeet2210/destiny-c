@@ -32,8 +32,7 @@ export default async function BookingsPage() {
         My bookings
       </h1>
       <p className="text-text-muted text-[13px]">
-        These are heads-ups you&apos;ve sent — the owner knows you&apos;re
-        likely coming, but no table is held.
+        Track each reservation request and the restaurant owner&apos;s decision.
       </p>
 
       {bookings.length === 0 ? (
@@ -53,12 +52,17 @@ export default async function BookingsPage() {
                 id: b.id,
                 restaurantName: b.restaurantName,
                 booking_time: b.booking_time,
+                booking_end_time: b.booking_end_time,
                 headcount: b.headcount,
                 status: b.status,
                 reminder_sent_at: b.reminder_sent_at,
                 confirmed_at: b.confirmed_at,
                 owner_note: b.owner_note,
                 special_request: b.special_request,
+                owner_decided_at: b.owner_decided_at,
+                owner_response: b.owner_response,
+                offerTitle: b.offerTitle,
+                eventTitle: b.eventTitle,
               }}
               reviewSlot={
                 canReview(b) && !b.alreadyReviewed ? (

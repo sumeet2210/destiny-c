@@ -59,9 +59,9 @@ export function ConfirmCard({
   }
 
   return (
-      <Card className="space-y-3 text-center">
-        <p className="text-text-muted text-sm">
-          <span className="font-mono">{when}</span> ·{' '}
+    <Card className="space-y-3 text-center">
+      <p className="text-text-muted text-sm">
+        <span className="font-mono">{when}</span> ·{' '}
         <span className="font-mono">{booking.headcount}</span> people
       </p>
       {error && <p className="text-accent-urgent-text text-[13px]">{error}</p>}

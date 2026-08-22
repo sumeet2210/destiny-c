@@ -3,22 +3,13 @@
 // policies with three accounts: a friend, a non-friend, and sharing on/off.
 // Run: npm run rls:test   (after scripts/seed-remote.ts)
 
-import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../types/db';
+import { loadDevEnv } from './dev-env';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const envRaw = readFileSync(join(root, '.env.local'), 'utf8').replace(/^﻿/, '');
-for (const line of envRaw.split(/\r?\n/)) {
-  const m = line.trim().match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"?([^"]*)"?$/);
-  if (m && m[2] && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-}
-
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const publishable = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-const secret = process.env.SUPABASE_SECRET_KEY!;
+// Resets the seed students' passwords and deletes their fixture rows, so the
+// dev-project guard in loadDevEnv matters here as much as in the seed script.
+const { url, publishable, secret } = loadDevEnv();
 
 const admin = createClient<Database>(url, secret, {
   auth: { persistSession: false, autoRefreshToken: false },

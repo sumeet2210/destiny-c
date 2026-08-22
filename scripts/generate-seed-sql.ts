@@ -72,6 +72,8 @@ const students = SEED_STUDENT_IDS.map((id, i) =>
 );
 
 // Completed, confirmed bookings backing the seed reviews (review RLS requires them).
+// booking_end_time is NOT NULL, so it has to be emitted; one hour matches the
+// backfill convention in 20260819100000_booking_end_time.sql.
 const bookings = seedReviews.map((r, i) => ({
   id: r.booking_id,
   student_id: r.student_id,
@@ -79,6 +81,9 @@ const bookings = seedReviews.map((r, i) => ({
   headcount: 2 + (i % 3),
   special_request: null,
   booking_time: r.created_at,
+  booking_end_time: new Date(
+    new Date(r.created_at).getTime() + 60 * 60_000,
+  ).toISOString(),
   status: 'completed',
   reminder_sent_at: r.created_at,
   confirmed_at: r.created_at,

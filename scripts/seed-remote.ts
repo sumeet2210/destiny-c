@@ -5,11 +5,9 @@
 // auth.admin.createUser cannot set a fixed uuid, so seed user ids are remapped
 // to the generated ones on every row that references them.
 
-import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/db';
+import { loadDevEnv } from './dev-env';
 import {
   seedRestaurants,
   seedMenuItems,
@@ -21,19 +19,7 @@ import {
   SEED_STUDENT_IDS,
 } from '../lib/data/seed';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const envRaw = readFileSync(join(root, '.env.local'), 'utf8').replace(/^﻿/, '');
-for (const line of envRaw.split(/\r?\n/)) {
-  const m = line.trim().match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"?([^"]*)"?$/);
-  if (m && m[2] && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-}
-
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const secret = process.env.SUPABASE_SECRET_KEY;
-if (!url || !secret) throw new Error('Missing Supabase env in .env.local');
-if (!url.includes('zlhuxisdetdzlmhdiksu')) {
-  throw new Error(`Refusing: ${url} is not the destiny-dev project`);
-}
+const { url, secret } = loadDevEnv();
 
 const admin = createClient<Database>(url, secret, {
   auth: { persistSession: false, autoRefreshToken: false },

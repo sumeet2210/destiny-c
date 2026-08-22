@@ -15,22 +15,47 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: '14.15';
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       bookings: {
         Row: {
-          booking_time: string;
           booking_end_time: string;
+          booking_time: string;
           confirmed_at: string | null;
           created_at: string;
           event_id: string | null;
           headcount: number;
           id: string;
+          offer_id: string | null;
+          owner_decided_at: string | null;
           owner_note: string | null;
           owner_note_at: string | null;
-          owner_decided_at: string | null;
           owner_response: string | null;
-          offer_id: string | null;
           reminder_sent_at: string | null;
           restaurant_id: string;
           special_request: string | null;
@@ -38,18 +63,18 @@ export type Database = {
           student_id: string;
         };
         Insert: {
-          booking_time: string;
           booking_end_time: string;
+          booking_time: string;
           confirmed_at?: string | null;
           created_at?: string;
           event_id?: string | null;
           headcount: number;
           id?: string;
+          offer_id?: string | null;
+          owner_decided_at?: string | null;
           owner_note?: string | null;
           owner_note_at?: string | null;
-          owner_decided_at?: string | null;
           owner_response?: string | null;
-          offer_id?: string | null;
           reminder_sent_at?: string | null;
           restaurant_id: string;
           special_request?: string | null;
@@ -57,18 +82,18 @@ export type Database = {
           student_id: string;
         };
         Update: {
-          booking_time?: string;
           booking_end_time?: string;
+          booking_time?: string;
           confirmed_at?: string | null;
           created_at?: string;
           event_id?: string | null;
           headcount?: number;
           id?: string;
+          offer_id?: string | null;
+          owner_decided_at?: string | null;
           owner_note?: string | null;
           owner_note_at?: string | null;
-          owner_decided_at?: string | null;
           owner_response?: string | null;
-          offer_id?: string | null;
           reminder_sent_at?: string | null;
           restaurant_id?: string;
           special_request?: string | null;
@@ -147,8 +172,8 @@ export type Database = {
           cover_image_url: string | null;
           created_at: string;
           description: string | null;
-          entry_fee: number | null;
           ends_at: string | null;
+          entry_fee: number | null;
           event_type: Database['public']['Enums']['event_type'];
           id: string;
           is_cancelled: boolean;
@@ -162,8 +187,8 @@ export type Database = {
           cover_image_url?: string | null;
           created_at?: string;
           description?: string | null;
-          entry_fee?: number | null;
           ends_at?: string | null;
+          entry_fee?: number | null;
           event_type?: Database['public']['Enums']['event_type'];
           id?: string;
           is_cancelled?: boolean;
@@ -177,8 +202,8 @@ export type Database = {
           cover_image_url?: string | null;
           created_at?: string;
           description?: string | null;
-          entry_fee?: number | null;
           ends_at?: string | null;
+          entry_fee?: number | null;
           event_type?: Database['public']['Enums']['event_type'];
           id?: string;
           is_cancelled?: boolean;
@@ -613,7 +638,15 @@ export type Database = {
           event_id: string | null;
           interest_count: number | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'event_rsvps_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       friend_edges: {
         Row: {
@@ -686,17 +719,17 @@ export type Database = {
       booking_status:
         'requested' | 'confirmed' | 'unconfirmed' | 'completed' | 'cancelled';
       event_type:
-        | 'dj_night'
         | 'live_music'
-        | 'comedy'
-        | 'party'
         | 'open_mic'
         | 'quiz'
         | 'screening'
         | 'food_festival'
+        | 'other'
+        | 'dj_night'
+        | 'comedy'
+        | 'party'
         | 'gaming'
-        | 'cultural'
-        | 'other';
+        | 'cultural';
       friendship_status: 'pending' | 'accepted' | 'blocked';
       photo_kind: 'gallery' | 'menu_photo';
       restaurant_status: 'pending_approval' | 'active' | 'suspended';
@@ -826,6 +859,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       booking_status: [
@@ -836,17 +872,17 @@ export const Constants = {
         'cancelled',
       ],
       event_type: [
-        'dj_night',
         'live_music',
-        'comedy',
-        'party',
         'open_mic',
         'quiz',
         'screening',
         'food_festival',
+        'other',
+        'dj_night',
+        'comedy',
+        'party',
         'gaming',
         'cultural',
-        'other',
       ],
       friendship_status: ['pending', 'accepted', 'blocked'],
       photo_kind: ['gallery', 'menu_photo'],

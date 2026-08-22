@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build && opennextjs-cloudflare build --skipNextBuild && node scripts/prepare-sites-build.mjs",
+    "build": "vinext build && node scripts/prepare-sites-build.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
@@ -17,22 +17,31 @@
     "format:check": "prettier --check .",
     "seed:remote": "node --experimental-websocket --import tsx scripts/seed-remote.ts",
     "rls:test": "node --experimental-websocket --import tsx scripts/rls-test-remote.ts",
-    "dev:login": "node --experimental-websocket --import tsx scripts/dev-login.ts"
+    "dev:login": "node --experimental-websocket --import tsx scripts/dev-login.ts",
+    "dev:vinext": "vinext dev --port 3001",
+    "build:vinext": "vinext build",
+    "start:vinext": "wrangler dev --config dist/server/wrangler.json",
+    "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.1",
+    "@vinext/cloudflare": "^1.0.0-beta.6",
     "next": "16.3.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "server-only": "^0.0.1"
+    "react-server-dom-webpack": "^19.2.8",
+    "server-only": "^0.0.1",
+    "vinext": "^1.0.0-beta.8"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.2",
+    "@cloudflare/vite-plugin": "^1.53.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.0",
+    "@vitejs/plugin-rsc": "^0.5.34",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "prettier": "^3.9.6",
@@ -41,7 +50,9 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.10",
     "typescript": "^5",
+    "vite": "^8.2.2",
     "vitest": "^4.1.10",
     "wrangler": "^4.125.0"
-  }
+  },
+  "type": "module"
 }

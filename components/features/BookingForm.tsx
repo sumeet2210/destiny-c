@@ -318,7 +318,7 @@ export function BookingForm({
         </div>
 
         <div>
-          <Label htmlFor="bk-request">Add a special request (optional)</Label>
+          <Label htmlFor="bk-request">Add a special request</Label>
           <Textarea
             id="bk-request"
             value={specialRequest}

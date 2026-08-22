@@ -2,11 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { formatDistance, haversineKm } from '@/lib/domain/distance';
 
 type TickerOffer = {
   id: string;
   restaurant_id: string;
   restaurantName: string;
+  restaurantAddress: string;
   restaurantLat: number | null;
   restaurantLng: number | null;
   title: string;
@@ -19,6 +21,7 @@ type TickerEvent = {
   id: string;
   restaurant_id: string;
   restaurantName: string;
+  restaurantAddress: string;
   restaurantLat: number | null;
   restaurantLng: number | null;
   title: string;
@@ -33,6 +36,7 @@ type TickerCard = {
   key: string;
   restaurantId: string;
   restaurantName: string;
+  restaurantAddress: string;
   restaurantLat: number | null;
   restaurantLng: number | null;
   title: string;
@@ -51,6 +55,7 @@ type PointerGesture = {
 
 const DRAG_THRESHOLD_PX = 10;
 const FLIP_AUTO_RESET_MS = 5000;
+const NITW_CAMPUS = { lat: 17.9833, lng: 79.5308 };
 
 /**
  * Today's specials rail. Its duplicate cycle keeps the existing seamless loop;
@@ -387,6 +392,7 @@ function EventTile({
         key,
         restaurantId: event.restaurant_id,
         restaurantName: event.restaurantName,
+        restaurantAddress: event.restaurantAddress,
         restaurantLat: event.restaurantLat,
         restaurantLng: event.restaurantLng,
         title: event.title,
@@ -413,6 +419,7 @@ function OfferTile({
         key,
         restaurantId: offer.restaurant_id,
         restaurantName: offer.restaurantName,
+        restaurantAddress: offer.restaurantAddress,
         restaurantLat: offer.restaurantLat,
         restaurantLng: offer.restaurantLng,
         title: offer.title,
@@ -439,6 +446,17 @@ function TickerTile({
   const contentKey = card.key.replace(/^duplicate-/, '');
   const heat = mockHeat(contentKey);
   const isFlipped = flippedCard === card.key;
+  const distance =
+    isFlipped && card.restaurantLat !== null && card.restaurantLng !== null
+      ? formatDistance(
+          haversineKm(
+            NITW_CAMPUS.lat,
+            NITW_CAMPUS.lng,
+            card.restaurantLat,
+            card.restaurantLng,
+          ),
+        )
+      : null;
   const className = [
     'specials-card',
     `specials-${card.kind}-card`,
@@ -514,6 +532,22 @@ function TickerTile({
             <span>Quick pick</span>
             <strong>{card.restaurantName}</strong>
           </div>
+          {isFlipped ? (
+            <>
+              <div className="specials-back-location">
+                <span className="specials-location-icon" aria-hidden>
+                  <LocationPinIcon />
+                </span>
+                <span className="specials-location-copy">
+                  <strong>{card.restaurantAddress}</strong>
+                  <small>
+                    {distance ? 'From NITW campus' : 'Around NIT Warangal'}
+                  </small>
+                </span>
+                {distance ? <b>{distance}</b> : null}
+              </div>
+            </>
+          ) : null}
           <div className="specials-back-actions" aria-label="Quick actions">
             <button
               type="button"
@@ -580,6 +614,15 @@ function ViewIcon() {
     <svg viewBox="0 0 24 24" aria-hidden>
       <path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6Z" />
       <circle cx="12" cy="12" r="2.5" />
+    </svg>
+  );
+}
+
+function LocationPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
     </svg>
   );
 }

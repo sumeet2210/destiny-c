@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
@@ -20,7 +19,6 @@ export function RsvpButton({
   friendsGoing?: string[];
   onInterestedChange?: (interested: boolean) => void;
 }) {
-  const router = useRouter();
   const [going, setGoing] = useState(initialGoing);
   const [pending, startTransition] = useTransition();
   const toast = useToast();
@@ -31,12 +29,8 @@ export function RsvpButton({
         size="sm"
         variant={going ? 'primary' : 'outline'}
         aria-pressed={going}
-        disabled={pending}
+        disabled={pending || !loggedIn}
         onClick={() => {
-          if (!loggedIn) {
-            router.push('/login?next=/events');
-            return;
-          }
           const next = !going;
           setGoing(next);
           onInterestedChange?.(next);

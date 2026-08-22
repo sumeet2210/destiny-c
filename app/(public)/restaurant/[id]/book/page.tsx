@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BookingForm } from '@/components/features/BookingForm';
 import { getRestaurantDetail } from '@/lib/queries/catalog';
@@ -52,11 +53,30 @@ export default async function BookPage(
 
   return (
     <main className="mx-auto max-w-md space-y-5 px-4 py-6">
-      <div className="space-y-2">
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Heading to {detail.row.name}?
-        </h1>
-        <p className="text-text-muted text-sm">{todayStatus}</p>
+      <div className="flex items-start gap-3">
+        <Link
+          href={`/restaurant/${id}`}
+          aria-label={`Back to ${detail.row.name}`}
+          className="border-border-hairline bg-surface-muted text-paper hover:bg-surface-raised grid size-10 shrink-0 place-items-center rounded-full border transition-colors"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="size-5 fill-none stroke-current stroke-2"
+          >
+            <path
+              d="m15 18-6-6 6-6M9 12h10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
+        <div className="min-w-0 space-y-2">
+          <h1 className="font-display text-paper text-2xl font-extrabold">
+            Heading to {detail.row.name}?
+          </h1>
+          <p className="text-text-muted text-sm">{todayStatus}</p>
+        </div>
       </div>
 
       <BookingForm

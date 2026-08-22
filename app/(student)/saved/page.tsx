@@ -16,9 +16,12 @@ export default async function SavedPage() {
   if (!isSupabaseConfigured()) {
     return (
       <main className="mx-auto max-w-md px-4 pt-16 pb-28">
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Saved
-        </h1>
+        <div className="flex items-center gap-3">
+          <SavedBackLink />
+          <h1 className="font-display text-paper text-2xl font-extrabold">
+            Saved
+          </h1>
+        </div>
         <Card className="text-text-muted mt-4 text-sm">
           Seed mode — saving needs a live Supabase project.
         </Card>
@@ -42,6 +45,7 @@ export default async function SavedPage() {
   return (
     <main className="mx-auto w-full max-w-6xl space-y-10 px-3 pt-3 pb-28 sm:px-5 sm:pt-5">
       <header className="relative overflow-hidden rounded-[1.6rem] border border-white/10 bg-[radial-gradient(circle_at_82%_12%,rgba(167,139,250,0.2),transparent_34%),radial-gradient(circle_at_12%_100%,rgba(71,215,255,0.08),transparent_32%),linear-gradient(145deg,#202020,#0d0d0d)] px-5 pt-16 pb-5 shadow-[0_22px_60px_rgba(0,0,0,0.34)] sm:p-8">
+        <SavedBackLink className="absolute top-4 left-5 sm:top-6 sm:left-8" />
         <div className="pointer-events-none absolute top-5 right-20 hidden h-px w-28 bg-gradient-to-r from-transparent via-white/35 to-transparent sm:block" />
         <div className="max-w-2xl">
           <p className="text-[10px] font-black tracking-[0.16em] text-[#A78BFA] uppercase">
@@ -193,6 +197,28 @@ export default async function SavedPage() {
         )}
       </section>
     </main>
+  );
+}
+
+function SavedBackLink({ className = '' }: { className?: string }) {
+  return (
+    <Link
+      href="/"
+      aria-label="Back to home"
+      className={`border-border-hairline bg-surface-muted text-paper hover:bg-surface-raised grid size-10 shrink-0 place-items-center rounded-full border transition-colors ${className}`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="size-5 fill-none stroke-current stroke-2"
+      >
+        <path
+          d="m15 18-6-6 6-6M9 12h10"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </Link>
   );
 }
 

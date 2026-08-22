@@ -361,6 +361,8 @@ export async function listTickerOffers() {
       return {
         ...o,
         restaurantName: restaurant?.name ?? '',
+        restaurantAddress:
+          restaurant?.address || restaurant?.area || 'Warangal',
         restaurantLat: restaurant?.lat ?? null,
         restaurantLng: restaurant?.lng ?? null,
       };
@@ -393,6 +395,8 @@ export async function listUpcomingEvents() {
       return {
         ...e,
         restaurantName: restaurant?.name ?? '',
+        restaurantAddress:
+          restaurant?.address || restaurant?.area || 'Warangal',
         restaurantLat: restaurant?.lat ?? null,
         restaurantLng: restaurant?.lng ?? null,
       };

@@ -1393,11 +1393,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 .specialsSection :global(.specials-card-back) {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 0.65rem;
   padding: 1.15rem;
   background:
-    radial-gradient(circle at 85% 10%, rgb(29 185 84 / 17%), transparent 35%),
-    #2b2b2b;
+    radial-gradient(circle at 92% 4%, rgb(29 185 84 / 19%), transparent 33%),
+    radial-gradient(circle at 5% 78%, rgb(71 215 255 / 8%), transparent 34%),
+    linear-gradient(145deg, #303030, #202020 68%);
   cursor: pointer;
   transform: rotateY(180deg);
 }
@@ -1428,6 +1430,85 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   white-space: nowrap;
 }
 
+.specialsSection :global(.specials-back-location) {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 1.9rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.58rem;
+  padding: 0.18rem 0.1rem;
+}
+
+.specialsSection :global(.specials-location-icon) {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(29 185 84 / 13%);
+  color: #1db954;
+  box-shadow: 0 0 0 1px rgb(29 185 84 / 22%);
+}
+
+.specialsSection :global(.specials-location-icon svg) {
+  width: 0.98rem;
+  height: 0.98rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.specialsSection :global(.specials-location-copy) {
+  display: grid;
+  min-width: 0;
+  gap: 0.17rem;
+}
+
+.specialsSection :global(.specials-location-copy > strong) {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #ededed;
+  font-size: 0.7rem;
+  font-weight: 750;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.specialsSection :global(.specials-location-copy > small) {
+  color: #8f8f8f;
+  font-size: 0.58rem;
+  font-weight: 650;
+}
+
+.specialsSection :global(.specials-back-location > b) {
+  display: flex;
+  min-width: 0;
+  grid-column: 2;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+  color: #1db954;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.specialsSection :global(.specials-back-location > b)::before {
+  height: 1px;
+  min-width: 1rem;
+  flex: 1;
+  background: repeating-linear-gradient(
+    to right,
+    rgb(29 185 84 / 42%) 0 3px,
+    transparent 3px 7px
+  );
+  content: '';
+}
+
 .specialsSection :global(.specials-flip-close) {
   position: absolute;
   z-index: 2;
@@ -1453,7 +1534,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
   align-self: end;
-  margin-top: 0.8rem;
+  margin-top: 0;
 }
 
 .specialsSection :global(.specials-back-actions > a),
@@ -1461,7 +1542,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   position: relative;
   display: flex;
   min-width: 0;
-  min-height: 4.35rem;
+  min-height: 3.65rem;
   align-items: center;
   justify-content: center;
   flex-direction: column;

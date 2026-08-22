@@ -183,22 +183,6 @@ export function BookingForm({
     <>
       <Card className="space-y-5">
         <section className="relative overflow-hidden rounded-[1.15rem] border border-[#1DB954]/35 bg-[radial-gradient(circle_at_92%_0%,rgba(29,185,84,0.22),transparent_38%),linear-gradient(145deg,#202020,#111)] p-3.5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
-          <div className="relative mb-3 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black tracking-[0.13em] text-[#1DB954] uppercase">
-                Add to your table
-              </p>
-              <h2 className="text-paper mt-0.5 text-base font-extrabold">
-                Choose one experience
-              </h2>
-            </div>
-            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[9px] font-bold text-white/55">
-              Optional
-            </span>
-          </div>
-          <p className="relative mb-2.5 text-[11px] leading-relaxed text-white/55">
-            Select either one restaurant offer or one event for this booking.
-          </p>
           <div className="relative grid grid-cols-2 gap-2">
             <ExtraButton
               label="Special offer"
@@ -260,9 +244,6 @@ export function BookingForm({
                   <span className="block">{day.label}</span>
                   <span className="mt-0.5 block text-[10px] opacity-75">
                     {day.detail}
-                  </span>
-                  <span className="mt-0.5 block text-[10px] opacity-75">
-                    {day.hours}
                   </span>
                 </button>
               );
@@ -343,22 +324,26 @@ export function BookingForm({
             value={specialRequest}
             maxLength={500}
             onChange={(event) => setSpecialRequest(event.target.value)}
-            placeholder="Birthday table, veg-only group, window seat if possible…"
           />
         </div>
         {error && (
           <p className="text-accent-urgent-text text-[13px]">{error}</p>
         )}
-        <Button
-          type="button"
-          disabled={!selectedDay?.slots.length}
-          className="w-full"
-          size="lg"
-          onClick={reviewBooking}
-        >
-          Reserve table
-        </Button>
       </Card>
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 px-4">
+        <div className="mx-auto max-w-md">
+          <Button
+            type="button"
+            disabled={!selectedDay?.slots.length}
+            className="pointer-events-auto w-full shadow-[0_14px_36px_rgba(0,0,0,0.45)]"
+            size="lg"
+            onClick={reviewBooking}
+          >
+            Reserve table
+          </Button>
+        </div>
+      </div>
 
       <ChoiceSheet
         kind={picker}

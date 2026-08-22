@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { RsvpButton } from '@/components/features/RsvpButton';
 import { EVENT_TYPES } from '@/config/events';
 import { getSessionUser } from '@/lib/auth/session';
 import { getEventDetail, listEventInterestCounts } from '@/lib/queries/catalog';
 import { getFriendActivity, getMyRsvpIds } from '@/lib/queries/social';
+import { EventInterestActions } from './EventInterestActions';
 import styles from './event-detail.module.css';
 
 const IST = 'Asia/Kolkata';
@@ -124,27 +124,15 @@ export default async function EventDetailPage({
               <p className={styles.description}>{event.description}</p>
             ) : null}
 
-            <p className={styles.interestCount}>
-              <strong>{counts.get(event.id) ?? 0}</strong> students are
-              interested
-            </p>
-
-            <div className={styles.actions}>
-              <RsvpButton
-                eventId={event.id}
-                initialGoing={myRsvps.has(event.id)}
-                loggedIn={user?.role === 'student'}
-                friendsGoing={activity.goingTo.get(event.id)}
-              />
-              <Link
-                href={event.ticket_url ?? bookingHref}
-                className={styles.primaryAction}
-                target={event.ticket_url ? '_blank' : undefined}
-                rel={event.ticket_url ? 'noreferrer' : undefined}
-              >
-                {event.ticket_url ? 'Get tickets' : 'Book now'}
-              </Link>
-            </div>
+            <EventInterestActions
+              eventId={event.id}
+              initialCount={counts.get(event.id) ?? 0}
+              initialGoing={myRsvps.has(event.id)}
+              loggedIn={user?.role === 'student'}
+              friendsGoing={activity.goingTo.get(event.id) ?? []}
+              bookingHref={bookingHref}
+              ticketUrl={event.ticket_url}
+            />
           </div>
         </article>
 

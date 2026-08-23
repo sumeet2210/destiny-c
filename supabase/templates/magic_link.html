@@ -2,13 +2,22 @@
   Student login email. Code-only by design — see docs/decisions.md.
 
   Supabase sends this template for signInWithOtp (lib/auth/actions.ts
-  #requestStudentOtp). The stock version ships {{ .ConfirmationURL }} and no
-  {{ .Token }}, which is why students used to receive a link and never a code.
+  #requestStudentOtp). The stock version ships ConfirmationURL and no Token,
+  which is why students used to receive a link and never a code.
 
   Deliberately omits ConfirmationURL entirely: the app has no route that can
   exchange a magic-link code for a session, and clicking such a link CONSUMES
   the token, so a student who tapped it could no longer use the code either.
   Do not add a link back without also adding that route.
+
+  Variable names above are written bare, WITHOUT the surrounding braces, on
+  purpose. GoTrue renders this through Go's template engine, and text/template
+  substitutes actions inside HTML comments just like anywhere else — writing
+  the URL variable here as a real action would put a live magic link into every
+  delivered email. Invisible to the reader, but inbox providers prefetch links,
+  and prefetching consumes the token, which invalidates the code too. That is
+  the precise failure this template exists to prevent, so don't reintroduce it
+  in a comment.
 
   Inline styles and a table layout on purpose — email clients strip <style>.
 -->

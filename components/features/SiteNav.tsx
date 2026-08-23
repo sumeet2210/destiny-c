@@ -70,11 +70,7 @@ export function SiteHeader({
             />
           </div>
         </header>
-        <NavigationDrawer
-          open={menuOpen}
-          accountHref={accountHref}
-          onClose={() => setMenuOpen(false)}
-        />
+        <NavigationDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
       </>
     );
   }
@@ -118,11 +114,7 @@ export function SiteHeader({
           </div>
         </div>
       </header>
-      <NavigationDrawer
-        open={menuOpen}
-        accountHref={accountHref}
-        onClose={() => setMenuOpen(false)}
-      />
+      <NavigationDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );
 }
@@ -147,11 +139,9 @@ function MenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
 
 function NavigationDrawer({
   open,
-  accountHref,
   onClose,
 }: {
   open: boolean;
-  accountHref: string;
   onClose: () => void;
 }) {
   const pathname = usePathname();
@@ -159,8 +149,6 @@ function NavigationDrawer({
   const aboutPanelId = useId();
   const [contactOpen, setContactOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const portalHref =
-    accountHref === '/owner/dashboard' ? '/owner/dashboard' : '/owner/login';
   const links = [{ href: '/saved', label: 'Saved' }];
 
   const isActive = (href: string) =>
@@ -293,7 +281,13 @@ function NavigationDrawer({
         </nav>
 
         <div className={styles.drawerDivider} aria-hidden />
-        <Link href={portalHref} onClick={onClose} className={styles.portalCta}>
+        {/* Always the login door: AppShell redirects owners to their dashboard
+            before this drawer can render, so a signed-in owner never sees it. */}
+        <Link
+          href="/owner/login"
+          onClick={onClose}
+          className={styles.portalCta}
+        >
           <span className={styles.portalIcon} aria-hidden>
             <PortalIcon />
           </span>

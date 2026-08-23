@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
 import { ToastProvider } from '@/components/ui/Toast';
-import { MobileTabBar } from '@/components/features/SiteNav';
 import './globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -42,10 +41,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       </head>
       <body className="bg-canvas text-paper font-body flex min-h-full flex-col">
         <ToastProvider>
-          <div className="min-h-full w-full pb-[calc(6rem+env(safe-area-inset-bottom))]">
-            {children}
-          </div>
-          <MobileTabBar />
+          {/* No nav here on purpose. The student tab bar belongs to AppShell,
+              which wraps only (public) and (student); owner pages ship their
+              own nav and used to inherit a tab bar full of routes they cannot
+              open. */}
+          <div className="min-h-full w-full">{children}</div>
         </ToastProvider>
       </body>
     </html>

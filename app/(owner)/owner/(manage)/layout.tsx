@@ -19,7 +19,7 @@ export default async function OwnerManageLayout({
     <div className="mx-auto flex min-h-full w-full max-w-6xl">
       <aside className="border-border-hairline hidden w-52 shrink-0 flex-col gap-1 border-r p-4 sm:flex">
         <Link
-          href="/"
+          href="/owner/dashboard"
           className="font-display text-accent-primary mb-4 text-lg font-extrabold"
         >
           Destiny

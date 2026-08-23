@@ -1,0 +1,36 @@
+{
+    "name": "destiny-partners",
+    "version": "1.0.0",
+    "description": "Destiny Partners Dashboard - Restaurant management platform for offers, events, bookings, and menu management",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "start": "vite"
+    },
+    "dependencies": {
+        "chart.js": "^4.4.4",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.43",
+        "@types/react-dom": "^18.2.17",
+        "@vitejs/plugin-react": "^4.7.0",
+        "vite": "^5.4.21"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}

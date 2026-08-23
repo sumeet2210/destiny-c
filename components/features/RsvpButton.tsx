@@ -1,26 +1,28 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
-import { toggleRsvp } from '@/lib/social/actions';
+import { useSaved } from '@/lib/session';
 
-/** P9-4: mark yourself going — one of the two shared social signals. */
+/** P9-4: mark yourself going — one of the two shared social signals. Going state
+ *  lives in the shared SavedProvider so it stays consistent across the events
+ *  list, event detail, and Saved. */
 export function RsvpButton({
   eventId,
-  initialGoing,
-  loggedIn,
   friendsGoing,
   onInterestedChange,
 }: {
   eventId: string;
-  initialGoing: boolean;
-  loggedIn: boolean;
   friendsGoing?: string[];
   onInterestedChange?: (interested: boolean) => void;
 }) {
-  const [going, setGoing] = useState(initialGoing);
+  const { isStudent, isGoing, toggleGoing } = useSaved();
+  const going = isGoing(eventId);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
 
   return (
@@ -29,23 +31,28 @@ export function RsvpButton({
         size="sm"
         variant={going ? 'primary' : 'outline'}
         aria-pressed={going}
-        disabled={pending || !loggedIn}
+        disabled={pending}
         onClick={() => {
+          if (!isStudent) {
+            router.push(`/login?next=${encodeURIComponent(pathname)}`);
+            return;
+          }
           const next = !going;
-          setGoing(next);
           onInterestedChange?.(next);
           startTransition(async () => {
-            const res = await toggleRsvp(eventId);
-            if (!res.ok) {
-              setGoing(!next);
+            try {
+              await toggleGoing(eventId);
+              if (next) {
+                toast(
+                  "You're in! We'll remind you before the event.",
+                  'positive',
+                );
+              }
+            } catch (err) {
               onInterestedChange?.(!next);
-              toast(res.message ?? 'Could not RSVP', 'error');
-              return;
-            }
-            if (next) {
               toast(
-                "You're in! We'll remind you before the event.",
-                'positive',
+                err instanceof Error ? err.message : 'Could not RSVP',
+                'error',
               );
             }
           });

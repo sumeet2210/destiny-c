@@ -8,7 +8,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useTransition,
 } from 'react';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
@@ -16,8 +15,8 @@ import { CRAVINGS, type CravingTag } from '@/config/cravings';
 import { PRICE_BUCKETS, type PriceBucketKey } from '@/config/price-buckets';
 import { cn } from '@/lib/cn';
 import { haversineKm, formatDistance } from '@/lib/domain/distance';
-import type { RestaurantSummary } from '@/lib/queries/catalog';
-import { toggleSaved } from '@/lib/social/actions';
+import type { RestaurantSummary } from '@/lib/api/types';
+import { useSaved } from '@/lib/session';
 import styles from './squad-going-section.module.css';
 
 type BudgetFilter = PriceBucketKey | null;
@@ -56,23 +55,18 @@ const DISTANCE_OPTIONS: ReadonlyArray<{
 
 export function SquadGoingSection({
   restaurants,
-  loggedIn,
-  initialSavedIds,
   className,
 }: {
   restaurants: RestaurantSummary[];
-  loggedIn: boolean;
-  initialSavedIds: string[];
   className?: string;
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { isStudent, isSaved, toggleSave } = useSaved();
   const [filters, setFilters] = useState<SquadFilters>(EMPTY_FILTERS);
   const [draft, setDraft] = useState<SquadFilters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [savedIds, setSavedIds] = useState(() => new Set(initialSavedIds));
   const [poppingId, setPoppingId] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
 
   const availableCuisines = useMemo(
     () =>
@@ -144,35 +138,23 @@ export function SquadGoingSection({
 
   const saveRestaurant = (restaurant: RestaurantSummary) => {
     const nextPath = `/restaurant/${restaurant.id}?from=friend_activity`;
-    if (!loggedIn) {
+    if (!isStudent) {
       router.push(`/login?next=${encodeURIComponent(nextPath)}`);
       return;
     }
 
-    const wasSaved = savedIds.has(restaurant.id);
-    setSavedIds((current) => {
-      const next = new Set(current);
-      if (wasSaved) next.delete(restaurant.id);
-      else next.add(restaurant.id);
-      return next;
-    });
-
-    if (!wasSaved) {
+    if (!isSaved(restaurant.id)) {
       setPoppingId(restaurant.id);
       window.setTimeout(() => setPoppingId(null), 420);
     }
 
-    startTransition(async () => {
-      const result = await toggleSaved(restaurant.id);
-      if (!result.ok) {
-        setSavedIds((current) => {
-          const next = new Set(current);
-          if (wasSaved) next.add(restaurant.id);
-          else next.delete(restaurant.id);
-          return next;
-        });
-        toast(result.message ?? 'Could not save this place', 'error');
-      }
+    // The shared SavedProvider owns the optimistic flip + revert; we only need
+    // to surface a failure toast.
+    void toggleSave(restaurant.id).catch((err) => {
+      toast(
+        err instanceof Error ? err.message : 'Could not save this place',
+        'error',
+      );
     });
   };
 
@@ -211,7 +193,7 @@ export function SquadGoingSection({
               key={restaurant.id}
               restaurant={restaurant}
               distanceKm={distanceKm}
-              saved={savedIds.has(restaurant.id)}
+              saved={isSaved(restaurant.id)}
               popping={poppingId === restaurant.id}
               onSave={() => saveRestaurant(restaurant)}
             />

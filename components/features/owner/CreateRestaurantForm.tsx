@@ -1,15 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { AREAS } from '@/config/areas';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
-import { createRestaurant } from '@/lib/owner/actions';
+import { createRestaurant } from '@/lib/api/owner';
 
-export function CreateRestaurantForm() {
-  const router = useRouter();
+export function CreateRestaurantForm({
+  onChanged,
+}: {
+  onChanged?: () => void;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -21,17 +23,20 @@ export function CreateRestaurantForm() {
           const fd = new FormData(e.currentTarget);
           startTransition(async () => {
             setError(null);
-            const res = await createRestaurant({
-              name: String(fd.get('name')),
-              area: String(fd.get('area')),
-              address: String(fd.get('address') || '') || null,
-              phone: String(fd.get('phone') || '') || null,
-              description: String(fd.get('description') || '') || null,
-              lat: fd.get('lat') ? Number(fd.get('lat')) : null,
-              lng: fd.get('lng') ? Number(fd.get('lng')) : null,
-            });
-            if (!res.ok) setError(res.message ?? 'Could not submit.');
-            else router.refresh();
+            try {
+              await createRestaurant({
+                name: String(fd.get('name')),
+                area: String(fd.get('area')),
+                address: String(fd.get('address') || '') || null,
+                phone: String(fd.get('phone') || '') || null,
+                description: String(fd.get('description') || '') || null,
+                lat: fd.get('lat') ? Number(fd.get('lat')) : null,
+                lng: fd.get('lng') ? Number(fd.get('lng')) : null,
+              });
+              onChanged?.();
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Could not submit.');
+            }
           });
         }}
         className="space-y-4"

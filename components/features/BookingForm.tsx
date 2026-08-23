@@ -8,6 +8,7 @@ import { Label, Textarea } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { validateBookingWindow } from '@/lib/domain/booking';
 import type { BookingDayOption } from '@/lib/domain/hours';
+import { createBooking } from '@/lib/api/bookings';
 import { cn } from '@/lib/cn';
 
 const IST_OFFSET_MINUTES = 330;
@@ -95,24 +96,20 @@ export function BookingForm({
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          restaurantId,
-          bookingTime: when.toISOString(),
-          bookingEndTime: until.toISOString(),
-          headcount,
-          specialRequest,
-          offerId: experience?.kind === 'offer' ? experience.id : null,
-          eventId: experience?.kind === 'event' ? experience.id : null,
-        }),
+      await createBooking({
+        restaurantId,
+        bookingTime: when.toISOString(),
+        bookingEndTime: until.toISOString(),
+        headcount,
+        specialRequest,
+        offerId: experience?.kind === 'offer' ? experience.id : undefined,
+        eventId: experience?.kind === 'event' ? experience.id : undefined,
       });
-      const data = await response.json();
-      if (!data.ok) setError(data.error ?? 'Could not place that reservation.');
-      else setStep('done');
-    } catch {
-      setError('Network hiccup — try again.');
+      setStep('done');
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Network hiccup — try again.',
+      );
     } finally {
       setSubmitting(false);
     }

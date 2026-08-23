@@ -7,13 +7,9 @@ import { MenuRow } from '@/components/ui/MenuRow';
 import { Card } from '@/components/ui/Card';
 import { DestinyPage } from '@/components/ui/DestinyPage';
 import { Skeleton } from '@/components/ui/Skeleton';
-import {
-  applyFilters,
-  listRestaurantSummaries,
-  searchDishes,
-  type CatalogFilters,
-  type RestaurantSummary,
-} from '@/lib/queries/catalog';
+import { listRestaurants } from '@/lib/api/restaurants';
+import { searchDishes } from '@/lib/api/search';
+import type { CatalogFilters, RestaurantSummary } from '@/lib/api/types';
 import styles from './search.module.css';
 
 export const metadata = { title: 'Search' };
@@ -109,12 +105,11 @@ async function Results({
     : filters.craving
       ? `craving:${filters.craving}`
       : 'search';
-  const [rawSummaries, dishHits] = await Promise.all([
-    listRestaurantSummaries(),
+  const [rawResults, dishHits] = await Promise.all([
+    listRestaurants(filters),
     filters.q ? searchDishes(filters.q) : Promise.resolve([]),
   ]);
-  const summaries = withSearchArtwork(rawSummaries);
-  const results = applyFilters(summaries, filters);
+  const results = withSearchArtwork(rawResults);
 
   // Dish results can introduce a restaurant even when its name does not match.
   const resultIds = new Set(results.map((restaurant) => restaurant.id));

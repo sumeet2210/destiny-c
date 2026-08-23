@@ -8,7 +8,7 @@ import {
   formatBookingWindow,
   type BookingStatus,
 } from '@/lib/domain/booking';
-import { confirmBooking } from '@/lib/bookings/actions';
+import { confirmBooking } from '@/lib/api/bookings';
 
 export function ConfirmCard({
   booking,
@@ -71,9 +71,14 @@ export function ConfirmCard({
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
-            const res = await confirmBooking(booking.id);
-            if (res.ok) setConfirmed(true);
-            else setError(res.message ?? 'Could not confirm.');
+            try {
+              await confirmBooking(booking.id);
+              setConfirmed(true);
+            } catch (err) {
+              setError(
+                err instanceof Error ? err.message : 'Could not confirm.',
+              );
+            }
           })
         }
       >

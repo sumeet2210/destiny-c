@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Label } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
-import { sendFriendRequest } from '@/lib/social/actions';
+import { sendFriendRequest } from '@/lib/api/social';
 
-export function AddFriendForm() {
+export function AddFriendForm({ onChanged }: { onChanged?: () => void }) {
   const [email, setEmail] = useState('');
   const [pending, startTransition] = useTransition();
   const toast = useToast();
@@ -19,12 +19,17 @@ export function AddFriendForm() {
         onSubmit={(e) => {
           e.preventDefault();
           startTransition(async () => {
-            const res = await sendFriendRequest(email);
-            toast(
-              res.ok ? 'Request sent' : (res.message ?? 'Could not send'),
-              res.ok ? 'positive' : 'error',
-            );
-            if (res.ok) setEmail('');
+            try {
+              await sendFriendRequest(email);
+              toast('Request sent', 'positive');
+              setEmail('');
+              onChanged?.();
+            } catch (err) {
+              toast(
+                err instanceof Error ? err.message : 'Could not send',
+                'error',
+              );
+            }
           });
         }}
         className="flex items-end gap-2"

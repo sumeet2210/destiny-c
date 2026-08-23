@@ -3,22 +3,18 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProfileViewLogger } from '@/components/features/ProfileViewLogger';
 import { RestaurantCard } from '@/components/features/RestaurantCard';
-import { ReviewForm } from '@/components/features/ReviewForm';
 import { ReviewList } from '@/components/features/ReviewList';
 import { SaveToggle } from '@/components/features/SaveToggle';
 import { DestinyPage } from '@/components/ui/DestinyPage';
 import { VIBES } from '@/config/vibes';
-import { getSessionUser } from '@/lib/auth/session';
-import { canReview } from '@/lib/domain/booking';
 import { formatDistance, haversineKm } from '@/lib/domain/distance';
 import {
   formatDayShifts,
   type DayKey,
   type OpeningHours,
 } from '@/lib/domain/hours';
-import { listStudentBookings } from '@/lib/queries/bookings';
-import { alsoLike, getRestaurantDetail } from '@/lib/queries/catalog';
-import { getSavedIds } from '@/lib/queries/social';
+import { alsoLike, getRestaurantDetail } from '@/lib/api/restaurants';
+import { ReviewPrompt } from './ReviewPrompt';
 import {
   ProfileCoverCarousel,
   ProfileGalleryButton,
@@ -49,12 +45,7 @@ export default async function RestaurantPage(
 ) {
   const { id } = await props.params;
   const search = await props.searchParams;
-  const [detail, user, savedIds, bookings] = await Promise.all([
-    getRestaurantDetail(id),
-    getSessionUser(),
-    getSavedIds(),
-    listStudentBookings(),
-  ]);
+  const detail = await getRestaurantDetail(id);
   if (!detail) notFound();
 
   const { summary, row, menu, menuPhotos, offers, events, reviews } = detail;
@@ -62,7 +53,6 @@ export default async function RestaurantPage(
   const photos = artwork
     ? [artwork, ...summary.photos.filter((photo) => photo !== artwork)]
     : summary.photos;
-  const isStudent = user?.role === 'student';
   const distance =
     summary.lat !== null && summary.lng !== null
       ? formatDistance(
@@ -87,14 +77,6 @@ export default async function RestaurantPage(
       .join(' · ') ||
     'Local favourite';
   const address = row.address || row.area;
-  const reviewableBooking = isStudent
-    ? bookings.find(
-        (booking) =>
-          booking.restaurant_id === id &&
-          canReview(booking) &&
-          !booking.alreadyReviewed,
-      )
-    : undefined;
 
   return (
     <DestinyPage className={styles.restaurantPage}>
@@ -120,10 +102,7 @@ export default async function RestaurantPage(
                   labels={PHOTO_LABELS}
                 />
               ) : null}
-              <SaveToggle
-                restaurantId={id}
-                initialSaved={isStudent && savedIds.has(id)}
-              />
+              <SaveToggle restaurantId={id} />
             </div>
             <ProfileCoverCarousel
               photos={photos.slice(0, 4)}
@@ -248,15 +227,7 @@ export default async function RestaurantPage(
           aria-labelledby="reviews-title"
         >
           <h2 id="reviews-title">Reviews</h2>
-          {reviewableBooking ? (
-            <div className={styles.writeReview}>
-              <span>You visited this place.</span>
-              <ReviewForm
-                bookingId={reviewableBooking.id}
-                restaurantName={row.name}
-              />
-            </div>
-          ) : null}
+          <ReviewPrompt restaurantId={id} restaurantName={row.name} />
           <ReviewList
             appearance="destiny"
             reviews={reviews.map((review) => ({

@@ -7,13 +7,14 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { EventCard } from '@/components/features/EventCard';
-import { upsertEvent } from '@/lib/owner/actions';
+import { upsertEvent } from '@/lib/api/owner';
+import type { Tables } from '@/types/db';
 
 type OwnerEvent = {
   id: string;
   title: string;
   description: string | null;
-  event_type: string;
+  event_type: Tables<'events'>['event_type'];
   starts_at: string;
   ends_at: string | null;
   entry_fee: number | null;
@@ -29,7 +30,13 @@ const toLocalInput = (iso: string | null) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
-export function EventManager({ events }: { events: OwnerEvent[] }) {
+export function EventManager({
+  events,
+  onChanged,
+}: {
+  events: OwnerEvent[];
+  onChanged?: () => void;
+}) {
   const [editing, setEditing] = useState<Partial<OwnerEvent> | null>(null);
   const [mountedAt] = useState(() => Date.now());
   const [pending, startTransition] = useTransition();
@@ -72,19 +79,24 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
-                  const res = await upsertEvent({
-                    id: e.id,
-                    title: e.title,
-                    event_type: e.event_type,
-                    starts_at: e.starts_at,
-                    ends_at: e.ends_at,
-                    description: e.description ?? undefined,
-                    is_cancelled: true,
-                  });
-                  toast(
-                    res.ok ? 'Event cancelled' : (res.message ?? 'Failed'),
-                    res.ok ? 'positive' : 'error',
-                  );
+                  try {
+                    await upsertEvent({
+                      id: e.id,
+                      title: e.title,
+                      event_type: e.event_type,
+                      starts_at: e.starts_at,
+                      ends_at: e.ends_at,
+                      description: e.description ?? undefined,
+                      is_cancelled: true,
+                    });
+                    toast('Event cancelled', 'positive');
+                    onChanged?.();
+                  } catch (err) {
+                    toast(
+                      err instanceof Error ? err.message : 'Failed',
+                      'error',
+                    );
+                  }
                 })
               }
             >
@@ -123,24 +135,28 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               const starts = String(fd.get('starts_at'));
               const ends = String(fd.get('ends_at') || '');
               startTransition(async () => {
-                const res = await upsertEvent({
-                  id: editing.id,
-                  title: String(fd.get('title')),
-                  description: String(fd.get('description') || ''),
-                  event_type: String(fd.get('event_type')),
-                  starts_at: new Date(starts).toISOString(),
-                  ends_at: ends ? new Date(ends).toISOString() : null,
-                  entry_fee: fd.get('entry_fee')
-                    ? Number(fd.get('entry_fee'))
-                    : null,
-                  location_details: String(fd.get('location_details') || ''),
-                  ticket_url: String(fd.get('ticket_url') || ''),
-                });
-                toast(
-                  res.ok ? 'Event saved' : (res.message ?? 'Failed'),
-                  res.ok ? 'positive' : 'error',
-                );
-                if (res.ok) setEditing(null);
+                try {
+                  await upsertEvent({
+                    id: editing.id,
+                    title: String(fd.get('title')),
+                    description: String(fd.get('description') || ''),
+                    event_type: String(
+                      fd.get('event_type'),
+                    ) as Tables<'events'>['event_type'],
+                    starts_at: new Date(starts).toISOString(),
+                    ends_at: ends ? new Date(ends).toISOString() : null,
+                    entry_fee: fd.get('entry_fee')
+                      ? Number(fd.get('entry_fee'))
+                      : null,
+                    location_details: String(fd.get('location_details') || ''),
+                    ticket_url: String(fd.get('ticket_url') || ''),
+                  });
+                  toast('Event saved', 'positive');
+                  setEditing(null);
+                  onChanged?.();
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'Failed', 'error');
+                }
               });
             }}
             className="space-y-4"

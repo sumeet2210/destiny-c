@@ -3,16 +3,11 @@ import { LiveTickerSearch } from '@/components/features/LiveTickerSearch';
 import { SpecialsTicker } from '@/components/features/SpecialsTicker';
 import { SquadGoingSection } from '@/components/features/SquadGoingSection';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { getSessionUser } from '@/lib/auth/session';
-import {
-  applyFilters,
-  listQuickSearchIndex,
-  listRestaurantSummaries,
-  listTickerOffers,
-  listUpcomingEvents,
-  type RestaurantSummary,
-} from '@/lib/queries/catalog';
-import { getSavedIds } from '@/lib/queries/social';
+import { listRestaurants } from '@/lib/api/restaurants';
+import { listTickerOffers } from '@/lib/api/offers';
+import { listUpcomingEvents } from '@/lib/api/events';
+import { getQuickSearchIndex } from '@/lib/api/search';
+import type { RestaurantSummary } from '@/lib/api/types';
 import { HeroRotatingCta } from './HeroRotatingCta';
 import styles from './home.module.css';
 
@@ -72,26 +67,18 @@ export default function HomePage() {
 }
 
 async function DiscoverSection() {
-  const [restaurants, user, savedIds] = await Promise.all([
-    listRestaurantSummaries(),
-    getSessionUser(),
-    getSavedIds(),
-  ]);
+  const restaurants = await listRestaurants({ sort: 'trending' });
 
   return (
     <SquadGoingSection
       className={styles.homeSquadSection}
-      restaurants={withHomeArtwork(
-        applyFilters(restaurants, { sort: 'trending' }),
-      )}
-      loggedIn={user?.role === 'student'}
-      initialSavedIds={[...savedIds]}
+      restaurants={withHomeArtwork(restaurants)}
     />
   );
 }
 
 async function HomeSearchSection() {
-  const searchIndex = await listQuickSearchIndex();
+  const searchIndex = await getQuickSearchIndex();
 
   return (
     <section

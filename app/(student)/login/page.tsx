@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Input, Label } from '@/components/ui/Input';
 import { STUDENT_EMAIL_DOMAINS } from '@/config/auth';
-import { requestStudentOtp, verifyStudentOtp } from '@/lib/auth/actions';
+import { requestStudentOtp, verifyStudentOtp } from '@/lib/api/auth';
 
 export default function LoginPage() {
   return (
@@ -33,17 +33,23 @@ function LoginForm() {
   const sendCode = () =>
     startTransition(async () => {
       setError(null);
-      const res = await requestStudentOtp(email.trim());
-      if (!res.ok) setError(res.message ?? 'Could not send the code.');
-      else setStep('code');
+      try {
+        await requestStudentOtp(email.trim());
+        setStep('code');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not send the code.');
+      }
     });
 
   const verify = () =>
     startTransition(async () => {
       setError(null);
-      const res = await verifyStudentOtp(email.trim(), code.trim());
-      if (!res.ok) setError(res.message ?? "That code didn't work.");
-      else router.push(params.get('next') ?? '/');
+      try {
+        await verifyStudentOtp(email.trim(), code.trim());
+        router.push(params.get('next') ?? '/');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "That code didn't work.");
+      }
     });
 
   return (

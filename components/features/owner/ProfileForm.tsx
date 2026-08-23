@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
-import { updateRestaurant } from '@/lib/owner/actions';
+import { updateRestaurant } from '@/lib/api/owner';
 
 type ProfileFields = {
   name: string;
@@ -51,11 +51,15 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         onSubmit={(e) => {
           e.preventDefault();
           startTransition(async () => {
-            const res = await updateRestaurant(fields);
-            toast(
-              res.ok ? 'Profile saved' : (res.message ?? 'Could not save'),
-              res.ok ? 'positive' : 'error',
-            );
+            try {
+              await updateRestaurant(fields);
+              toast('Profile saved', 'positive');
+            } catch (err) {
+              toast(
+                err instanceof Error ? err.message : 'Could not save',
+                'error',
+              );
+            }
           });
         }}
         className="space-y-4"

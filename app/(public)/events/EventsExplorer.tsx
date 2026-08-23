@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { RsvpButton } from '@/components/features/RsvpButton';
 import { EVENT_TYPES } from '@/config/events';
+import { getFriendActivity } from '@/lib/api/social';
+import type { FriendActivity } from '@/lib/api/types';
+import { useApi } from '@/lib/hooks/useApi';
+import { useSaved } from '@/lib/session';
 import styles from './events.module.css';
 
 const IST = 'Asia/Kolkata';
@@ -23,8 +27,6 @@ export type SceneEvent = {
   location: string | null;
   ticketUrl: string | null;
   interestCount: number;
-  initiallyInterested: boolean;
-  friendsInterested: string[];
 };
 
 function dayKey(value: Date | string) {
@@ -83,15 +85,25 @@ function feeLabel(fee: number | null) {
 
 export function EventsExplorer({
   events,
-  loggedIn,
   rangeStart,
 }: {
   events: SceneEvent[];
-  loggedIn: boolean;
   rangeStart: string;
 }) {
   const dates = useMemo(() => dateRange(rangeStart), [rangeStart]);
   const [selectedDay, setSelectedDay] = useState('all');
+
+  // Friend activity ("Aarav is going") used to be resolved server-side. With the
+  // session on the client, fetch it once for signed-in students and share the
+  // going-to map across every card instead of an N+1 per-card request.
+  const { isStudent } = useSaved();
+  const { data: activity } = useApi(
+    () =>
+      isStudent
+        ? getFriendActivity()
+        : Promise.resolve<FriendActivity | null>(null),
+    [isStudent],
+  );
 
   const filtered = useMemo(() => {
     return events.filter((event) => {
@@ -154,7 +166,11 @@ export function EventsExplorer({
         {filtered.length ? (
           <div className={styles.eventGrid}>
             {filtered.map((event) => (
-              <SceneCard key={event.id} event={event} loggedIn={loggedIn} />
+              <SceneCard
+                key={event.id}
+                event={event}
+                friendsGoing={activity?.goingTo.get(event.id) ?? []}
+              />
             ))}
           </div>
         ) : (
@@ -177,10 +193,10 @@ export function EventsExplorer({
 
 function SceneCard({
   event,
-  loggedIn,
+  friendsGoing,
 }: {
   event: SceneEvent;
-  loggedIn: boolean;
+  friendsGoing: string[];
 }) {
   const meta = EVENT_TYPES.find((item) => item.key === event.eventType);
   const bookingHref = `/restaurant/${event.restaurantId}/book?event=${event.id}`;
@@ -222,9 +238,7 @@ function SceneCard({
         <div className={styles.cardActions}>
           <RsvpButton
             eventId={event.id}
-            initialGoing={event.initiallyInterested}
-            loggedIn={loggedIn}
-            friendsGoing={event.friendsInterested}
+            friendsGoing={friendsGoing}
             onInterestedChange={(interested) =>
               setInterestCount((current) =>
                 Math.max(0, current + (interested ? 1 : -1)),

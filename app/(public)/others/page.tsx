@@ -1,17 +1,13 @@
 import Link from 'next/link';
 import { ToolboxDisclosure } from './ToolboxDisclosure';
-import { getSessionUser } from '@/lib/auth/session';
+import { RestaurantPortalLink } from './RestaurantPortalLink';
 import styles from './others.module.css';
 
 export const metadata = { title: 'Others' };
 
 type MenuIconName = 'saved' | 'portal';
 
-export default async function OthersPage() {
-  const user = await getSessionUser();
-  const portalHref =
-    user?.role === 'owner' ? '/owner/dashboard' : '/owner/login';
-
+export default function OthersPage() {
   const destinations: ReadonlyArray<{
     href: string;
     label: string;
@@ -56,7 +52,7 @@ export default async function OthersPage() {
           <ToolboxDisclosure kind="contact" />
         </nav>
 
-        <Link href={portalHref} className={styles.portalCard}>
+        <RestaurantPortalLink className={styles.portalCard}>
           <span className={styles.portalIconWrap}>
             <MenuIcon name="portal" />
           </span>
@@ -65,7 +61,7 @@ export default async function OthersPage() {
             <strong>Restaurant Portal</strong>
           </span>
           <ArrowIcon />
-        </Link>
+        </RestaurantPortalLink>
       </div>
     </main>
   );

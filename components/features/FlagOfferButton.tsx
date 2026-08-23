@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useToast } from '@/components/ui/Toast';
-import { flagOffer } from '@/lib/offers/actions';
+import { flagOffer } from '@/lib/api/offers';
 
 export function FlagOfferButton({ offerId }: { offerId: string }) {
   const [flagged, setFlagged] = useState(false);
   const [, startTransition] = useTransition();
-  const toast = useToast();
 
   if (flagged) {
     return (
@@ -24,8 +22,9 @@ export function FlagOfferButton({ offerId }: { offerId: string }) {
       onClick={() =>
         startTransition(async () => {
           setFlagged(true);
-          const res = await flagOffer(offerId);
-          if (!res.ok) toast('Could not send that — try again later', 'error');
+          // flagOffer is best-effort: it swallows failures so a bad flag never
+          // disrupts the page.
+          await flagOffer(offerId);
         })
       }
     >

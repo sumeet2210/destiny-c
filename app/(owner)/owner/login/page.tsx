@@ -10,7 +10,7 @@ import {
 } from '@/components/features/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { Input, Label } from '@/components/ui/Input';
-import { ownerLogin } from '@/lib/auth/actions';
+import { ownerLogin } from '@/lib/api/auth';
 
 export default function OwnerLoginPage() {
   const router = useRouter();
@@ -37,9 +37,12 @@ export default function OwnerLoginPage() {
           event.preventDefault();
           startTransition(async () => {
             setError(null);
-            const res = await ownerLogin(email.trim(), password);
-            if (!res.ok) setError(res.message ?? 'Login failed.');
-            else router.push('/owner/dashboard');
+            try {
+              await ownerLogin(email.trim(), password);
+              router.push('/owner/dashboard');
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Login failed.');
+            }
           });
         }}
         className={styles.form}

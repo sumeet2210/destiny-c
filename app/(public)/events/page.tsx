@@ -2,12 +2,10 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { DestinyPage } from '@/components/ui/DestinyPage';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { getSessionUser } from '@/lib/auth/session';
 import {
   listEventInterestCounts,
   listUpcomingEvents,
-} from '@/lib/queries/catalog';
-import { getFriendActivity, getMyRsvpIds } from '@/lib/queries/social';
+} from '@/lib/api/events';
 import { EventsExplorer, type SceneEvent } from './EventsExplorer';
 import styles from './events.module.css';
 
@@ -97,11 +95,8 @@ export default async function EventsPage() {
 }
 
 async function EventsData() {
-  const [events, user, myRsvps, activity, interestCounts] = await Promise.all([
+  const [events, interestCounts] = await Promise.all([
     listUpcomingEvents(),
-    getSessionUser(),
-    getMyRsvpIds(),
-    getFriendActivity(),
     listEventInterestCounts(),
   ]);
 
@@ -134,14 +129,11 @@ async function EventsData() {
     location: event.location_details,
     ticketUrl: event.ticket_url,
     interestCount: interestCounts.get(event.id) ?? 0,
-    initiallyInterested: myRsvps.has(event.id),
-    friendsInterested: activity.goingTo.get(event.id) ?? [],
   }));
 
   return (
     <EventsExplorer
       events={sceneEvents}
-      loggedIn={user?.role === 'student'}
       rangeStart={new Date().toISOString()}
     />
   );

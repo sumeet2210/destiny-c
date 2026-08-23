@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AuthGuard } from '@/components/features/AuthGuard';
 import { BookingForm } from '@/components/features/BookingForm';
-import { getRestaurantDetail } from '@/lib/queries/catalog';
-import { requireStudent } from '@/lib/auth/session';
-import { isSupabaseConfigured } from '@/lib/supabase/server';
+import { getRestaurantDetail } from '@/lib/api/restaurants';
 import { BOOKING } from '@/config/booking';
 import {
   bookingDayOptions,
@@ -30,12 +29,6 @@ export default async function BookPage(
       leadTimeMinutes: BOOKING.minLeadTimeMinutes,
     },
   );
-
-  if (isSupabaseConfigured()) {
-    await requireStudent(
-      `/restaurant/${id}/book${bookForLater ? '?later=1' : ''}`,
-    );
-  }
 
   const hours = detail.row.opening_hours as OpeningHours | null;
   const todayKey = new Date()
@@ -79,24 +72,26 @@ export default async function BookPage(
         </div>
       </div>
 
-      <BookingForm
-        restaurantId={id}
-        restaurantName={detail.row.name}
-        bookingDays={bookingDays}
-        bookForLater={bookForLater}
-        offers={detail.offers.map((offer) => ({
-          id: offer.id,
-          title: offer.discount_text || offer.title,
-          description: offer.description,
-          detail: `Valid until ${formatBookingExtraDate(offer.expires_at)}`,
-        }))}
-        events={detail.events.map((event) => ({
-          id: event.id,
-          title: event.title,
-          description: event.description,
-          detail: formatBookingExtraDate(event.starts_at),
-        }))}
-      />
+      <AuthGuard role="student">
+        <BookingForm
+          restaurantId={id}
+          restaurantName={detail.row.name}
+          bookingDays={bookingDays}
+          bookForLater={bookForLater}
+          offers={detail.offers.map((offer) => ({
+            id: offer.id,
+            title: offer.discount_text || offer.title,
+            description: offer.description,
+            detail: `Valid until ${formatBookingExtraDate(offer.expires_at)}`,
+          }))}
+          events={detail.events.map((event) => ({
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            detail: formatBookingExtraDate(event.starts_at),
+          }))}
+        />
+      </AuthGuard>
     </main>
   );
 }

@@ -6,7 +6,7 @@ import { CRAVINGS } from '@/config/cravings';
 import { Chip } from '@/components/ui/Chip';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import type { RestaurantSummary } from '@/lib/queries/catalog';
+import type { RestaurantSummary } from '@/lib/api/types';
 
 /**
  * The signature interaction (PRD §5.3, design.md §4): a horizontally

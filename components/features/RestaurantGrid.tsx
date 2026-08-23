@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { RestaurantCard } from '@/components/features/RestaurantCard';
 import { Button } from '@/components/ui/Button';
 import { haversineKm } from '@/lib/domain/distance';
-import type { RestaurantSummary } from '@/lib/queries/catalog';
+import type { RestaurantSummary } from '@/lib/api/types';
 
 type Coords = { lat: number; lng: number };
 

@@ -1,11 +1,6 @@
 import { SquadGoingSection } from '@/components/features/SquadGoingSection';
-import { getSessionUser } from '@/lib/auth/session';
-import {
-  applyFilters,
-  listRestaurantSummaries,
-  type RestaurantSummary,
-} from '@/lib/queries/catalog';
-import { getSavedIds } from '@/lib/queries/social';
+import { listRestaurants } from '@/lib/api/restaurants';
+import type { RestaurantSummary } from '@/lib/api/types';
 import styles from './discover.module.css';
 
 export const metadata = { title: 'Discover' };
@@ -28,22 +23,12 @@ function withDiscoverArtwork(restaurants: RestaurantSummary[]) {
 }
 
 export default async function DiscoverPage() {
-  const [restaurants, user, savedIds] = await Promise.all([
-    listRestaurantSummaries(),
-    getSessionUser(),
-    getSavedIds(),
-  ]);
+  const restaurants = await listRestaurants({ sort: 'trending' });
 
   return (
     <main className={styles.page}>
       <div className={styles.shell}>
-        <SquadGoingSection
-          restaurants={withDiscoverArtwork(
-            applyFilters(restaurants, { sort: 'trending' }),
-          )}
-          loggedIn={user?.role === 'student'}
-          initialSavedIds={[...savedIds]}
-        />
+        <SquadGoingSection restaurants={withDiscoverArtwork(restaurants)} />
       </div>
     </main>
   );

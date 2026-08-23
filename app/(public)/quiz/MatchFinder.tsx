@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { MATCH_QUESTIONS, type MatchAnswers } from '@/config/quiz';
 import { rankRestaurantMatches } from '@/lib/domain/restaurant-match';
-import type { RestaurantSummary } from '@/lib/queries/catalog';
+import type { RestaurantSummary } from '@/lib/api/types';
 import styles from './quiz.module.css';
 
 type MatchFinderProps = {

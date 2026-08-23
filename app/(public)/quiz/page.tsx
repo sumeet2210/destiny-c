@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { listRestaurantSummaries } from '@/lib/queries/catalog';
-import type { RestaurantSummary } from '@/lib/queries/catalog';
+import { listRestaurants } from '@/lib/api/restaurants';
+import type { RestaurantSummary } from '@/lib/api/types';
 import { MatchFinder } from './MatchFinder';
 import styles from './quiz.module.css';
 
@@ -28,7 +28,7 @@ function withMatchArtwork(restaurants: RestaurantSummary[]) {
 }
 
 export default async function QuizPage() {
-  const restaurants = withMatchArtwork(await listRestaurantSummaries());
+  const restaurants = withMatchArtwork(await listRestaurants());
 
   return (
     <main className={styles.finder}>

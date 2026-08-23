@@ -9,7 +9,7 @@ import { Input, Label } from '@/components/ui/Input';
 import { MenuRow } from '@/components/ui/MenuRow';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
-import { deleteMenuItem, upsertMenuItem } from '@/lib/owner/actions';
+import { deleteMenuItem, upsertMenuItem } from '@/lib/api/owner';
 
 type Item = {
   id?: string;
@@ -28,7 +28,13 @@ const blank: Item = {
   is_available: true,
 };
 
-export function MenuManager({ items }: { items: Item[] }) {
+export function MenuManager({
+  items,
+  onChanged,
+}: {
+  items: Item[];
+  onChanged?: () => void;
+}) {
   const [editing, setEditing] = useState<Item | null>(null);
   const [pending, startTransition] = useTransition();
   const toast = useToast();
@@ -36,12 +42,14 @@ export function MenuManager({ items }: { items: Item[] }) {
   const save = () => {
     if (!editing) return;
     startTransition(async () => {
-      const res = await upsertMenuItem(editing);
-      toast(
-        res.ok ? 'Menu saved' : (res.message ?? 'Could not save'),
-        res.ok ? 'positive' : 'error',
-      );
-      if (res.ok) setEditing(null);
+      try {
+        await upsertMenuItem(editing);
+        toast('Menu saved', 'positive');
+        setEditing(null);
+        onChanged?.();
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Could not save', 'error');
+      }
     });
   };
 
@@ -71,10 +79,20 @@ export function MenuManager({ items }: { items: Item[] }) {
                   size="sm"
                   onClick={() =>
                     startTransition(async () => {
-                      await upsertMenuItem({
-                        ...item,
-                        is_available: !item.is_available,
-                      });
+                      try {
+                        await upsertMenuItem({
+                          ...item,
+                          is_available: !item.is_available,
+                        });
+                        onChanged?.();
+                      } catch (err) {
+                        toast(
+                          err instanceof Error
+                            ? err.message
+                            : 'Could not update',
+                          'error',
+                        );
+                      }
                     })
                   }
                 >
@@ -92,9 +110,17 @@ export function MenuManager({ items }: { items: Item[] }) {
                   size="sm"
                   onClick={() =>
                     startTransition(async () => {
-                      const res = await deleteMenuItem(item.id!);
-                      if (!res.ok)
-                        toast(res.message ?? 'Could not delete', 'error');
+                      try {
+                        await deleteMenuItem(item.id!);
+                        onChanged?.();
+                      } catch (err) {
+                        toast(
+                          err instanceof Error
+                            ? err.message
+                            : 'Could not delete',
+                          'error',
+                        );
+                      }
                     })
                   }
                 >

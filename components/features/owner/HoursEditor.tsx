@@ -14,7 +14,7 @@ import {
   type OpeningHours,
   type Shift,
 } from '@/lib/domain/hours';
-import { updateRestaurant } from '@/lib/owner/actions';
+import { updateRestaurant } from '@/lib/api/owner';
 
 export function HoursEditor({ initial }: { initial: OpeningHours }) {
   const [hours, setHours] = useState<OpeningHours>(initial);
@@ -127,11 +127,15 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
-            const res = await updateRestaurant({ opening_hours: hours });
-            toast(
-              res.ok ? 'Hours saved' : (res.message ?? 'Could not save'),
-              res.ok ? 'positive' : 'error',
-            );
+            try {
+              await updateRestaurant({ opening_hours: hours });
+              toast('Hours saved', 'positive');
+            } catch (err) {
+              toast(
+                err instanceof Error ? err.message : 'Could not save',
+                'error',
+              );
+            }
           })
         }
       >

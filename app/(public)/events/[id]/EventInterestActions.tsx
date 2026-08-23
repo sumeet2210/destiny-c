@@ -3,26 +3,35 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { RsvpButton } from '@/components/features/RsvpButton';
+import { getFriendActivity } from '@/lib/api/social';
+import type { FriendActivity } from '@/lib/api/types';
+import { useApi } from '@/lib/hooks/useApi';
+import { useSaved } from '@/lib/session';
 import styles from './event-detail.module.css';
 
 export function EventInterestActions({
   eventId,
   initialCount,
-  initialGoing,
-  loggedIn,
-  friendsGoing,
   bookingHref,
   ticketUrl,
 }: {
   eventId: string;
   initialCount: number;
-  initialGoing: boolean;
-  loggedIn: boolean;
-  friendsGoing: string[];
   bookingHref: string;
   ticketUrl: string | null;
 }) {
   const [interestCount, setInterestCount] = useState(initialCount);
+
+  // "Aarav is going" comes from the signed-in student's friend activity, fetched
+  // client-side now that the session lives in the browser rather than the server.
+  const { isStudent } = useSaved();
+  const { data: activity } = useApi(
+    () =>
+      isStudent
+        ? getFriendActivity()
+        : Promise.resolve<FriendActivity | null>(null),
+    [isStudent],
+  );
 
   return (
     <>
@@ -33,9 +42,7 @@ export function EventInterestActions({
       <div className={styles.actions}>
         <RsvpButton
           eventId={eventId}
-          initialGoing={initialGoing}
-          loggedIn={loggedIn}
-          friendsGoing={friendsGoing}
+          friendsGoing={activity?.goingTo.get(eventId) ?? []}
           onInterestedChange={(interested) =>
             setInterestCount((current) =>
               Math.max(0, current + (interested ? 1 : -1)),

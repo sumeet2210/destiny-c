@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { QuickSearchIndex } from '@/lib/queries/catalog';
+import type { QuickSearchIndex } from '@/lib/api/types';
 import { cn } from '@/lib/cn';
 import styles from './live-ticker-search.module.css';
 

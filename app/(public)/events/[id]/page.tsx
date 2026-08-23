@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { EVENT_TYPES } from '@/config/events';
-import { getSessionUser } from '@/lib/auth/session';
-import { getEventDetail, listEventInterestCounts } from '@/lib/queries/catalog';
-import { getFriendActivity, getMyRsvpIds } from '@/lib/queries/social';
+import { getEventDetail, listEventInterestCounts } from '@/lib/api/events';
 import { EventInterestActions } from './EventInterestActions';
 import styles from './event-detail.module.css';
 
@@ -51,11 +49,8 @@ export default async function EventDetailPage({
   params,
 }: PageProps<'/events/[id]'>) {
   const { id } = await params;
-  const [detail, user, myRsvps, activity, counts] = await Promise.all([
+  const [detail, counts] = await Promise.all([
     getEventDetail(id),
-    getSessionUser(),
-    getMyRsvpIds(),
-    getFriendActivity(),
     listEventInterestCounts(),
   ]);
   if (!detail) notFound();
@@ -127,9 +122,6 @@ export default async function EventDetailPage({
             <EventInterestActions
               eventId={event.id}
               initialCount={counts.get(event.id) ?? 0}
-              initialGoing={myRsvps.has(event.id)}
-              loggedIn={user?.role === 'student'}
-              friendsGoing={activity.goingTo.get(event.id) ?? []}
               bookingHref={bookingHref}
               ticketUrl={event.ticket_url}
             />

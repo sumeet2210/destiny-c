@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input, Label } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
-import { updateStudentProfile } from '@/lib/auth/actions';
+import { updateProfile } from '@/lib/api/auth';
 import { cn } from '@/lib/cn';
 
 /**
@@ -46,10 +46,14 @@ export function SharingToggle({
             const next = !on;
             setOn(next);
             startTransition(async () => {
-              const res = await updateStudentProfile({ share_activity: next });
-              if (!res.ok) {
+              try {
+                await updateProfile({ share_activity: next });
+              } catch (err) {
                 setOn(!next);
-                toast(res.message ?? 'Could not update', 'error');
+                toast(
+                  err instanceof Error ? err.message : 'Could not update',
+                  'error',
+                );
               }
             });
           }}
@@ -82,13 +86,15 @@ export function SharingToggle({
             type="button"
             onClick={() =>
               startTransition(async () => {
-                const res = await updateStudentProfile({
-                  hostel: hostel || null,
-                });
-                toast(
-                  res.ok ? 'Saved' : (res.message ?? 'Could not save'),
-                  res.ok ? 'positive' : 'error',
-                );
+                try {
+                  await updateProfile({ hostel: hostel || null });
+                  toast('Saved', 'positive');
+                } catch (err) {
+                  toast(
+                    err instanceof Error ? err.message : 'Could not save',
+                    'error',
+                  );
+                }
               })
             }
             className="rounded-control border-border-hairline text-paper hover:bg-surface-raised border px-3 text-[13px]"

@@ -1,22 +1,26 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
-import { toggleSaved } from '@/lib/social/actions';
+import { useSaved } from '@/lib/session';
 import { cn } from '@/lib/cn';
 
-/** P9-1: save/unsave. Saved is private by default (PRD §5.9). */
+/** P9-1: save/unsave. Saved is private by default (PRD §5.9). Saved state comes
+ *  from the shared SavedProvider, so it stays consistent across every grid and
+ *  the restaurant profile without per-card fetches. */
 export function SaveToggle({
   restaurantId,
-  initialSaved,
   showLabel = false,
 }: {
   restaurantId: string;
-  initialSaved: boolean;
   showLabel?: boolean;
 }) {
-  const [saved, setSaved] = useState(initialSaved);
+  const { isStudent, isSaved, toggleSave } = useSaved();
+  const saved = isSaved(restaurantId);
   const [, startTransition] = useTransition();
+  const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
 
   return (
@@ -26,13 +30,18 @@ export function SaveToggle({
       aria-pressed={saved}
       onClick={(e) => {
         e.preventDefault();
-        const next = !saved;
-        setSaved(next);
+        if (!isStudent) {
+          router.push(`/login?next=${encodeURIComponent(pathname)}`);
+          return;
+        }
         startTransition(async () => {
-          const res = await toggleSaved(restaurantId);
-          if (!res.ok) {
-            setSaved(!next);
-            toast(res.message ?? 'Could not save', 'error');
+          try {
+            await toggleSave(restaurantId);
+          } catch (err) {
+            toast(
+              err instanceof Error ? err.message : 'Could not save',
+              'error',
+            );
           }
         });
       }}

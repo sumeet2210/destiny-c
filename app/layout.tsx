@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
 import { ToastProvider } from '@/components/ui/Toast';
 import { MobileTabBar } from '@/components/features/SiteNav';
+import { SessionProvider, SavedProvider } from '@/lib/session';
 import './globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -41,12 +42,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body className="bg-canvas text-paper font-body flex min-h-full flex-col">
-        <ToastProvider>
-          <div className="min-h-full w-full pb-[calc(6rem+env(safe-area-inset-bottom))]">
-            {children}
-          </div>
-          <MobileTabBar />
-        </ToastProvider>
+        <SessionProvider>
+          <SavedProvider>
+            <ToastProvider>
+              <div className="min-h-full w-full pb-[calc(6rem+env(safe-area-inset-bottom))]">
+                {children}
+              </div>
+              <MobileTabBar />
+            </ToastProvider>
+          </SavedProvider>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -7,7 +7,7 @@ import { useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useToast } from '@/components/ui/Toast';
-import { deletePhoto, reorderPhotos, uploadPhoto } from '@/lib/owner/actions';
+import { deletePhoto, reorderPhotos, uploadPhoto } from '@/lib/api/owner';
 
 type Photo = { id: string; url: string; kind: 'gallery' | 'menu_photo' };
 
@@ -30,9 +30,11 @@ async function resizeToWebp(file: File, maxDim = 1600): Promise<Blob> {
 export function PhotoManager({
   coverUrl,
   photos,
+  onChanged,
 }: {
   coverUrl: string | null;
   photos: Photo[];
+  onChanged?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
@@ -59,17 +61,17 @@ export function PhotoManager({
     setUploading(true);
     try {
       const blob = await resizeToWebp(file);
-      const fd = new FormData();
-      fd.set('file', new File([blob], 'photo.webp', { type: 'image/webp' }));
-      fd.set('kind', targetRef.current.kind);
-      if (targetRef.current.asCover) fd.set('as_cover', '1');
-      const res = await uploadPhoto(fd);
+      await uploadPhoto(new File([blob], 'photo.webp', { type: 'image/webp' }), {
+        kind: targetRef.current.kind,
+        asCover: targetRef.current.asCover,
+      });
+      toast('Photo uploaded', 'positive');
+      onChanged?.();
+    } catch (err) {
       toast(
-        res.ok ? 'Photo uploaded' : (res.message ?? 'Upload failed'),
-        res.ok ? 'positive' : 'error',
+        err instanceof Error ? err.message : 'Could not process that image',
+        'error',
       );
-    } catch {
-      toast('Could not process that image', 'error');
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -82,14 +84,23 @@ export function PhotoManager({
     if (j < 0 || j >= next.length) return;
     [next[index], next[j]] = [next[j], next[index]];
     startTransition(async () => {
-      await reorderPhotos(next.map((p) => p.id));
+      try {
+        await reorderPhotos(next.map((p) => p.id));
+        onChanged?.();
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Could not reorder', 'error');
+      }
     });
   };
 
   const remove = (id: string) =>
     startTransition(async () => {
-      const res = await deletePhoto(id);
-      if (!res.ok) toast(res.message ?? 'Could not delete', 'error');
+      try {
+        await deletePhoto(id);
+        onChanged?.();
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Could not delete', 'error');
+      }
     });
 
   return (

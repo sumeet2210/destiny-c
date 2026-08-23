@@ -11,7 +11,7 @@ import {
   canConfirm,
   type BookingStatus,
 } from '@/lib/domain/booking';
-import { cancelBooking, confirmBooking } from '@/lib/bookings/actions';
+import { cancelBooking, confirmBooking } from '@/lib/api/bookings';
 import { cn } from '@/lib/cn';
 
 type Item = {
@@ -42,9 +42,12 @@ const statusTone: Record<BookingStatus, string> = {
 export function BookingRow({
   booking,
   reviewSlot,
+  onChanged,
 }: {
   booking: Item;
   reviewSlot?: React.ReactNode;
+  /** Called after a successful confirm/cancel so the list can refetch. */
+  onChanged?: () => void;
 }) {
   const [mountedAt] = useState(() => new Date());
   const [pending, startTransition] = useTransition();
@@ -105,13 +108,16 @@ export function BookingRow({
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
-                  const res = await confirmBooking(booking.id);
-                  toast(
-                    res.ok
-                      ? 'Confirmed — see you there'
-                      : (res.message ?? 'Failed'),
-                    res.ok ? 'positive' : 'error',
-                  );
+                  try {
+                    await confirmBooking(booking.id);
+                    toast('Confirmed — see you there', 'positive');
+                    onChanged?.();
+                  } catch (err) {
+                    toast(
+                      err instanceof Error ? err.message : 'Failed',
+                      'error',
+                    );
+                  }
                 })
               }
             >
@@ -125,13 +131,16 @@ export function BookingRow({
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
-                  const res = await cancelBooking(booking.id);
-                  toast(
-                    res.ok
-                      ? 'Cancelled — the owner will see'
-                      : (res.message ?? 'Failed'),
-                    res.ok ? 'default' : 'error',
-                  );
+                  try {
+                    await cancelBooking(booking.id);
+                    toast('Cancelled — the owner will see', 'default');
+                    onChanged?.();
+                  } catch (err) {
+                    toast(
+                      err instanceof Error ? err.message : 'Failed',
+                      'error',
+                    );
+                  }
                 })
               }
             >

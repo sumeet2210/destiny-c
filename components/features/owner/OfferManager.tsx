@@ -7,7 +7,7 @@ import { Input, Label, Textarea } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
 import { OfferBadge } from '@/components/features/OfferBadge';
-import { createOffer, updateOffer } from '@/lib/owner/actions';
+import { createOffer, updateOffer } from '@/lib/api/owner';
 
 type Offer = {
   id: string;
@@ -19,7 +19,13 @@ type Offer = {
   flagged_count: number;
 };
 
-export function OfferManager({ offers }: { offers: Offer[] }) {
+export function OfferManager({
+  offers,
+  onChanged,
+}: {
+  offers: Offer[];
+  onChanged?: () => void;
+}) {
   const [creating, setCreating] = useState(false);
   const [mountedAt] = useState(() => Date.now());
   const [pending, startTransition] = useTransition();
@@ -67,11 +73,16 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
-                  const res = await updateOffer(o.id, { is_active: false });
-                  toast(
-                    res.ok ? 'Offer taken down' : (res.message ?? 'Failed'),
-                    res.ok ? 'positive' : 'error',
-                  );
+                  try {
+                    await updateOffer(o.id, { is_active: false });
+                    toast('Offer taken down', 'positive');
+                    onChanged?.();
+                  } catch (err) {
+                    toast(
+                      err instanceof Error ? err.message : 'Failed',
+                      'error',
+                    );
+                  }
                 })
               }
             >
@@ -115,19 +126,21 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
             const fd = new FormData(e.currentTarget);
             const expiresLocal = String(fd.get('expires_at') || '');
             startTransition(async () => {
-              const res = await createOffer({
-                title: String(fd.get('title')),
-                description: String(fd.get('description') || ''),
-                discount_text: String(fd.get('discount_text') || ''),
-                expires_at: expiresLocal
-                  ? new Date(expiresLocal).toISOString()
-                  : undefined,
-              });
-              toast(
-                res.ok ? 'Offer is live' : (res.message ?? 'Failed'),
-                res.ok ? 'positive' : 'error',
-              );
-              if (res.ok) setCreating(false);
+              try {
+                await createOffer({
+                  title: String(fd.get('title')),
+                  description: String(fd.get('description') || ''),
+                  discount_text: String(fd.get('discount_text') || ''),
+                  expires_at: expiresLocal
+                    ? new Date(expiresLocal).toISOString()
+                    : undefined,
+                });
+                toast('Offer is live', 'positive');
+                setCreating(false);
+                onChanged?.();
+              } catch (err) {
+                toast(err instanceof Error ? err.message : 'Failed', 'error');
+              }
             });
           }}
           className="space-y-4"

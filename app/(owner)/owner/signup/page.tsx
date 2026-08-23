@@ -10,7 +10,7 @@ import {
 } from '@/components/features/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { Input, Label } from '@/components/ui/Input';
-import { ownerSignup } from '@/lib/auth/actions';
+import { ownerSignup } from '@/lib/api/auth';
 
 export default function OwnerSignupPage() {
   const router = useRouter();
@@ -38,14 +38,20 @@ export default function OwnerSignupPage() {
           startTransition(async () => {
             setError(null);
             setNotice(null);
-            const res = await ownerSignup(
-              email.trim(),
-              password,
-              fullName.trim(),
-            );
-            if (!res.ok) setError(res.message ?? 'Signup failed.');
-            else if (res.message) setNotice(res.message);
-            else router.push('/owner/dashboard');
+            try {
+              const { session, message } = await ownerSignup(
+                email.trim(),
+                password,
+                fullName.trim(),
+              );
+              if (session) router.push('/owner/dashboard');
+              else
+                setNotice(
+                  message ?? 'Check your email to confirm your account.',
+                );
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Signup failed.');
+            }
           });
         }}
         className={styles.form}

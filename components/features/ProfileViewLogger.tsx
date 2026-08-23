@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logProfileView } from '@/lib/api/views';
 
 /**
  * Fires the profile_views log once per profile mount (P3-13). Client-side so
@@ -14,12 +15,7 @@ export function ProfileViewLogger({
   source: string;
 }) {
   useEffect(() => {
-    fetch('/api/profile-view', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ restaurantId, source }),
-      keepalive: true,
-    }).catch(() => {});
+    logProfileView(restaurantId, source);
   }, [restaurantId, source]);
 
   return null;

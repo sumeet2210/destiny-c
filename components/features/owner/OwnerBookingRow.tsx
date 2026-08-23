@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import type { BookingStatus } from '@/lib/domain/booking';
-import { respondToBooking, setOwnerNote } from '@/lib/bookings/actions';
+import { respondToBooking, setBookingNote } from '@/lib/api/bookings';
 import { cn } from '@/lib/cn';
 
 // Owner-facing status copy: what the owner knows, not what's promised.
@@ -20,6 +20,7 @@ const ownerStatus: Record<BookingStatus, { label: string; tone: string }> = {
 
 export function OwnerBookingRow({
   booking,
+  onChanged,
 }: {
   booking: {
     id: string;
@@ -34,6 +35,7 @@ export function OwnerBookingRow({
     offerTitle: string | null;
     eventTitle: string | null;
   };
+  onChanged?: () => void;
 }) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState(booking.owner_note ?? '');
@@ -93,11 +95,13 @@ export function OwnerBookingRow({
             disabled={pending}
             onClick={() =>
               startTransition(async () => {
-                const res = await respondToBooking(booking.id, 'accept');
-                toast(
-                  res.ok ? 'Reservation accepted' : (res.message ?? 'Failed'),
-                  res.ok ? 'positive' : 'error',
-                );
+                try {
+                  await respondToBooking(booking.id, 'accept');
+                  toast('Reservation accepted', 'positive');
+                  onChanged?.();
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'Failed', 'error');
+                }
               })
             }
           >
@@ -109,11 +113,13 @@ export function OwnerBookingRow({
             disabled={pending}
             onClick={() =>
               startTransition(async () => {
-                const res = await respondToBooking(booking.id, 'reject');
-                toast(
-                  res.ok ? 'Reservation rejected' : (res.message ?? 'Failed'),
-                  res.ok ? 'default' : 'error',
-                );
+                try {
+                  await respondToBooking(booking.id, 'reject');
+                  toast('Reservation rejected', 'default');
+                  onChanged?.();
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'Failed', 'error');
+                }
               })
             }
           >
@@ -141,12 +147,17 @@ export function OwnerBookingRow({
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
-                  const res = await setOwnerNote(booking.id, note);
-                  toast(
-                    res.ok ? 'Note sent' : (res.message ?? 'Failed'),
-                    res.ok ? 'positive' : 'error',
-                  );
-                  if (res.ok) setNoteOpen(false);
+                  try {
+                    await setBookingNote(booking.id, note);
+                    toast('Note sent', 'positive');
+                    setNoteOpen(false);
+                    onChanged?.();
+                  } catch (err) {
+                    toast(
+                      err instanceof Error ? err.message : 'Failed',
+                      'error',
+                    );
+                  }
                 })
               }
             >

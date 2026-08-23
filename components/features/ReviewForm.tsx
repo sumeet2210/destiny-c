@@ -5,15 +5,18 @@ import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
-import { createReview } from '@/lib/reviews/actions';
+import { createReview } from '@/lib/api/reviews';
 import { cn } from '@/lib/cn';
 
 export function ReviewForm({
   bookingId,
   restaurantName,
+  onPosted,
 }: {
   bookingId: string;
   restaurantName: string;
+  /** Called after a review posts so the list can refetch. */
+  onPosted?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
@@ -71,13 +74,17 @@ export function ReviewForm({
             disabled={pending || rating === 0}
             onClick={() =>
               startTransition(async () => {
-                const res = await createReview({ bookingId, rating, comment });
-                if (res.ok) {
+                try {
+                  await createReview({ bookingId, rating, comment });
                   setDone(true);
                   setOpen(false);
                   toast('Review posted — thanks', 'positive');
-                } else {
-                  toast(res.message ?? 'Could not post that', 'error');
+                  onPosted?.();
+                } catch (err) {
+                  toast(
+                    err instanceof Error ? err.message : 'Could not post that',
+                    'error',
+                  );
                 }
               })
             }

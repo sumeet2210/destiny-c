@@ -152,6 +152,17 @@ max_indexes = 5
 # Vector Buckets is available to Supabase Pro plan.
 # [storage.vector.buckets.documents-openai]
 
+# WARNING — `supabase config push` writes this whole block over the hosted
+# project's Auth settings. Four values below are dev-only or already out of sync
+# with the linked project, and would break it if pushed as-is:
+#   site_url / additional_redirect_urls — 127.0.0.1, dead in production
+#   [auth.rate_limit] email_sent = 2    — resets the send cap even after
+#                                         custom SMTP raised it in the dashboard
+#   [auth.email] enable_confirmations   — false here, true on the hosted project
+#   [auth.email] otp_length = 6         — the linked project issues 8-digit
+#                                         codes; pushing 6 changes them silently
+# Set those to production values in the same commit as any config push, or
+# change them in the dashboard and leave this file for `supabase start` only.
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
@@ -242,6 +253,15 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# Student login is code-only: the template prints {{ .Token }} and deliberately
+# omits {{ .ConfirmationURL }}, because no route exists to exchange a magic-link
+# code for a session. Applies to `supabase start` immediately; reaches the hosted
+# project only via `supabase config push` (read the warning at the top of
+# [auth] before running that).
+[auth.email.template.magic_link]
+subject = "Your Destiny login code"
+content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]

@@ -29,13 +29,19 @@ function LoginForm() {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Whether the code step has to collect an address too. A flag rather than
+  // `!email`, which would hide the field again on the first keystroke.
+  const [askEmail, setAskEmail] = useState(false);
 
   const sendCode = () =>
     startTransition(async () => {
       setError(null);
       const res = await requestStudentOtp(email.trim());
       if (!res.ok) setError(res.message ?? 'Could not send the code.');
-      else setStep('code');
+      else {
+        setAskEmail(false);
+        setStep('code');
+      }
     });
 
   const verify = () =>
@@ -107,6 +113,7 @@ function LoginForm() {
             type="button"
             onClick={() => {
               setError(null);
+              setAskEmail(true);
               setStep('code');
             }}
             className={styles.textButton}
@@ -122,9 +129,31 @@ function LoginForm() {
           }}
           className={styles.form}
         >
-          <p className={styles.stepDetail}>
-            Code sent to <strong>{email}</strong>
-          </p>
+          {askEmail ? (
+            /* Landing straight on this step via "I already have a code" means we
+               never captured an address, and verifyOtp matches the code against
+               one — without this field the escape hatch can only ever fail. */
+            <div className={styles.fieldGroup}>
+              <Label htmlFor="code-email" className={styles.label}>
+                NITW email
+              </Label>
+              <Input
+                id="code-email"
+                type="email"
+                autoComplete="email"
+                required
+                autoFocus
+                placeholder={`rollno@${STUDENT_EMAIL_DOMAINS[0]}`}
+                className={styles.field}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </div>
+          ) : (
+            <p className={styles.stepDetail}>
+              Code sent to <strong>{email}</strong>
+            </p>
+          )}
 
           <div className={styles.fieldGroup}>
             <Label htmlFor="code" className={styles.label}>
@@ -135,10 +164,17 @@ function LoginForm() {
               inputMode="numeric"
               autoComplete="one-time-code"
               required
-              autoFocus
+              autoFocus={!askEmail}
               className={`${styles.field} ${styles.codeField}`}
               value={code}
-              onChange={(event) => setCode(event.target.value)}
+              // Strip anything that isn't a digit: pasting from the email is the
+              // normal path and it tends to bring spaces along. Deliberately no
+              // maxLength or length pattern — the linked project issues 8-digit
+              // codes even though supabase/config.toml says otp_length = 6, so
+              // a hardcoded width here would silently truncate a valid code.
+              onChange={(event) =>
+                setCode(event.target.value.replace(/\D/g, ''))
+              }
             />
           </div>
 
@@ -164,6 +200,7 @@ function LoginForm() {
             className={styles.secondaryButton}
             onClick={() => {
               setError(null);
+              setAskEmail(false);
               setStep('email');
             }}
           >

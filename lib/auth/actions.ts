@@ -19,17 +19,38 @@ const NOT_CONFIGURED: AuthResult = {
 /**
  * Supabase's raw auth errors are written for developers — "email rate limit
  * exceeded" reads to a student like they did something wrong. Translate the
- * ones a student can actually hit; log the rest and stay vague rather than
- * leaking internals.
+ * ones a student or owner can actually hit; log the rest and stay vague rather
+ * than leaking internals.
+ *
+ * Every branch below is reachable from the UI, so keep the copy audience-
+ * neutral: students hit this on the OTP form, owners on login and signup.
  */
 function friendlyAuthError(error: { message: string; code?: string }): string {
   const code = error.code ?? '';
   const raw = error.message.toLowerCase();
 
   if (code === 'over_email_send_rate_limit' || raw.includes('rate limit')) {
-    return "We can't send codes right now — give it a few minutes and try again.";
+    return 'Too many emails have gone out just now — give it a few minutes and try again.';
   }
-  if (raw.includes('token has expired') || raw.includes('expired')) {
+  if (
+    code === 'invalid_credentials' ||
+    raw.includes('invalid login credentials')
+  ) {
+    return 'That email and password do not match.';
+  }
+  if (code === 'email_not_confirmed' || raw.includes('email not confirmed')) {
+    return 'Confirm your email from the link we sent, then log in.';
+  }
+  if (code === 'user_already_exists' || raw.includes('already registered')) {
+    return 'An account with that email already exists — log in instead.';
+  }
+  // GoTrue collapses a stale code and a mistyped one into a single
+  // "Token has expired or is invalid", so we genuinely cannot tell them
+  // apart — name both rather than blaming the wrong one.
+  if (raw.includes('expired') && raw.includes('invalid')) {
+    return "That code didn't match, or it has expired. Request a new one.";
+  }
+  if (raw.includes('expired')) {
     return 'That code has expired. Request a new one.';
   }
   if (raw.includes('invalid') && raw.includes('token')) {
@@ -94,7 +115,7 @@ export async function ownerLogin(
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { ok: false, message: error.message };
+  if (error) return { ok: false, message: friendlyAuthError(error) };
   revalidatePath('/', 'layout');
   return { ok: true };
 }
@@ -111,7 +132,7 @@ export async function ownerSignup(
     password,
     options: { data: { role: 'owner', full_name: fullName } },
   });
-  if (error) return { ok: false, message: error.message };
+  if (error) return { ok: false, message: friendlyAuthError(error) };
   if (!data.session) {
     return {
       ok: true,

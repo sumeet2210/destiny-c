@@ -39,3 +39,22 @@ Rule 0.3 says generated. No Supabase project exists yet in this environment, so
 person to link a project must run
 `npx supabase gen types typescript --linked > types/db.ts` and diff it.
 Affects: P1-13.
+
+Resolved 2026-08-23: generated against the linked dev project. The hand-written
+file was column-for-column correct but missing the `event_rsvps → events`
+foreign key, so embedded selects on that table would have failed to type.
+
+## 2026-08-23 — Student login is code-only; no magic link
+
+`signInWithOtp` mints both a 6-digit code and a magic-link token, and Supabase's
+stock Magic Link template ships only `{{ .ConfirmationURL }}` — so students
+received a link and never a code, and the link could not work: nothing in the app
+exchanges a magic-link code for a session, and following it CONSUMES the token,
+which then invalidates the code as well.
+
+Chose code-only over adding an `/auth/callback` route: the login UI is already a
+two-step email → code form, a code survives being opened on a different device
+than it was requested from, and it removes the Site-URL/redirect-allow-list
+failure mode entirely. `supabase/templates/magic_link.html` prints `{{ .Token }}`
+and deliberately omits the URL. Anyone re-adding a link must add that route
+first. Affects: P4-1, P4-2.

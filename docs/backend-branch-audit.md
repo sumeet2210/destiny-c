@@ -10,29 +10,29 @@ Audit only. No code changed. Produced on 2026-08-24.
 
 **`backend-branch` forked from `main` at `238584e` and never received any of
 main's last 7 commits.** It is `main@238584e` + an Express API + a
-localStorage auth rewrite. Because the fork is older, the branch *reverts* every
+localStorage auth rewrite. Because the fork is older, the branch _reverts_ every
 fix main has landed since:
 
-| main commit | Fix | backend-branch state |
-| --- | --- | --- |
-| `1c3d40b` | public Sites deployment via vinext | reverted to open-next |
-| `0d9725e` | dev project online / owner login | partially reverted |
-| `96b8171` | student login code-only | reverted (`magic_link.html` deleted) |
-| `a324e06` | scope owners to their own portal | **reverted** |
-| `f709ddd` | LAN + tunnel hosts reach `next dev` | reverted |
-| `23b0565` | login template stops emitting live magic link | **reverted** (template deleted) |
+| main commit | Fix                                           | backend-branch state                 |
+| ----------- | --------------------------------------------- | ------------------------------------ |
+| `1c3d40b`   | public Sites deployment via vinext            | reverted to open-next                |
+| `0d9725e`   | dev project online / owner login              | partially reverted                   |
+| `96b8171`   | student login code-only                       | reverted (`magic_link.html` deleted) |
+| `a324e06`   | scope owners to their own portal              | **reverted**                         |
+| `f709ddd`   | LAN + tunnel hosts reach `next dev`           | reverted                             |
+| `23b0565`   | login template stops emitting live magic link | **reverted** (template deleted)      |
 
 Second finding: **the Express backend is a port of main's own logic, not new
 logic.** The backend files say so in their own header comments (e.g.
-`backend/src/lib/view/summary.js`: *"ported from lib/queries/catalog.ts"*).
+`backend/src/lib/view/summary.js`: _"ported from lib/queries/catalog.ts"_).
 Main's implementations are consistently larger and more complete:
 
-| Domain | main | backend-branch |
-| --- | --- | --- |
-| catalog reads | `lib/queries/catalog.ts` — 547 lines | `lib/view/catalog.js` — 61 lines |
-| opening hours | `lib/domain/hours.ts` — 244 lines | `lib/domain/hours.js` — 91 lines |
-| booking rules | `lib/domain/booking.ts` — 195 lines | `lib/domain/booking.js` — 122 lines |
-| owner writes | `lib/owner/actions.ts` — 324 lines | `owner.controller.js` — 251 lines |
+| Domain        | main                                 | backend-branch                      |
+| ------------- | ------------------------------------ | ----------------------------------- |
+| catalog reads | `lib/queries/catalog.ts` — 547 lines | `lib/view/catalog.js` — 61 lines    |
+| opening hours | `lib/domain/hours.ts` — 244 lines    | `lib/domain/hours.js` — 91 lines    |
+| booking rules | `lib/domain/booking.ts` — 195 lines  | `lib/domain/booking.js` — 122 lines |
+| owner writes  | `lib/owner/actions.ts` — 324 lines   | `owner.controller.js` — 251 lines   |
 
 Third finding: **only one domain is genuinely absent from main — the admin
 console.** Everything else in `backend-branch` already exists in `main`, usually
@@ -51,8 +51,8 @@ Baseline verified on `main`: `npm test` → **55 passed / 4 files**;
    it is what forces the entire localStorage rewrite.
 3. **Student nav moved into the root layout** — `app/layout.tsx` gains
    `<MobileTabBar />`. Main's layout carries an explicit comment forbidding this:
-   *"No nav here on purpose … owner pages ship their own nav and used to inherit a
-   tab bar full of routes they cannot open."* This reintroduces the exact bug
+   _"No nav here on purpose … owner pages ship their own nav and used to inherit a
+   tab bar full of routes they cannot open."_ This reintroduces the exact bug
    `a324e06` fixed, and would also apply student nav to the new admin pages.
 4. **Server-side route guards become client-side** — `requireOwner()` in the owner
    layout is replaced by `<AuthGuard role="owner">`, which only runs after mount.
@@ -68,38 +68,38 @@ Baseline verified on `main`: `npm test` → **55 passed / 4 files**;
 
 ## Feature migration matrix
 
-| # | Feature | backend-branch | main today | Action | Class | Risk |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Express app foundation (`createApp`, CORS, error envelope, `/health`) | Present | Absent | Add only if an HTTP API is actually wanted | SAFE_NEW_FEATURE | Low |
-| 2 | **Admin console** (overview, restaurant approval, roles, offer/review moderation) | Present, 296-line controller + 10 endpoints | **Absent entirely** | **Reimplement in main's architecture** | REIMPLEMENT_REQUIRED | Medium |
-| 3 | Restaurants / detail / also-like | Ported subset | `lib/queries/catalog.ts`, richer | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 4 | Search index + dishes | Ported subset | `searchDishes` present | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 5 | Offers ticker + flag | Ported | `lib/offers/actions.ts` + `flag_offer` RPC | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 6 | Events + interest counts + RSVP | Ported | `event_interest_counts` view present | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 7 | Bookings (create/list/confirm/cancel/respond/note) | 7 endpoints | `lib/bookings/actions.ts`, `app/api/bookings/route.ts`, 195-line domain | Keep main; diff rules for gaps | MAIN_ALREADY_HAS_BETTER_VERSION | Medium |
-| 8 | Saved restaurants | Ported | `lib/social/actions.ts` | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 9 | Reviews | Ported | `lib/reviews/actions.ts` | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 10 | Friends / social / friend activity | 7 endpoints | `lib/queries/social.ts` + actions | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | Low |
-| 11 | Owner console (bundle, menu, offers, events, photos, analytics) | 13 endpoints | `lib/owner/actions.ts` + `lib/queries/owner.ts` | Keep main | MAIN_ALREADY_HAS_BETTER_VERSION | High |
-| 12 | Cron sweeps + reminder email | Ported | `app/api/cron/[job]/route.ts` | Keep main | DUPLICATE_OR_UNNECESSARY | Low |
-| 13 | Profile-view logger | Ported | `app/api/profile-view/route.ts` | Keep main | DUPLICATE_OR_UNNECESSARY | Low |
-| 14 | **`admin/` standalone Vite app** | 23 files, React 18 | — | **Do not migrate** (see below) | DUPLICATE_OR_UNNECESSARY | Low |
-| 15 | `lib/api/*` HTTP client + `useApi` | 15 files | Server Actions | Only needed if #1 is adopted | ARCHITECTURAL_CONFLICT | High |
-| 16 | `lib/session/*` localStorage auth | 4 files | Supabase SSR cookies + middleware | **Do not migrate** | ARCHITECTURAL_CONFLICT | Critical |
-| 17 | `*View.tsx` client rewrites (21 files) | Present | Server Components | Do not migrate | ARCHITECTURAL_CONFLICT | High |
-| 18 | `AuthGuard`, `OwnerBundleGate` | Present | Server-side `requireOwner()` | Do not migrate | ARCHITECTURAL_CONFLICT | High |
-| 19 | `AsyncStates` loading/error scaffolding | Present | — | Optional cherry-pick if client fetching appears | SAFE_NEW_FEATURE | Low |
-| 20 | Build/deploy config | open-next | vinext | Keep main | ARCHITECTURAL_CONFLICT | Critical |
-| 21 | `middleware.ts` deletion | Deleted | Present | Keep main | ARCHITECTURAL_CONFLICT | Critical |
-| 22 | Root-layout `MobileTabBar` | Present | Deliberately absent | Keep main | ARCHITECTURAL_CONFLICT | High |
-| 23 | `destiny-c` gitlink | Present | — | Never migrate | DUPLICATE_OR_UNNECESSARY | Critical |
-| 24 | `SiteNav` `accountHref` threading | Present | Hardcoded in drawer | Small genuine improvement — reconcile | MANUAL_RECONCILIATION | Low |
+| #   | Feature                                                                           | backend-branch                              | main today                                                              | Action                                          | Class                           | Risk     |
+| --- | --------------------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------- | -------- |
+| 1   | Express app foundation (`createApp`, CORS, error envelope, `/health`)             | Present                                     | Absent                                                                  | Add only if an HTTP API is actually wanted      | SAFE_NEW_FEATURE                | Low      |
+| 2   | **Admin console** (overview, restaurant approval, roles, offer/review moderation) | Present, 296-line controller + 10 endpoints | **Absent entirely**                                                     | **Reimplement in main's architecture**          | REIMPLEMENT_REQUIRED            | Medium   |
+| 3   | Restaurants / detail / also-like                                                  | Ported subset                               | `lib/queries/catalog.ts`, richer                                        | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 4   | Search index + dishes                                                             | Ported subset                               | `searchDishes` present                                                  | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 5   | Offers ticker + flag                                                              | Ported                                      | `lib/offers/actions.ts` + `flag_offer` RPC                              | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 6   | Events + interest counts + RSVP                                                   | Ported                                      | `event_interest_counts` view present                                    | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 7   | Bookings (create/list/confirm/cancel/respond/note)                                | 7 endpoints                                 | `lib/bookings/actions.ts`, `app/api/bookings/route.ts`, 195-line domain | Keep main; diff rules for gaps                  | MAIN_ALREADY_HAS_BETTER_VERSION | Medium   |
+| 8   | Saved restaurants                                                                 | Ported                                      | `lib/social/actions.ts`                                                 | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 9   | Reviews                                                                           | Ported                                      | `lib/reviews/actions.ts`                                                | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 10  | Friends / social / friend activity                                                | 7 endpoints                                 | `lib/queries/social.ts` + actions                                       | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | Low      |
+| 11  | Owner console (bundle, menu, offers, events, photos, analytics)                   | 13 endpoints                                | `lib/owner/actions.ts` + `lib/queries/owner.ts`                         | Keep main                                       | MAIN_ALREADY_HAS_BETTER_VERSION | High     |
+| 12  | Cron sweeps + reminder email                                                      | Ported                                      | `app/api/cron/[job]/route.ts`                                           | Keep main                                       | DUPLICATE_OR_UNNECESSARY        | Low      |
+| 13  | Profile-view logger                                                               | Ported                                      | `app/api/profile-view/route.ts`                                         | Keep main                                       | DUPLICATE_OR_UNNECESSARY        | Low      |
+| 14  | **`admin/` standalone Vite app**                                                  | 23 files, React 18                          | —                                                                       | **Do not migrate** (see below)                  | DUPLICATE_OR_UNNECESSARY        | Low      |
+| 15  | `lib/api/*` HTTP client + `useApi`                                                | 15 files                                    | Server Actions                                                          | Only needed if #1 is adopted                    | ARCHITECTURAL_CONFLICT          | High     |
+| 16  | `lib/session/*` localStorage auth                                                 | 4 files                                     | Supabase SSR cookies + middleware                                       | **Do not migrate**                              | ARCHITECTURAL_CONFLICT          | Critical |
+| 17  | `*View.tsx` client rewrites (21 files)                                            | Present                                     | Server Components                                                       | Do not migrate                                  | ARCHITECTURAL_CONFLICT          | High     |
+| 18  | `AuthGuard`, `OwnerBundleGate`                                                    | Present                                     | Server-side `requireOwner()`                                            | Do not migrate                                  | ARCHITECTURAL_CONFLICT          | High     |
+| 19  | `AsyncStates` loading/error scaffolding                                           | Present                                     | —                                                                       | Optional cherry-pick if client fetching appears | SAFE_NEW_FEATURE                | Low      |
+| 20  | Build/deploy config                                                               | open-next                                   | vinext                                                                  | Keep main                                       | ARCHITECTURAL_CONFLICT          | Critical |
+| 21  | `middleware.ts` deletion                                                          | Deleted                                     | Present                                                                 | Keep main                                       | ARCHITECTURAL_CONFLICT          | Critical |
+| 22  | Root-layout `MobileTabBar`                                                        | Present                                     | Deliberately absent                                                     | Keep main                                       | ARCHITECTURAL_CONFLICT          | High     |
+| 23  | `destiny-c` gitlink                                                               | Present                                     | —                                                                       | Never migrate                                   | DUPLICATE_OR_UNNECESSARY        | Critical |
+| 24  | `SiteNav` `accountHref` threading                                                 | Present                                     | Hardcoded in drawer                                                     | Small genuine improvement — reconcile           | MANUAL_RECONCILIATION           | Low      |
 
 ### On #14, the `admin/` directory
 
 It is not an admin console. `admin/package.json` names it `destiny-partners`,
-described as *"Restaurant management platform for offers, events, bookings, and
-menu management"* — an **owner** dashboard. It has its own fake
+described as _"Restaurant management platform for offers, events, bookings, and
+menu management"_ — an **owner** dashboard. It has its own fake
 login/signup against `localStorage` (`admin/src/components/Auth.jsx`,
 `admin/src/utils/storage.js` with a `Demo` seed), React 18 + Vite 5 + chart.js,
 and never talks to the Express API. It duplicates main's owner portal as a mock.
@@ -110,9 +110,9 @@ keeping at all, it belongs under `prototypes/` — not as a second deployed app.
 
 These are not features. Their own headers say why they exist:
 
-- `ReviewPrompt.tsx` — *"used to be computed on the server from the student's bookings. With the session now in the browser…"*
-- `RestaurantPortalLink.tsx` — *"The Next server no longer holds the session"*
-- `AsyncStates.tsx` — *"authed views that used to be Server Components"*
+- `ReviewPrompt.tsx` — _"used to be computed on the server from the student's bookings. With the session now in the browser…"_
+- `RestaurantPortalLink.tsx` — _"The Next server no longer holds the session"_
+- `AsyncStates.tsx` — _"authed views that used to be Server Components"_
 
 Every one is compensation for deleting `middleware.ts`. Keep main's architecture
 and none are needed.
@@ -121,21 +121,21 @@ and none are needed.
 
 Only the **admin** group has no equivalent in main.
 
-| Group | Count | Endpoints | main equivalent |
-| --- | --- | --- | --- |
-| health | 1 | `GET /health` | n/a |
-| auth | 8 | `POST /auth/student/otp`, `/student/verify`, `/owner/login`, `/owner/signup`, `/refresh`, `/logout`; `GET /auth/me`; `PATCH /auth/profile` | `lib/auth/actions.ts` |
-| restaurants | 4 | `GET /restaurants`, `/:id`, `/:id/also-like`; `POST /:id/save` | `lib/queries/catalog.ts` |
-| offers | 2 | `GET /offers/ticker`; `POST /offers/:id/flag` | `lib/offers/actions.ts` |
-| search | 2 | `GET /search/index`, `/search/dishes` | `lib/queries/catalog.ts` |
-| events | 4 | `GET /events`, `/interest-counts`, `/:id`; `POST /:id/rsvp` | `lib/queries/catalog.ts`, `lib/social/actions.ts` |
-| bookings | 7 | `POST /bookings`; `GET /bookings`, `/:id`; `POST /:id/confirm`, `/:id/cancel`, `/:id/respond`; `PATCH /:id/note` | `lib/bookings/actions.ts` |
-| reviews | 1 | `POST /reviews` | `lib/reviews/actions.ts` |
-| social | 7 | `GET /social/saved`, `/friends`, `/rsvps`, `/friend-activity`; `POST /friends`, `/friends/:id/respond`; `DELETE /friends/:id` | `lib/social/actions.ts` |
-| owner | 13 | `GET /owner/bundle`, `/bookings`, `/analytics`; `POST/PATCH /owner/restaurant`; `POST /owner/menu`, `DELETE /menu/:id`; `POST /owner/offers`, `PATCH /offers/:id`; `POST /owner/events`; `POST /owner/photos`, `/photos/reorder`, `DELETE /photos/:id` | `lib/owner/actions.ts` |
-| **admin** | **10** | `GET /admin/overview`, `/restaurants`, `/users`, `/offers/flagged`, `/reviews`; `POST /restaurants/:id/status`, `/offers/:id/moderate`; `PATCH /users/:id`; `DELETE /offers/:id`, `/reviews/:id` | **none** |
-| views | 1 | `POST /views` | `app/api/profile-view/route.ts` |
-| cron | 1 | `POST /cron/:job` | `app/api/cron/[job]/route.ts` |
+| Group       | Count  | Endpoints                                                                                                                                                                                                                                              | main equivalent                                   |
+| ----------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| health      | 1      | `GET /health`                                                                                                                                                                                                                                          | n/a                                               |
+| auth        | 8      | `POST /auth/student/otp`, `/student/verify`, `/owner/login`, `/owner/signup`, `/refresh`, `/logout`; `GET /auth/me`; `PATCH /auth/profile`                                                                                                             | `lib/auth/actions.ts`                             |
+| restaurants | 4      | `GET /restaurants`, `/:id`, `/:id/also-like`; `POST /:id/save`                                                                                                                                                                                         | `lib/queries/catalog.ts`                          |
+| offers      | 2      | `GET /offers/ticker`; `POST /offers/:id/flag`                                                                                                                                                                                                          | `lib/offers/actions.ts`                           |
+| search      | 2      | `GET /search/index`, `/search/dishes`                                                                                                                                                                                                                  | `lib/queries/catalog.ts`                          |
+| events      | 4      | `GET /events`, `/interest-counts`, `/:id`; `POST /:id/rsvp`                                                                                                                                                                                            | `lib/queries/catalog.ts`, `lib/social/actions.ts` |
+| bookings    | 7      | `POST /bookings`; `GET /bookings`, `/:id`; `POST /:id/confirm`, `/:id/cancel`, `/:id/respond`; `PATCH /:id/note`                                                                                                                                       | `lib/bookings/actions.ts`                         |
+| reviews     | 1      | `POST /reviews`                                                                                                                                                                                                                                        | `lib/reviews/actions.ts`                          |
+| social      | 7      | `GET /social/saved`, `/friends`, `/rsvps`, `/friend-activity`; `POST /friends`, `/friends/:id/respond`; `DELETE /friends/:id`                                                                                                                          | `lib/social/actions.ts`                           |
+| owner       | 13     | `GET /owner/bundle`, `/bookings`, `/analytics`; `POST/PATCH /owner/restaurant`; `POST /owner/menu`, `DELETE /menu/:id`; `POST /owner/offers`, `PATCH /offers/:id`; `POST /owner/events`; `POST /owner/photos`, `/photos/reorder`, `DELETE /photos/:id` | `lib/owner/actions.ts`                            |
+| **admin**   | **10** | `GET /admin/overview`, `/restaurants`, `/users`, `/offers/flagged`, `/reviews`; `POST /restaurants/:id/status`, `/offers/:id/moderate`; `PATCH /users/:id`; `DELETE /offers/:id`, `/reviews/:id`                                                       | **none**                                          |
+| views       | 1      | `POST /views`                                                                                                                                                                                                                                          | `app/api/profile-view/route.ts`                   |
+| cron        | 1      | `POST /cron/:job`                                                                                                                                                                                                                                      | `app/api/cron/[job]/route.ts`                     |
 
 ## Database review
 
@@ -149,7 +149,7 @@ already has everything the admin controller reads:
 
 One real gap to note: the schema has **no admin RLS policies** — deliberately, per
 the backend's own comment. So admin reads/writes must run on the service-role
-client, and the role check is the *only* security boundary. In main that means the
+client, and the role check is the _only_ security boundary. In main that means the
 check belongs in a server-only module (`lib/supabase/admin.ts` is already the
 sanctioned service-key consumer) and must be re-verified on every request, never
 inferred from the UI.
@@ -158,16 +158,16 @@ inferred from the UI.
 
 Existing main variables — all still required, none to be removed:
 
-| Variable | Side | Required | Secret | Purpose |
-| --- | --- | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | frontend | yes | no | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | frontend | yes | no | public Supabase key |
-| `SUPABASE_SECRET_KEY` | server | yes | **yes** | service-role; cron + admin only |
-| `RESEND_API_KEY` | server | optional | **yes** | reminder emails |
-| `CRON_SECRET` | server | yes | **yes** | guards cron sweeps |
-| `SITE_URL` | server | optional | no | absolute origin in emails |
-| `DEV_ORIGINS` | dev | optional | no | extra `next dev` origins — **do not drop** |
-| `SUPABASE_PROJECT_REF` | dev scripts | yes | no | dev project guard |
+| Variable                               | Side        | Required | Secret  | Purpose                                    |
+| -------------------------------------- | ----------- | -------- | ------- | ------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`             | frontend    | yes      | no      | Supabase project URL                       |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | frontend    | yes      | no      | public Supabase key                        |
+| `SUPABASE_SECRET_KEY`                  | server      | yes      | **yes** | service-role; cron + admin only            |
+| `RESEND_API_KEY`                       | server      | optional | **yes** | reminder emails                            |
+| `CRON_SECRET`                          | server      | yes      | **yes** | guards cron sweeps                         |
+| `SITE_URL`                             | server      | optional | no      | absolute origin in emails                  |
+| `DEV_ORIGINS`                          | dev         | optional | no      | extra `next dev` origins — **do not drop** |
+| `SUPABASE_PROJECT_REF`                 | dev scripts | yes      | no      | dev project guard                          |
 
 Only needed if the Express API is adopted (#1): `NEXT_PUBLIC_API_URL`,
 `ALLOWED_ORIGIN`, `PORT`, plus backend copies of `SUPABASE_URL` /
@@ -213,10 +213,10 @@ Suggested revision:
    `AsyncStates` only if client fetching is introduced.
 3. **Diff the ported business logic for genuine divergences** — read
    `bookings.controller.js` and `owner.controller.js` against main's actions and
-   port any *rule* main lacks. Cheap, low-risk, no architecture change.
+   port any _rule_ main lacks. Cheap, low-risk, no architecture change.
 4. **Optionally park `admin/`** under `prototypes/` if the mock has design value.
-5. **Only then**, decide whether a standalone Express API is wanted *as a goal in
-   itself* (e.g. to serve a future mobile client). If yes, add it additively
+5. **Only then**, decide whether a standalone Express API is wanted _as a goal in
+   itself_ (e.g. to serve a future mobile client). If yes, add it additively
    alongside the Server Actions and validate Supabase JWTs from main's existing
    cookie session — never move the session into `localStorage`.
 

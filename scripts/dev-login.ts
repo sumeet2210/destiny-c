@@ -13,7 +13,6 @@
 // Run: npm run dev:login              (defaults to student1)
 //      npm run dev:login -- student2@student.nitw.ac.in
 //      npm run dev:login -- owner1@example.com
-//      npm run dev:login -- admin@example.com    (lands on /admin)
 //
 // Note: anything that updates a user invalidates that user's outstanding OTP,
 // so `npm run rls:test` (which resets student1-3 passwords) silently kills a
@@ -50,11 +49,9 @@ async function main() {
   console.log('');
   console.log(`  ${profile.full_name ?? email}  (${profile.role})`);
 
-  // Owners and admins have no OTP path — the login form asks for a password, and
-  // the seed never set one. Mint a throwaway one rather than baking a password
-  // into the repo. Both roles use /owner/login: requireOwner() recognises an
-  // admin session and forwards it to /admin.
-  if (profile.role === 'owner' || profile.role === 'admin') {
+  // Owners have no OTP path — the login form asks for a password, and the seed
+  // never set one. Mint a throwaway one rather than baking a password into the repo.
+  if (profile.role === 'owner') {
     const password = `dev-${randomBytes(9).toString('base64url')}`;
     const { error } = await admin.auth.admin.updateUserById(profile.id, {
       password,
@@ -66,9 +63,6 @@ async function main() {
     console.log(`  password:  ${password}`);
     console.log('');
     console.log('  Log in at http://localhost:3000/owner/login');
-    if (profile.role === 'admin') {
-      console.log('  (an admin lands on /admin, not the owner dashboard)');
-    }
     console.log('  (new password each run — the old one stops working)');
     console.log('');
     return;

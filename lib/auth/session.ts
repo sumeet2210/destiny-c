@@ -29,9 +29,9 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
  * session cookie was intact the whole time, they were just looking at a login
  * screen. Only an actual absence of session belongs at /login.
  *
- * Every signed-in role now has a home of its own — students here, owners at
- * /owner/dashboard, admins at /admin — so a role that lands on the wrong portal
- * is sent to its own rather than dumped on the public home.
+ * `admin` exists in the enum too and has no dedicated surface, so anyone who is
+ * signed in but not a student falls back to the public home rather than being
+ * pushed into a portal they don't own.
  */
 export async function requireStudent(next?: string): Promise<SessionUser> {
   const user = await getSessionUser();
@@ -39,7 +39,6 @@ export async function requireStudent(next?: string): Promise<SessionUser> {
     redirect(`/login${next ? `?next=${encodeURIComponent(next)}` : ''}`);
   }
   if (user.role === 'owner') redirect('/owner/dashboard');
-  if (user.role === 'admin') redirect('/admin');
   if (user.role !== 'student') redirect('/');
   return user;
 }
@@ -47,27 +46,7 @@ export async function requireStudent(next?: string): Promise<SessionUser> {
 export async function requireOwner(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect('/owner/login');
-  // Admins sign in through the owner form (both use a password), and that form
-  // lands everyone on /owner/dashboard. Bouncing them onward from here is what
-  // makes a single login page work for both roles.
-  if (user.role === 'admin') redirect('/admin');
   if (user.role !== 'owner') redirect('/');
-  return user;
-}
-
-/**
- * Gate for the admin console. The schema carries NO admin RLS policies on
- * purpose — owners can't self-approve and students can't reach other students'
- * rows — so every admin read and write runs on the service-role client, which
- * bypasses RLS entirely. This check is the only thing standing in front of that
- * power, which is why lib/queries/admin.ts and lib/admin/actions.ts call it
- * themselves rather than trusting the layout to have run.
- */
-export async function requireAdmin(): Promise<SessionUser> {
-  const user = await getSessionUser();
-  if (!user) redirect('/owner/login');
-  if (user.role === 'owner') redirect('/owner/dashboard');
-  if (user.role !== 'admin') redirect('/');
   return user;
 }
 

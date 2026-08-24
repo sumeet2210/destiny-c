@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { CreateRestaurantForm } from '@/components/features/owner/CreateRestaurantForm';
-import { getOwnerBundle } from '@/lib/queries/owner';
-import { getOwnerAnalytics, getOwnerReviews } from '@/lib/queries/owner';
+import {
+  getOwnerAnalytics,
+  getOwnerBundle,
+  getOwnerReviews,
+} from '@/lib/queries/owner';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 import { nowMs } from '@/lib/now';
 

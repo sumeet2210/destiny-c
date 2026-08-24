@@ -15,10 +15,7 @@ import type { BookingStatus } from './booking';
 
 /** The status buckets an owner can filter by, plus the unfiltered default. */
 export type BookingStatusFilter =
-  | 'all'
-  | 'requested'
-  | 'confirmed'
-  | 'cancelled';
+  'all' | 'requested' | 'confirmed' | 'cancelled';
 
 /**
  * A raw search param: absent, a single value, or repeated (?k=a&k=b).

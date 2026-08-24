@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { CreateRestaurantForm } from '@/components/features/owner/CreateRestaurantForm';
-import { getOwnerBundle } from '@/lib/queries/owner';
-import { getOwnerAnalytics } from '@/lib/queries/owner';
+import {
+  getOwnerAnalytics,
+  getOwnerBundle,
+  getOwnerReviews,
+} from '@/lib/queries/owner';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 import { nowMs } from '@/lib/now';
 
@@ -78,7 +81,11 @@ export default async function OwnerDashboard() {
     );
   }
 
-  const analytics = await getOwnerAnalytics();
+  // Both reuse the cached owner bundle, so this is two queries, not two rounds.
+  const [analytics, reviews] = await Promise.all([
+    getOwnerAnalytics(),
+    getOwnerReviews(),
+  ]);
   const now = nowMs();
   const liveOffers = offers.filter(
     (o) => o.is_active && new Date(o.expires_at).getTime() > now,
@@ -96,11 +103,24 @@ export default async function OwnerDashboard() {
         <p className="text-accent-secondary text-[13px]">Live on Destiny</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Profile views, last 7 days"
           value={analytics?.totals.last7 ?? 0}
           hint="Page views on Destiny — not footfall."
+        />
+        <Stat
+          label="Average rating"
+          value={
+            reviews === null || reviews.average === null
+              ? '—'
+              : reviews.average.toFixed(1)
+          }
+          hint={
+            reviews?.count
+              ? `From ${reviews.count} review${reviews.count > 1 ? 's' : ''}.`
+              : 'No reviews yet.'
+          }
         />
         <Stat label="Live offers" value={liveOffers.length} />
         <Stat label="Upcoming events" value={upcomingEvents.length} />
@@ -153,7 +173,7 @@ function Stat({
   hint,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   hint?: string;
 }) {
   return (

@@ -26,6 +26,7 @@ import {
   minutesUntilClose,
   type OpeningHours,
 } from '@/lib/domain/hours';
+import { averageRating } from '@/lib/domain/reviews';
 
 export type Catalog = {
   restaurants: Tables<'restaurants'>[];
@@ -198,9 +199,7 @@ export function toSummary(
     isOpen: isOpenAt(hours, at),
     isOpenToday: isOpenToday(hours, at),
     closingInMinutes: minutesUntilClose(hours, at),
-    rating: ratings.length
-      ? ratings.reduce((a, b) => a + b, 0) / ratings.length
-      : null,
+    rating: averageRating(ratings),
     reviewCount: ratings.length,
     trendingViews: catalog.trendingViews.get(r.id) ?? 0,
     liveOffer: offers[0]

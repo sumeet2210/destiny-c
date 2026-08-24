@@ -15,7 +15,15 @@ export type ReviewItem = {
 
 type Sort = 'newest' | 'highest' | 'lowest';
 
-/** Reviews sortable by newest, highest, lowest (PRD §5.8). */
+/**
+ * Reviews sortable by newest, highest, lowest (PRD §5.8).
+ *
+ * The `review-*` class hooks are restyled by the public restaurant page's CSS
+ * module. The Tailwind classes here are the standalone fallback for surfaces
+ * without that module (the owner portal); every one of them targets a property
+ * the module also declares, and `.reviewsSection :global(.x)` outranks a bare
+ * utility class, so the public page is unaffected.
+ */
 export function ReviewList({
   reviews,
   appearance = 'default',
@@ -72,7 +80,10 @@ export function ReviewList({
         {(expanded ? sorted : sorted.slice(0, 4)).map((review) => (
           <Card key={review.id} className="review-card space-y-1">
             <div className="review-card-head flex items-center gap-3">
-              <span className="review-avatar" aria-hidden>
+              <span
+                className="review-avatar bg-surface-raised text-accent-primary grid h-9 w-9 shrink-0 place-items-center rounded-full text-[11px] font-extrabold"
+                aria-hidden
+              >
                 {(review.reviewerName ?? 'NITW diner')
                   .split(' ')
                   .map((part) => part[0])
@@ -118,7 +129,7 @@ export function ReviewList({
       {sorted.length > 4 && !expanded ? (
         <button
           type="button"
-          className="review-show-more"
+          className="review-show-more rounded-control border-border-hairline text-paper min-h-10 w-fit border px-3 text-[13px] font-semibold"
           onClick={() => setExpanded(true)}
         >
           Show more

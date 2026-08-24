@@ -2,6 +2,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
+import { averageRating } from '@/lib/domain/reviews';
 import type { Tables } from '@/types/db';
 
 export type OwnerBundle = {
@@ -121,6 +122,52 @@ export async function listOwnerBookings(): Promise<OwnerBooking[]> {
     eventTitle: b.event_id ? (eventNames.get(b.event_id) ?? null) : null,
   }));
 }
+
+export type OwnerReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
+export type OwnerReviewSummary = {
+  reviews: OwnerReview[];
+  average: number | null;
+  count: number;
+};
+
+/**
+ * Reviews left on the owner's own restaurant.
+ *
+ * student_id is deliberately not selected. Main shows reviewers anonymously on
+ * the public page, and an owner has no more claim on a diner's identity than a
+ * passer-by does — so the name never enters this query, let alone the UI.
+ *
+ * Scoped twice over: the restaurant came from owner_id = auth.uid(), and the
+ * reviews RLS policy independently gates on owns_restaurant(restaurant_id).
+ * The owner's own session client, never the service key.
+ */
+export const getOwnerReviews = cache(
+  async (): Promise<OwnerReviewSummary | null> => {
+    if (!isSupabaseConfigured()) return null;
+    const bundle = await getOwnerBundle();
+    if (!bundle) return null;
+    const supabase = await createClient();
+
+    const { data } = await supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at')
+      .eq('restaurant_id', bundle.restaurant.id)
+      .order('created_at', { ascending: false });
+
+    const reviews = data ?? [];
+    return {
+      reviews,
+      average: averageRating(reviews.map((review) => review.rating)),
+      count: reviews.length,
+    };
+  },
+);
 
 export type AnalyticsBundle = {
   totals: { last7: number; last30: number };

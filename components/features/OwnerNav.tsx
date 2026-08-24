@@ -12,6 +12,7 @@ const items = [
   { href: '/owner/events', label: 'Events' },
   { href: '/owner/photos', label: 'Photos' },
   { href: '/owner/bookings', label: 'Bookings' },
+  { href: '/owner/reviews', label: 'Reviews' },
   { href: '/owner/analytics', label: 'Analytics' },
 ] as const;
 

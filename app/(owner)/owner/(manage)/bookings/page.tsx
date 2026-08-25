@@ -23,7 +23,7 @@ export default async function OwnerBookingsPage(
   // Built from the parsed filters rather than the raw query string, so the file
   // can never cover a different set of rows than the page is showing.
   const exportParams = new URLSearchParams();
-  if (status !== 'all') exportParams.set('status', status);
+  if (status === 'cancelled') exportParams.set('status', status);
   if (guest) exportParams.set('guest', guest);
   const exportQuery = exportParams.toString();
   const exportHref = `/api/owner/bookings/export${exportQuery ? `?${exportQuery}` : ''}`;
@@ -34,17 +34,7 @@ export default async function OwnerBookingsPage(
       : `${bookings.length} of ${all.length} shown`;
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Bookings
-        </h1>
-        <p className="text-text-muted mt-1 text-[13px]">
-          Review incoming table requests, then accept or reject each one. You
-          can also leave a note the student will see.
-        </p>
-      </div>
-
+    <div className="w-full space-y-5">
       {all.length === 0 ? (
         <p className="text-text-muted text-sm">
           No reservations yet. New requests will appear here.

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { OwnerNav } from '@/components/features/OwnerNav';
 import { Button } from '@/components/ui/Button';
 import { requireOwner } from '@/lib/auth/session';
@@ -16,27 +15,24 @@ export default async function OwnerManageLayout({
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-6xl">
-      <aside className="border-border-hairline hidden w-52 shrink-0 flex-col gap-1 border-r p-4 sm:flex">
-        <Link
-          href="/owner/dashboard"
-          className="font-display text-accent-primary mb-4 text-lg font-extrabold"
-        >
-          Destiny
-        </Link>
-        <OwnerNav />
-        <form action={signOut} className="mt-auto">
-          <Button type="submit" variant="ghost" size="sm" className="w-full">
-            Log out
-          </Button>
-        </form>
-      </aside>
-      <div className="min-w-0 flex-1">
-        <div className="border-border-hairline border-b p-3 sm:hidden">
-          <OwnerNav horizontal />
+    <div className="min-h-full w-full">
+      <header className="bg-canvas/90 sticky top-0 z-30 px-3 pt-3 backdrop-blur-md sm:px-6 sm:pt-5">
+        <div className="rounded-control bg-surface-muted/80 flex items-center gap-2 p-2 shadow-[0_12px_35px_rgba(0,0,0,0.18)]">
+          <div className="min-w-0 flex-1">
+            <OwnerNav horizontal />
+          </div>
+          <form action={signOut} className="shrink-0">
+            <Button
+              type="submit"
+              size="sm"
+              className="w-fit !bg-[#2a2a2a] !text-[#b5b5b5] hover:!bg-[#343434] hover:!text-white"
+            >
+              Log out
+            </Button>
+          </form>
         </div>
-        <div className="p-4 sm:p-6">{children}</div>
-      </div>
+      </header>
+      <main className="p-4 sm:p-6">{children}</main>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { MenuManager } from '@/components/features/owner/MenuManager';
+import { MenuPhotoManager } from '@/components/features/owner/MenuPhotoManager';
 import { getOwnerBundle } from '@/lib/queries/owner';
 
 export const metadata = { title: 'Menu' };
@@ -9,16 +10,7 @@ export default async function OwnerMenuPage() {
   if (!bundle) redirect('/owner/dashboard');
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Menu
-        </h1>
-        <p className="text-text-muted mt-1 text-[13px]">
-          Students search by dish — every item listed is another way to be
-          found.
-        </p>
-      </div>
+    <div className="w-full space-y-6">
       <MenuManager
         items={bundle.menu.map((m) => ({
           id: m.id,
@@ -28,6 +20,11 @@ export default async function OwnerMenuPage() {
           craving_tags: m.craving_tags,
           is_available: m.is_available,
         }))}
+      />
+      <MenuPhotoManager
+        photos={bundle.photos
+          .filter((photo) => photo.kind === 'menu_photo')
+          .map((photo) => ({ id: photo.id, url: photo.url }))}
       />
     </div>
   );

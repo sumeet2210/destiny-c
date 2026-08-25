@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { SharingToggle } from '@/components/features/SharingToggle';
+import { FoodPreferences } from '@/components/features/FoodPreferences';
 import { requireStudent } from '@/lib/auth/session';
 import { signOut } from '@/lib/auth/actions';
 import Link from 'next/link';
@@ -12,13 +12,20 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto max-w-md space-y-5 px-4 py-6">
-      <div>
-        <p className="text-accent-primary text-xs font-extrabold tracking-[0.14em] uppercase">
-          Student profile
-        </p>
-        <h1 className="font-display text-paper mt-1 text-2xl font-extrabold">
-          Your Destiny
-        </h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-accent-primary text-xs font-extrabold tracking-[0.14em] uppercase">
+            Student profile
+          </p>
+          <h1 className="font-display text-paper mt-1 text-2xl font-extrabold">
+            Your Destiny
+          </h1>
+        </div>
+        <form action={signOut}>
+          <Button type="submit" variant="outline" size="sm">
+            Log out
+          </Button>
+        </form>
       </div>
 
       <Card className="space-y-3">
@@ -30,25 +37,32 @@ export default async function AccountPage() {
         )}
       </Card>
 
-      <Link
-        href="/bookings"
-        className="rounded-card border-border-hairline bg-surface-muted text-paper flex min-h-16 items-center justify-between border px-4 text-sm font-extrabold no-underline transition-colors hover:border-[#1DB954]"
-      >
-        <span>My bookings</span>
-        <span aria-hidden>→</span>
-      </Link>
+      <div className="space-y-3">
+        <ProfileShortcut href="/saved" label="Saved" />
+        <ProfileShortcut href="/bookings" label="Bookings" />
+        <ProfileShortcut href="/reviews" label="My Reviews" />
+      </div>
 
-      <SharingToggle
-        initialValue={user.share_activity}
-        initialHostel={user.hostel}
+      <FoodPreferences
+        initialFoodType={user.food_type}
+        initialFavoriteCuisines={user.favorite_cuisines}
+        initialSpicePreference={user.spice_preference}
       />
-
-      <form action={signOut}>
-        <Button type="submit" variant="outline" className="w-full">
-          Log out
-        </Button>
-      </form>
     </main>
+  );
+}
+
+function ProfileShortcut({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-card border-border-hairline bg-surface-muted text-paper hover:border-accent-primary flex min-h-16 items-center justify-between border px-4 text-sm font-extrabold no-underline transition-colors"
+    >
+      <span>{label}</span>
+      <b className="text-accent-primary transition-transform group-hover:translate-x-1">
+        →
+      </b>
+    </Link>
   );
 }
 

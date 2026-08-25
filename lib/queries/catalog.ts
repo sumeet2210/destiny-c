@@ -58,7 +58,7 @@ async function publicClient() {
 export const getCatalog = cache(async (): Promise<Catalog> => {
   if (!isConfigured()) {
     return {
-      restaurants: seedRestaurants.filter((r) => r.status === 'active'),
+      restaurants: seedRestaurants.filter((r) => r.status === 'live'),
       menuItems: seedMenuItems,
       offers: seedOffers.filter(
         (o) => o.is_active && new Date(o.expires_at).getTime() > Date.now(),
@@ -78,7 +78,7 @@ export const getCatalog = cache(async (): Promise<Catalog> => {
   const supabase = await publicClient();
   const [restaurants, menuItems, offers, photos, events, reviews, trending] =
     await Promise.all([
-      supabase.from('restaurants').select('*').eq('status', 'active'),
+      supabase.from('restaurants').select('*').eq('status', 'live'),
       supabase.from('menu_items').select('*'),
       supabase
         .from('offers')

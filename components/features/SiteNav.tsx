@@ -29,6 +29,13 @@ export function SiteHeader({
   const onHome = pathname === '/';
   const onSaved = pathname === '/saved' || pathname.startsWith('/saved/');
   const onEvents = pathname === '/events' || pathname.startsWith('/events/');
+  const onStudentLogin = pathname === '/login';
+  const onStudentProfile =
+    pathname === '/account' || pathname.startsWith('/account/');
+  const onStudentBookings =
+    pathname === '/bookings' || pathname.startsWith('/bookings/');
+  const onStudentReviews =
+    pathname === '/reviews' || pathname.startsWith('/reviews/');
   const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
   const onBookingPage = /^\/restaurant\/[^/]+\/book\/?$/.test(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -52,7 +59,16 @@ export function SiteHeader({
     };
   }, [menuOpen]);
 
-  if (onEvents || onRestaurantProfile || onBookingPage) return null;
+  if (
+    onEvents ||
+    onStudentLogin ||
+    onStudentProfile ||
+    onStudentBookings ||
+    onStudentReviews ||
+    onRestaurantProfile ||
+    onBookingPage
+  )
+    return null;
 
   if (onHome || onSaved) {
     return (
@@ -281,13 +297,7 @@ function NavigationDrawer({
         </nav>
 
         <div className={styles.drawerDivider} aria-hidden />
-        {/* Always the login door: AppShell redirects owners to their dashboard
-            before this drawer can render, so a signed-in owner never sees it. */}
-        <Link
-          href="/owner/login"
-          onClick={onClose}
-          className={styles.portalCta}
-        >
+        <Link href="/owner" onClick={onClose} className={styles.portalCta}>
           <span className={styles.portalIcon} aria-hidden>
             <PortalIcon />
           </span>

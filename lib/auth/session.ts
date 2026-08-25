@@ -50,6 +50,13 @@ export async function requireOwner(): Promise<SessionUser> {
   return user;
 }
 
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await getSessionUser();
+  if (!user) redirect('/admin/login');
+  if (user.role !== 'admin') redirect('/');
+  return user;
+}
+
 /** The owner's restaurant row (any status), or null. */
 export const getOwnedRestaurant = cache(async () => {
   const user = await getSessionUser();

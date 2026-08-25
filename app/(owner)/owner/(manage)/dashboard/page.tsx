@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
-import { CreateRestaurantForm } from '@/components/features/owner/CreateRestaurantForm';
+import { ProfileReviewSubmit } from '@/components/features/owner/ProfileReviewSubmit';
 import { getOwnerBundle } from '@/lib/queries/owner';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 
@@ -21,28 +21,23 @@ export default async function OwnerDashboard() {
 
   if (!bundle) {
     return (
-      <div className="max-w-lg space-y-4">
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Add your restaurant
-        </h1>
-        <p className="text-text-muted text-sm">
-          Tell us the basics. Once submitted it goes for a quick manual approval
-          — students can&apos;t see it until then.
-        </p>
-        <CreateRestaurantForm />
-      </div>
+      <Notice title="No approved restaurant linked">
+        Restaurant accounts are created only from an approved application.
+        Return to the restaurant portal or contact Destiny support if your
+        application was already approved.
+      </Notice>
     );
   }
 
   const { restaurant } = bundle;
 
-  // P4-4: the awaiting-approval holding screen.
-  if (restaurant.status === 'pending_approval') {
+  if (
+    String(restaurant.status) === 'profile_incomplete' ||
+    String(restaurant.status) === 'pending_approval'
+  ) {
     return (
-      <Notice title="Awaiting approval">
-        <span className="text-paper">{restaurant.name}</span> is submitted and
-        waiting on a quick manual check — usually within a day. You can already
-        set up your{' '}
+      <Notice title="Complete your restaurant profile">
+        Your application is approved and the account is ready. Complete your{' '}
         <Link
           href="/owner/menu"
           className="text-accent-primary hover:underline"
@@ -63,12 +58,22 @@ export default async function OwnerDashboard() {
         >
           hours
         </Link>{' '}
-        so everything goes live at once.
+        , then submit the completed profile for final review.
+        <ProfileReviewSubmit />
       </Notice>
     );
   }
 
-  if (restaurant.status === 'suspended') {
+  if (String(restaurant.status) === 'profile_review') {
+    return (
+      <Notice title="Profile under review">
+        Destiny is reviewing the completed profile for {restaurant.name}. It
+        will become publicly visible only after activation.
+      </Notice>
+    );
+  }
+
+  if (String(restaurant.status) === 'suspended') {
     return (
       <Notice title="Listing suspended">
         Your listing is currently hidden. Get in touch with the Destiny team to
@@ -77,7 +82,14 @@ export default async function OwnerDashboard() {
     );
   }
 
-  redirect('/owner/analytics');
+  if (
+    String(restaurant.status) === 'live' ||
+    String(restaurant.status) === 'active'
+  ) {
+    redirect('/owner/analytics');
+  }
+
+  return <Notice title="Profile unavailable">Contact Destiny support.</Notice>;
 }
 
 function Notice({
@@ -90,7 +102,7 @@ function Notice({
   return (
     <Card className="max-w-lg space-y-2">
       <h1 className="font-display text-paper text-xl font-bold">{title}</h1>
-      <p className="text-text-muted text-sm">{children}</p>
+      <div className="text-text-muted text-sm">{children}</div>
     </Card>
   );
 }

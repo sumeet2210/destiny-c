@@ -38,31 +38,9 @@ const revalidateOwnerAnd = (path: string) => {
 };
 
 // ---------------------------------------------------------------------------
-// Restaurant profile (P4-3 create, P5-2 edit, P5-3 hours)
+// Restaurant profile (P5-2 edit, P5-3 hours). Creation happens only through
+// the approved application claim workflow in lib/onboarding/actions.ts.
 // ---------------------------------------------------------------------------
-
-export async function createRestaurant(
-  input: Pick<
-    TablesInsert<'restaurants'>,
-    'name' | 'area' | 'address' | 'phone' | 'description'
-  > & { lat?: number | null; lng?: number | null },
-): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, message: 'Not logged in.' };
-
-  const { error } = await supabase.from('restaurants').insert({
-    ...input,
-    owner_id: user.id,
-    status: 'pending_approval',
-  });
-  if (error) return { ok: false, message: error.message };
-  revalidateOwnerAnd('/owner/dashboard');
-  return { ok: true };
-}
 
 export async function updateRestaurant(
   patch: Omit<TablesUpdate<'restaurants'>, 'opening_hours'> & {

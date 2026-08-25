@@ -13,7 +13,11 @@ export const metadata = { title: 'Analytics' };
 
 export default async function OwnerAnalyticsPage() {
   const bundle = await getOwnerBundle();
-  if (!bundle || bundle.restaurant.status !== 'active') {
+  const restaurantStatus = String(bundle?.restaurant.status);
+  if (
+    !bundle ||
+    (restaurantStatus !== 'live' && restaurantStatus !== 'active')
+  ) {
     redirect('/owner/dashboard');
   }
 

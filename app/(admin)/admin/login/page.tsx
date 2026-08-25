@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import {
@@ -12,60 +11,49 @@ import { Button } from '@/components/ui/Button';
 import { Input, Label } from '@/components/ui/Input';
 import { ownerLogin } from '@/lib/auth/actions';
 
-export default function OwnerLoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
   return (
     <AuthShell
       audience="owner"
-      title="Welcome back."
-      description="Log in to manage your restaurant profile, menu, offers, events, and bookings."
-      footer={
-        <p>
-          New here? <Link href="/owner/apply">List your restaurant</Link>
-          <br />
-          Student? <Link href="/login">Use student login</Link>
-        </p>
-      }
+      title="Destiny admin"
+      description="Authorized team members only."
     >
       <form
+        className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
           startTransition(async () => {
-            setError(null);
-            const res = await ownerLogin(email.trim(), password);
-            if (!res.ok) setError(res.message ?? 'Login failed.');
-            else router.push('/owner/dashboard');
+            const result = await ownerLogin(email.trim(), password);
+            if (!result.ok) setError(result.message ?? 'Login failed.');
+            else router.push('/admin');
           });
         }}
-        className={styles.form}
       >
         <div className={styles.fieldGroup}>
-          <Label htmlFor="email" className={styles.label}>
+          <Label htmlFor="admin-email" className={styles.label}>
             Email
           </Label>
           <Input
-            id="email"
+            id="admin-email"
             type="email"
             autoComplete="email"
             required
-            autoFocus
             className={styles.field}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
         </div>
-
         <div className={styles.fieldGroup}>
-          <Label htmlFor="password" className={styles.label}>
+          <Label htmlFor="admin-password" className={styles.label}>
             Password
           </Label>
           <Input
-            id="password"
+            id="admin-password"
             type="password"
             autoComplete="current-password"
             required
@@ -74,19 +62,17 @@ export default function OwnerLoginPage() {
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
-
         {error ? (
-          <p role="alert" className={styles.error}>
+          <p className={styles.error} role="alert">
             {error}
           </p>
         ) : null}
-
         <Button
           type="submit"
           className={styles.primaryButton}
           disabled={pending}
         >
-          {pending ? 'Logging in...' : 'Log in'}
+          {pending ? 'Logging in…' : 'Log in'}
           {!pending ? <SubmitArrow /> : null}
         </Button>
       </form>

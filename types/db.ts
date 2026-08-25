@@ -629,6 +629,8 @@ export type Database = {
         Row: {
           created_at: string;
           email: string;
+          favorite_cuisines: string[];
+          food_type: string | null;
           full_name: string | null;
           hostel: string | null;
           id: string;
@@ -637,10 +639,13 @@ export type Database = {
           phone: string | null;
           role: Database['public']['Enums']['user_role'];
           share_activity: boolean;
+          spice_preference: string | null;
         };
         Insert: {
           created_at?: string;
           email: string;
+          favorite_cuisines?: string[];
+          food_type?: string | null;
           full_name?: string | null;
           hostel?: string | null;
           id: string;
@@ -649,10 +654,13 @@ export type Database = {
           phone?: string | null;
           role?: Database['public']['Enums']['user_role'];
           share_activity?: boolean;
+          spice_preference?: string | null;
         };
         Update: {
           created_at?: string;
           email?: string;
+          favorite_cuisines?: string[];
+          food_type?: string | null;
           full_name?: string | null;
           hostel?: string | null;
           id?: string;
@@ -661,6 +669,7 @@ export type Database = {
           phone?: string | null;
           role?: Database['public']['Enums']['user_role'];
           share_activity?: boolean;
+          spice_preference?: string | null;
         };
         Relationships: [];
       };
@@ -765,7 +774,8 @@ export type Database = {
         | 'cultural';
       friendship_status: 'pending' | 'accepted' | 'blocked';
       photo_kind: 'gallery' | 'menu_photo';
-      restaurant_status: 'pending_approval' | 'active' | 'suspended';
+      restaurant_status:
+        'profile_incomplete' | 'profile_review' | 'live' | 'suspended';
       user_role: 'student' | 'owner' | 'admin';
     };
     CompositeTypes: {
@@ -919,7 +929,12 @@ export const Constants = {
       ],
       friendship_status: ['pending', 'accepted', 'blocked'],
       photo_kind: ['gallery', 'menu_photo'],
-      restaurant_status: ['pending_approval', 'active', 'suspended'],
+      restaurant_status: [
+        'profile_incomplete',
+        'profile_review',
+        'live',
+        'suspended',
+      ],
       user_role: ['student', 'owner', 'admin'],
     },
   },

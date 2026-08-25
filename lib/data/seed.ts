@@ -105,7 +105,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '12:00', close: '23:00' }],
     },
     cover_image_url: '/seed/biryani-adda.svg',
-    status: 'active',
+    status: 'live',
     created_at: daysAgo(90),
   },
   {
@@ -137,7 +137,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '12:00', close: '22:00' }],
     },
     cover_image_url: '/seed/momo-nation.svg',
-    status: 'active',
+    status: 'live',
     created_at: daysAgo(75),
   },
   {
@@ -169,7 +169,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '09:00', close: '00:30' }],
     },
     cover_image_url: '/seed/chai-theory.svg',
-    status: 'active',
+    status: 'live',
     created_at: daysAgo(120),
   },
   {
@@ -216,7 +216,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '07:00', close: '14:00' }],
     },
     cover_image_url: '/seed/southern-spice.svg',
-    status: 'active',
+    status: 'live',
     created_at: daysAgo(60),
   },
   {
@@ -248,7 +248,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '12:00', close: '23:30' }],
     },
     cover_image_url: '/seed/scoops-stories.svg',
-    status: 'active',
+    status: 'live',
     created_at: daysAgo(45),
   },
   {
@@ -280,7 +280,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '13:00', close: '23:30' }],
     },
     cover_image_url: '/seed/hunter-grill.svg',
-    status: 'active',
+    status: 'live',
     created_at: daysAgo(30),
   },
 ];

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState, useTransition } from 'react';
 import {
@@ -25,29 +24,34 @@ function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [step, setStep] = useState<'email' | 'code'>('email');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  // Whether the code step has to collect an address too. A flag rather than
-  // `!email`, which would hide the field again on the first keystroke.
-  const [askEmail, setAskEmail] = useState(false);
 
   const sendCode = () =>
     startTransition(async () => {
       setError(null);
-      const res = await requestStudentOtp(email.trim());
+      const res = await requestStudentOtp(
+        email.trim(),
+        fullName.trim(),
+        phone.trim(),
+      );
       if (!res.ok) setError(res.message ?? 'Could not send the code.');
-      else {
-        setAskEmail(false);
-        setStep('code');
-      }
+      else setStep('code');
     });
 
   const verify = () =>
     startTransition(async () => {
       setError(null);
-      const res = await verifyStudentOtp(email.trim(), code.trim());
+      const res = await verifyStudentOtp(
+        email.trim(),
+        code.trim(),
+        fullName.trim(),
+        phone.trim(),
+      );
       if (!res.ok) setError(res.message ?? "That code didn't work.");
       else router.push(params.get('next') ?? '/');
     });
@@ -55,16 +59,13 @@ function LoginForm() {
   return (
     <AuthShell
       audience="student"
-      title={step === 'email' ? 'Welcome back.' : 'Check your inbox.'}
+      title={
+        step === 'email' ? 'Your next table starts here.' : 'Check your inbox.'
+      }
       description={
         step === 'email'
           ? 'Use your institute email. We will send a one-time code, so there is no password to remember.'
           : 'Enter the one-time code to continue to Destiny.'
-      }
-      footer={
-        <p>
-          Run a restaurant? <Link href="/owner/login">Owner login</Link>
-        </p>
       }
     >
       {step === 'email' ? (
@@ -75,22 +76,15 @@ function LoginForm() {
           }}
           className={styles.form}
         >
-          <div className={styles.fieldGroup}>
-            <Label htmlFor="email" className={styles.label}>
-              NITW email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              autoFocus
-              placeholder={`rollno@${STUDENT_EMAIL_DOMAINS[0]}`}
-              className={styles.field}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </div>
+          <StudentDetailsFields
+            fullName={fullName}
+            phone={phone}
+            email={email}
+            onFullNameChange={setFullName}
+            onPhoneChange={setPhone}
+            onEmailChange={setEmail}
+            autoFocus
+          />
 
           {error ? (
             <p role="alert" className={styles.error}>
@@ -100,26 +94,12 @@ function LoginForm() {
 
           <Button
             type="submit"
-            className={styles.primaryButton}
+            className={`${styles.primaryButton} ${styles.compactButton}`}
             disabled={pending}
           >
             {pending ? 'Sending...' : 'Send code'}
             {!pending ? <SubmitArrow /> : null}
           </Button>
-
-          {/* A student who closed the tab still has a code in their inbox,
-              and a failed send should not strand them on this step. */}
-          <button
-            type="button"
-            onClick={() => {
-              setError(null);
-              setAskEmail(true);
-              setStep('code');
-            }}
-            className={styles.textButton}
-          >
-            I already have a code
-          </button>
         </form>
       ) : (
         <form
@@ -129,31 +109,9 @@ function LoginForm() {
           }}
           className={styles.form}
         >
-          {askEmail ? (
-            /* Landing straight on this step via "I already have a code" means we
-               never captured an address, and verifyOtp matches the code against
-               one — without this field the escape hatch can only ever fail. */
-            <div className={styles.fieldGroup}>
-              <Label htmlFor="code-email" className={styles.label}>
-                NITW email
-              </Label>
-              <Input
-                id="code-email"
-                type="email"
-                autoComplete="email"
-                required
-                autoFocus
-                placeholder={`rollno@${STUDENT_EMAIL_DOMAINS[0]}`}
-                className={styles.field}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-          ) : (
-            <p className={styles.stepDetail}>
-              Code sent to <strong>{email}</strong>
-            </p>
-          )}
+          <p className={styles.stepDetail}>
+            Code sent to <strong>{email}</strong>
+          </p>
 
           <div className={styles.fieldGroup}>
             <Label htmlFor="code" className={styles.label}>
@@ -164,7 +122,7 @@ function LoginForm() {
               inputMode="numeric"
               autoComplete="one-time-code"
               required
-              autoFocus={!askEmail}
+              autoFocus
               className={`${styles.field} ${styles.codeField}`}
               value={code}
               // Strip anything that isn't a digit: pasting from the email is the
@@ -200,7 +158,6 @@ function LoginForm() {
             className={styles.secondaryButton}
             onClick={() => {
               setError(null);
-              setAskEmail(false);
               setStep('email');
             }}
           >
@@ -209,5 +166,82 @@ function LoginForm() {
         </form>
       )}
     </AuthShell>
+  );
+}
+
+function StudentDetailsFields({
+  fullName,
+  phone,
+  email,
+  onFullNameChange,
+  onPhoneChange,
+  onEmailChange,
+  autoFocus = false,
+}: {
+  fullName: string;
+  phone: string;
+  email: string;
+  onFullNameChange: (value: string) => void;
+  onPhoneChange: (value: string) => void;
+  onEmailChange: (value: string) => void;
+  autoFocus?: boolean;
+}) {
+  return (
+    <>
+      <div className={styles.fieldGroup}>
+        <Label htmlFor="full-name" className={styles.label}>
+          Name
+        </Label>
+        <Input
+          id="full-name"
+          type="text"
+          autoComplete="name"
+          required
+          autoFocus={autoFocus}
+          placeholder="Your full name"
+          className={styles.field}
+          value={fullName}
+          onChange={(event) => onFullNameChange(event.target.value)}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <Label htmlFor="phone" className={styles.label}>
+          Phone number
+        </Label>
+        <Input
+          id="phone"
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel"
+          required
+          minLength={10}
+          maxLength={10}
+          pattern="[0-9]{10}"
+          placeholder="10-digit mobile number"
+          className={styles.field}
+          value={phone}
+          onChange={(event) =>
+            onPhoneChange(event.target.value.replace(/\D/g, '').slice(0, 10))
+          }
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <Label htmlFor="email" className={styles.label}>
+          NITW email
+        </Label>
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
+          placeholder={`rollno@${STUDENT_EMAIL_DOMAINS[0]}`}
+          className={styles.field}
+          value={email}
+          onChange={(event) => onEmailChange(event.target.value)}
+        />
+      </div>
+    </>
   );
 }

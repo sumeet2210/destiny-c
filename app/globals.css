@@ -20,7 +20,7 @@
   --color-ink-on-secondary: #101010;
   /* Non-veg marker. Semantic indicator, never decorative — pairs with the
      triangle glyph so it survives greyscale (design.md §6). */
-  --color-nonveg: #505050;
+  --color-nonveg: #d94b3d;
 
   --font-display: 'Roboto Slab', Georgia, serif;
   --font-body:

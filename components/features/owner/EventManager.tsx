@@ -29,6 +29,10 @@ const toLocalInput = (iso: string | null) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const toLocalDate = (iso: string | null) => toLocalInput(iso).split('T')[0];
+const toLocalTime = (iso: string | null) =>
+  toLocalInput(iso).split('T')[1] ?? '';
+
 export function EventManager({ events }: { events: OwnerEvent[] }) {
   const [editing, setEditing] = useState<Partial<OwnerEvent> | null>(null);
   const [mountedAt] = useState(() => Date.now());
@@ -120,8 +124,8 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
             onSubmit={(ev) => {
               ev.preventDefault();
               const fd = new FormData(ev.currentTarget);
-              const starts = String(fd.get('starts_at'));
-              const ends = String(fd.get('ends_at') || '');
+              const starts = `${String(fd.get('start_date'))}T${String(fd.get('start_time'))}`;
+              const ends = `${String(fd.get('end_date'))}T${String(fd.get('end_time'))}`;
               startTransition(async () => {
                 const res = await upsertEvent({
                   id: editing.id,
@@ -129,7 +133,7 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   description: String(fd.get('description') || ''),
                   event_type: String(fd.get('event_type')),
                   starts_at: new Date(starts).toISOString(),
-                  ends_at: ends ? new Date(ends).toISOString() : null,
+                  ends_at: new Date(ends).toISOString(),
                   entry_fee: fd.get('entry_fee')
                     ? Number(fd.get('entry_fee'))
                     : null,
@@ -170,26 +174,49 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="ev-start">Starts</Label>
+                <Label htmlFor="ev-start-date">Start date</Label>
                 <Input
-                  id="ev-start"
-                  name="starts_at"
-                  type="datetime-local"
+                  id="ev-start-date"
+                  name="start_date"
+                  type="date"
                   required
-                  min={toLocalInput(new Date(mountedAt).toISOString())}
-                  max={toLocalInput(publishLimit.toISOString())}
+                  min={toLocalDate(new Date(mountedAt).toISOString())}
+                  max={toLocalDate(publishLimit.toISOString())}
                   className="font-mono"
-                  defaultValue={toLocalInput(editing.starts_at ?? null)}
+                  defaultValue={toLocalDate(editing.starts_at ?? null)}
                 />
               </div>
               <div>
-                <Label htmlFor="ev-end">Ends (optional)</Label>
+                <Label htmlFor="ev-start-time">Start time</Label>
                 <Input
-                  id="ev-end"
-                  name="ends_at"
-                  type="datetime-local"
+                  id="ev-start-time"
+                  name="start_time"
+                  type="time"
+                  required
                   className="font-mono"
-                  defaultValue={toLocalInput(editing.ends_at ?? null)}
+                  defaultValue={toLocalTime(editing.starts_at ?? null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="ev-end-date">End date</Label>
+                <Input
+                  id="ev-end-date"
+                  name="end_date"
+                  type="date"
+                  required
+                  className="font-mono"
+                  defaultValue={toLocalDate(editing.ends_at ?? null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="ev-end-time">End time</Label>
+                <Input
+                  id="ev-end-time"
+                  name="end_time"
+                  type="time"
+                  required
+                  className="font-mono"
+                  defaultValue={toLocalTime(editing.ends_at ?? null)}
                 />
               </div>
             </div>

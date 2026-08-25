@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { CRAVINGS } from '@/config/cravings';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -54,9 +53,12 @@ export function MenuManager({ items }: { items: Item[] }) {
           No items yet — add the first one.
         </p>
       ) : (
-        <Card>
+        <Card className="grid gap-x-8 gap-y-2 lg:grid-cols-2">
           {items.map((item) => (
-            <div key={item.id} className="group flex items-center gap-2">
+            <div
+              key={item.id}
+              className="group border-border-hairline flex min-w-0 items-center gap-2 border-b border-dashed py-1"
+            >
               <div className="flex-1">
                 <MenuRow
                   name={item.name}
@@ -65,7 +67,7 @@ export function MenuManager({ items }: { items: Item[] }) {
                   unavailable={!item.is_available}
                 />
               </div>
-              <div className="flex gap-1">
+              <div className="flex shrink-0 gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -149,35 +151,21 @@ export function MenuManager({ items }: { items: Item[] }) {
                 active={editing.is_veg}
                 onClick={() => setEditing({ ...editing, is_veg: true })}
               >
+                <span className="size-2 rounded-full bg-current" />
                 Veg
               </Chip>
               <Chip
                 active={!editing.is_veg}
+                className={
+                  !editing.is_veg
+                    ? '!border-[#d94b3d] !bg-[#d94b3d] !text-white'
+                    : undefined
+                }
                 onClick={() => setEditing({ ...editing, is_veg: false })}
               >
+                <span className="size-2 rotate-45 bg-current" />
                 Non-veg
               </Chip>
-            </div>
-            <div>
-              <Label>Craving tags (helps students find it)</Label>
-              <div className="flex flex-wrap gap-2">
-                {CRAVINGS.map((c) => (
-                  <Chip
-                    key={c.tag}
-                    active={editing.craving_tags.includes(c.tag)}
-                    onClick={() =>
-                      setEditing({
-                        ...editing,
-                        craving_tags: editing.craving_tags.includes(c.tag)
-                          ? editing.craving_tags.filter((t) => t !== c.tag)
-                          : [...editing.craving_tags, c.tag],
-                      })
-                    }
-                  >
-                    {c.label}
-                  </Chip>
-                ))}
-              </div>
             </div>
             <Button type="submit" disabled={pending} className="w-full">
               {pending ? 'Saving…' : 'Save item'}

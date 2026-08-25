@@ -59,5 +59,6 @@ export async function createReview(input: {
     return { ok: false, message: error.message };
   }
   revalidatePath('/bookings');
+  revalidatePath('/owner/analytics');
   return { ok: true };
 }

@@ -13,9 +13,8 @@
 // makes (see lib/queries/catalog.ts).
 import type { BookingStatus } from './booking';
 
-/** The status buckets an owner can filter by, plus the unfiltered default. */
-export type BookingStatusFilter =
-  'all' | 'requested' | 'confirmed' | 'cancelled';
+/** The two owner-facing booking buckets. */
+export type BookingStatusFilter = 'coming' | 'cancelled';
 
 /**
  * A raw search param: absent, a single value, or repeated (?k=a&k=b).
@@ -30,7 +29,7 @@ const firstValue = (raw: RawParam): string | undefined =>
   Array.isArray(raw) ? raw[0] : (raw ?? undefined);
 
 /**
- * Reads a ?status= value, falling back to "all" for anything unrecognised.
+ * Reads a ?status= value, falling back to "coming" for anything unrecognised.
  *
  * Deliberately total: a hand-typed or stale URL must never reach the database
  * as an invalid enum, and must never blank the list either.
@@ -38,12 +37,10 @@ const firstValue = (raw: RawParam): string | undefined =>
 export function parseStatusFilter(raw: RawParam): BookingStatusFilter {
   const value = firstValue(raw);
   switch (value) {
-    case 'requested':
-    case 'confirmed':
     case 'cancelled':
       return value;
     default:
-      return 'all';
+      return 'coming';
   }
 }
 
@@ -62,8 +59,9 @@ export type FilterableBooking = {
  * Applies the status bucket and the guest-name search, in original order.
  *
  * Plain substring matching, not a regex, so a search term can never be a
- * pattern. Statuses outside the four buckets (unconfirmed, completed) stay
- * reachable under "all".
+ * pattern. "Coming" includes requests awaiting the owner, accepted bookings,
+ * and bookings awaiting final student confirmation. Completed bookings do not
+ * belong in either current-work bucket.
  */
 export function filterOwnerBookings<T extends FilterableBooking>(
   bookings: readonly T[],
@@ -73,7 +71,11 @@ export function filterOwnerBookings<T extends FilterableBooking>(
   const guest = normalizeGuestQuery(filters.guest);
 
   return bookings.filter((booking) => {
-    if (status !== 'all' && booking.status !== status) return false;
+    const inStatus =
+      status === 'cancelled'
+        ? booking.status === 'cancelled'
+        : ['requested', 'confirmed', 'unconfirmed'].includes(booking.status);
+    if (!inStatus) return false;
     if (guest === '') return true;
     // A booking with no name on file cannot match a name search.
     return (booking.studentName ?? '').toLowerCase().includes(guest);

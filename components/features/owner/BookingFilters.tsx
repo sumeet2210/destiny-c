@@ -9,12 +9,10 @@ import {
   type BookingStatusFilter,
 } from '@/lib/domain/booking-filters';
 
-// Labels mirror the owner-facing wording in OwnerBookingRow, so a chip and the
-// badge on the row it selects never describe the same booking differently.
+// Owners only need current work and cancellations at this level. Incoming,
+// accepted, and awaiting-confirmation rows all belong under Coming.
 const options: { value: BookingStatusFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'requested', label: 'Incoming' },
-  { value: 'confirmed', label: 'Coming' },
+  { value: 'coming', label: 'Coming' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
@@ -22,7 +20,7 @@ const options: { value: BookingStatusFilter; label: string }[] = [
  * URL-backed booking filters; the server remains the filtering authority.
  *
  * The active chip comes from the same parser the page uses, so a stale or
- * hand-edited ?status= highlights "All" — matching the rows actually shown.
+ * hand-edited ?status= highlights "Coming" — matching the rows actually shown.
  */
 export function BookingFilters() {
   const router = useRouter();
@@ -52,7 +50,7 @@ export function BookingFilters() {
             key={option.value}
             active={active === option.value}
             onClick={() =>
-              set({ status: option.value === 'all' ? null : option.value })
+              set({ status: option.value === 'coming' ? null : option.value })
             }
           >
             {option.label}

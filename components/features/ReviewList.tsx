@@ -51,8 +51,7 @@ export function ReviewList({
   if (reviews.length === 0) {
     return (
       <p className="review-empty text-text-muted text-sm">
-        No reviews yet. Reviews come from students who actually booked and
-        showed up — so the first one has to earn it.
+        No reviews yet.
       </p>
     );
   }
@@ -119,8 +118,19 @@ export function ReviewList({
               </div>
             </div>
             {review.comment ? (
-              <p className="review-comment text-paper text-sm">
-                {review.comment}
+              <div className="pt-2">
+                {!destiny ? (
+                  <p className="text-text-muted mb-1 text-[11px] font-semibold tracking-wide uppercase">
+                    Review
+                  </p>
+                ) : null}
+                <p className="review-comment text-paper text-sm">
+                  {review.comment}
+                </p>
+              </div>
+            ) : !destiny ? (
+              <p className="text-text-muted pt-2 text-xs">
+                No written review was added.
               </p>
             ) : null}
           </Card>

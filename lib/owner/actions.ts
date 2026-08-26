@@ -329,6 +329,8 @@ export async function createOffer(input: {
   });
   if (error) return { ok: false, message: error.message };
   revalidateOwnerAnd('/owner/offers-events');
+  revalidatePath('/');
+  revalidatePath(`/restaurant/${owned.id}`);
   return { ok: true };
 }
 
@@ -388,6 +390,8 @@ export async function updateOffer(
     .eq('restaurant_id', owned.id);
   if (error) return { ok: false, message: error.message };
   revalidateOwnerAnd('/owner/offers-events');
+  revalidatePath('/');
+  revalidatePath(`/restaurant/${owned.id}`);
   return { ok: true };
 }
 

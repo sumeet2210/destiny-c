@@ -130,6 +130,7 @@ async function TickerSection() {
           discount_text: offer.discount_text,
           expires_at: offer.expires_at,
           image:
+            offer.image_url ??
             HOME_ARTWORK[offer.restaurantName] ??
             '/home/hero-campus-feast.webp',
         }))}
@@ -144,6 +145,7 @@ async function TickerSection() {
           event_type: event.event_type,
           starts_at: event.starts_at,
           image:
+            event.cover_image_url ??
             HOME_ARTWORK[event.restaurantName] ??
             '/home/hero-campus-feast.webp',
         }))}

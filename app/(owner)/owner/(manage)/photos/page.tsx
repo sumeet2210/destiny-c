@@ -25,6 +25,7 @@ export default async function OwnerPhotosPage() {
           id: p.id,
           url: p.url,
           kind: p.kind,
+          gallery_category: p.gallery_category,
         }))}
       />
     </div>

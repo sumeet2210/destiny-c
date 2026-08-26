@@ -1,7 +1,7 @@
 import { cn } from '@/lib/cn';
 
 const field =
-  'w-full rounded-control border border-border-hairline bg-surface-muted px-3.5 py-2.5 text-sm text-paper placeholder:text-text-muted disabled:cursor-default disabled:border-transparent disabled:bg-surface-raised disabled:text-paper disabled:opacity-100';
+  'w-full rounded-control border border-border-hairline bg-surface-muted px-3.5 py-2.5 text-sm text-paper placeholder:text-text-muted disabled:opacity-40';
 
 export function Input({
   className,

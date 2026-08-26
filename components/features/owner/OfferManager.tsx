@@ -14,7 +14,6 @@ type Offer = {
   title: string;
   description: string | null;
   discount_text: string | null;
-  starts_at: string;
   expires_at: string;
   is_active: boolean;
   flagged_count: number;
@@ -27,18 +26,10 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
   const toast = useToast();
 
   const live = offers.filter(
-    (o) =>
-      o.is_active &&
-      new Date(o.starts_at).getTime() <= mountedAt &&
-      new Date(o.expires_at).getTime() > mountedAt,
-  );
-  const scheduled = offers.filter(
-    (o) => o.is_active && new Date(o.starts_at).getTime() > mountedAt,
+    (o) => o.is_active && new Date(o.expires_at).getTime() > mountedAt,
   );
   const past = offers.filter(
-    (o) =>
-      !o.is_active ||
-      (!scheduled.includes(o) && new Date(o.expires_at).getTime() <= mountedAt),
+    (o) => !o.is_active || new Date(o.expires_at).getTime() <= mountedAt,
   );
 
   return (
@@ -90,29 +81,6 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
         </Card>
       ))}
 
-      {scheduled.length > 0 && (
-        <details className="text-text-muted text-sm">
-          <summary className="cursor-pointer">
-            Scheduled offers ({scheduled.length})
-          </summary>
-          <div className="mt-2 space-y-2">
-            {scheduled.map((offer) => (
-              <Card key={offer.id} className="py-2 text-[13px]">
-                {offer.title}
-                <span className="text-text-muted">
-                  {' '}
-                  · starts{' '}
-                  {new Date(offer.starts_at).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                  })}
-                </span>
-              </Card>
-            ))}
-          </div>
-        </details>
-      )}
-
       {past.length > 0 && (
         <details className="text-text-muted text-sm">
           <summary className="cursor-pointer">
@@ -145,15 +113,15 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
           onSubmit={(e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
-            const startsOn = String(fd.get('starts_on'));
-            const endsOn = String(fd.get('ends_on'));
+            const expiresLocal = String(fd.get('expires_at') || '');
             startTransition(async () => {
               const res = await createOffer({
                 title: String(fd.get('title')),
                 description: String(fd.get('description') || ''),
                 discount_text: String(fd.get('discount_text') || ''),
-                starts_at: new Date(`${startsOn}T00:00:00`).toISOString(),
-                expires_at: new Date(`${endsOn}T23:59:59`).toISOString(),
+                expires_at: expiresLocal
+                  ? new Date(expiresLocal).toISOString()
+                  : undefined,
               });
               toast(
                 res.ok ? 'Offer is live' : (res.message ?? 'Failed'),
@@ -189,27 +157,14 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
               placeholder="Any conditions — timings, ID needed…"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="of-start">Start date</Label>
-              <Input
-                id="of-start"
-                name="starts_on"
-                type="date"
-                className="font-mono"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="of-end">End date</Label>
-              <Input
-                id="of-end"
-                name="ends_on"
-                type="date"
-                className="font-mono"
-                required
-              />
-            </div>
+          <div>
+            <Label htmlFor="of-exp">Expires (leave empty = end of today)</Label>
+            <Input
+              id="of-exp"
+              name="expires_at"
+              type="datetime-local"
+              className="font-mono"
+            />
           </div>
           <Button type="submit" disabled={pending} className="w-full">
             {pending ? 'Posting…' : 'Publish offer'}

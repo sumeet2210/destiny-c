@@ -9,7 +9,8 @@ type MenuIconName = 'saved' | 'portal';
 
 export default async function OthersPage() {
   const user = await getSessionUser();
-  const portalHref = user?.role === 'owner' ? '/owner/dashboard' : '/owner';
+  const portalHref =
+    user?.role === 'owner' ? '/owner/dashboard' : '/owner/login';
 
   const destinations: ReadonlyArray<{
     href: string;

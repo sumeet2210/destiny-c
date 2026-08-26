@@ -15,19 +15,3 @@ export function createAdminClient() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
-
-/**
- * Used only while onboarding migrations are newer than the checked-in generated
- * database types. Regenerating types after the linked migration removes the
- * need for call-site casts without weakening the service-role boundary.
- */
-export function createWorkflowAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !secret) {
-    throw new Error('Supabase is not configured (URL or secret key missing)');
-  }
-  return createSupabaseClient(url, secret, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}

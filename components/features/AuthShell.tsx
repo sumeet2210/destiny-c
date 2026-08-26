@@ -39,24 +39,18 @@ export function AuthShell({
 
   return (
     <main
-      className={cn(
-        styles.page,
-        audience === 'student' && styles.inAppShell,
-        audience === 'student' && styles.student,
-      )}
+      className={cn(styles.page, audience === 'student' && styles.inAppShell)}
     >
       <div className={styles.frame}>
-        {audience === 'owner' ? (
-          <section className={styles.media} aria-label={copy.headline}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={copy.image} alt="" aria-hidden="true" />
-            <div className={styles.mediaShade} aria-hidden="true" />
-            <div className={styles.mediaCopy}>
-              <h2>{copy.headline}</h2>
-              <p>{copy.detail}</p>
-            </div>
-          </section>
-        ) : null}
+        <section className={styles.media} aria-label={copy.headline}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={copy.image} alt="" aria-hidden="true" />
+          <div className={styles.mediaShade} aria-hidden="true" />
+          <div className={styles.mediaCopy}>
+            <h2>{copy.headline}</h2>
+            <p>{copy.detail}</p>
+          </div>
+        </section>
 
         <section className={styles.formPanel} aria-labelledby="auth-title">
           <div className={styles.panelTop}>
@@ -65,15 +59,13 @@ export function AuthShell({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/brand/destiny-wordmark.png" alt="Destiny" />
               </Link>
-            ) : null}
+            ) : (
+              <span aria-hidden="true" />
+            )}
 
-            <Link
-              href="/"
-              className={styles.backLink}
-              aria-label="Back to discovery"
-            >
+            <Link href="/" className={styles.backLink}>
               <BackIcon />
-              {audience === 'owner' ? 'Back to discovery' : null}
+              Back to discovery
             </Link>
           </div>
 

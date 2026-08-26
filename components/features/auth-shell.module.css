@@ -167,7 +167,28 @@
 }
 
 .portalPage {
+  --color-canvas: #0d0d0d;
+  --color-surface-muted: #181818;
+  --color-surface-raised: #242424;
+  --color-border-hairline: #4a4a4a;
+  --color-paper: #ededed;
+  --color-text-muted: #999999;
+  --color-accent-primary: #d0d0d0;
+  --color-ink-on-primary: #101010;
   overflow-y: auto;
+  background: #0d0d0d;
+  color: #ededed;
+  color-scheme: dark;
+}
+
+.portalPage ::selection {
+  background: #b8b8b8;
+  color: #101010;
+}
+
+.portalPage :where(a, button, input):focus-visible {
+  outline-color: #b8b8b8;
+  box-shadow: 0 0 0 5px #0d0d0d;
 }
 
 .portalPage .portalFrame {
@@ -175,6 +196,7 @@
   min-height: 100svh;
   grid-template-columns: none;
   grid-template-rows: none;
+  background: #0d0d0d;
 }
 
 .portalPage .portalFormPanel {
@@ -200,8 +222,15 @@
   min-height: 2.75rem;
   justify-content: center;
   padding: 0;
-  border: 1px solid #505050;
+  border: 1px solid #4a4a4a;
   border-radius: 999px;
+  color: #ededed;
+}
+
+.portalPage .portalPanelTop .backLink:hover {
+  border-color: #7a7a7a;
+  background: #242424;
+  color: #ffffff;
 }
 
 .portalPage .portalFormWrap {
@@ -211,6 +240,7 @@
 }
 
 .portalPage .heading h1 {
+  color: #ededed;
   font-size: clamp(2.35rem, 5vw, 3.5rem);
 }
 
@@ -342,10 +372,25 @@
 .portalPage .ownerJoinCard {
   min-height: 6.75rem;
   padding: 1rem 1.1rem;
+  border-color: #565656;
+  background: #2b2b2b;
+  color: #ededed;
+}
+
+.portalPage .ownerJoinCard:hover {
+  border-color: #8a8a8a;
+  background: #3a3a3a;
+  color: #ffffff;
 }
 
 .portalPage .ownerLoginBox {
   padding: 1rem 1.1rem;
+  border-color: #4a4a4a;
+  background: #181818;
+}
+
+.portalPage .ownerLoginHeading h2 {
+  color: #ededed;
 }
 
 .portalPage .ownerLoginBox .form {
@@ -356,6 +401,45 @@
 .portalPage .footer {
   margin-top: 0.85rem;
   padding-top: 0.65rem;
+  border-color: #3a3a3a;
+  color: #999999;
+}
+
+.portalPage .footer a {
+  color: #ededed;
+  text-decoration-color: #777777;
+}
+
+.portalPage .footer a:hover {
+  color: #b8b8b8;
+}
+
+.portalPage .ownerLoginBox .label {
+  color: #d0d0d0;
+}
+
+.portalPage .ownerLoginBox .field {
+  border-color: #4a4a4a;
+  background: #121212;
+  color: #ededed;
+  caret-color: #b8b8b8;
+}
+
+.portalPage .ownerLoginBox .field:hover,
+.portalPage .ownerLoginBox .field:focus {
+  border-color: #7a7a7a;
+}
+
+.portalPage .ownerLoginBox .primaryButton {
+  border-color: #d0d0d0;
+  background: #d0d0d0;
+  color: #101010;
+}
+
+.portalPage .ownerLoginBox .primaryButton:hover:not(:disabled) {
+  border-color: #6a6a6a;
+  background: #4a4a4a;
+  color: #ffffff;
 }
 
 .fieldGroup {

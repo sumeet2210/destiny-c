@@ -20,28 +20,8 @@ export default function OwnerLoginPage() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <AuthShell
-      audience="owner"
-      title="Restaurant Portal"
-      variant="portal"
-      footer={
-        <p>
-          Student? <Link href="/login">Use student login</Link>
-        </p>
-      }
-    >
+    <AuthShell audience="owner" title="Restaurant Portal" variant="portal">
       <div className={styles.ownerOptions}>
-        <Link href="/owner/signup" className={styles.ownerJoinCard}>
-          <span className={styles.ownerOptionEyebrow}>New to Destiny</span>
-          <strong>List your restaurant</strong>
-          <span className={styles.ownerOptionDetail}>
-            Create a restaurant profile and join Destiny.
-          </span>
-          <span className={styles.ownerOptionArrow} aria-hidden="true">
-            <SubmitArrow />
-          </span>
-        </Link>
-
         <section
           className={styles.ownerLoginBox}
           aria-labelledby="owner-login-title"
@@ -112,6 +92,17 @@ export default function OwnerLoginPage() {
             </Button>
           </form>
         </section>
+
+        <Link href="/owner/signup" className={styles.ownerJoinCard}>
+          <span className={styles.ownerOptionEyebrow}>New to Destiny</span>
+          <strong>List your restaurant</strong>
+          <span className={styles.ownerOptionDetail}>
+            Create a restaurant profile and join Destiny.
+          </span>
+          <span className={styles.ownerOptionArrow} aria-hidden="true">
+            <SubmitArrow />
+          </span>
+        </Link>
       </div>
     </AuthShell>
   );

@@ -392,6 +392,38 @@ export type Database = {
           },
         ];
       };
+      restaurant_gallery_folders: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          restaurant_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          restaurant_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          restaurant_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'restaurant_gallery_folders_restaurant_id_fkey';
+            columns: ['restaurant_id'];
+            isOneToOne: false;
+            referencedRelation: 'restaurants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       restaurant_photos: {
         Row: {
           created_at: string;

@@ -1,17 +1,21 @@
 import { redirect } from 'next/navigation';
 import { PhotoManager } from '@/components/features/owner/PhotoManager';
-import { getOwnerBundle } from '@/lib/queries/owner';
+import { getOwnerBundle, getOwnerGalleryFolders } from '@/lib/queries/owner';
 
 export const metadata = { title: 'Photos' };
 
 export default async function OwnerPhotosPage() {
-  const bundle = await getOwnerBundle();
+  const [bundle, folders] = await Promise.all([
+    getOwnerBundle(),
+    getOwnerGalleryFolders(),
+  ]);
   if (!bundle) redirect('/owner/dashboard');
 
   return (
     <div className="w-full space-y-6">
       <PhotoManager
         coverUrl={bundle.restaurant.cover_image_url}
+        folderNames={folders.map((folder) => folder.name)}
         photos={bundle.photos.map((p) => ({
           id: p.id,
           url: p.url,

@@ -61,6 +61,23 @@ export const getOwnerBundle = cache(async (): Promise<OwnerBundle | null> => {
   };
 });
 
+/** Empty and populated owner-created gallery folders, in display order. */
+export async function getOwnerGalleryFolders(): Promise<
+  Tables<'restaurant_gallery_folders'>[]
+> {
+  if (!isSupabaseConfigured()) return [];
+  const bundle = await getOwnerBundle();
+  if (!bundle) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('restaurant_gallery_folders')
+    .select('*')
+    .eq('restaurant_id', bundle.restaurant.id)
+    .order('sort_order')
+    .order('created_at');
+  return data ?? [];
+}
+
 export type OwnerBooking = Tables<'bookings'> & {
   studentName: string | null;
   studentNoShows: number;

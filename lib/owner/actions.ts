@@ -401,6 +401,17 @@ export async function uploadPhoto(formData: FormData): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
+  if (folder) {
+    const { data: savedFolder } = await supabase
+      .from('restaurant_gallery_folders')
+      .select('id')
+      .eq('restaurant_id', owned.id)
+      .eq('name', folder)
+      .maybeSingle();
+    if (!savedFolder) {
+      return { ok: false, message: 'Create that folder before adding photos.' };
+    }
+  }
   const path = `${owned.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
   const { error: uploadError } = await supabase.storage
     .from('restaurant-images')
@@ -474,6 +485,39 @@ export async function reorderPhotos(ids: string[]): Promise<ActionResult> {
   return { ok: true };
 }
 
+/** Create an empty gallery folder before photos are uploaded into it. */
+export async function createGalleryFolder(name: string): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const owned = await ownedRestaurantId();
+  if (!owned.ok) return owned;
+  const clean = normalizeGalleryFolder(name);
+  if (!clean) return { ok: false, message: 'Give the folder a name.' };
+  const supabase = await createClient();
+  const { data: lastFolder } = await supabase
+    .from('restaurant_gallery_folders')
+    .select('sort_order')
+    .eq('restaurant_id', owned.id)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const { error } = await supabase.from('restaurant_gallery_folders').insert({
+    restaurant_id: owned.id,
+    name: clean,
+    sort_order: (lastFolder?.sort_order ?? -1) + 1,
+  });
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === '23505'
+          ? 'A folder with that name already exists.'
+          : error.message,
+    };
+  }
+  revalidateOwnerAnd('/owner/photos');
+  return { ok: true };
+}
+
 /** Move one photo between albums. Passing null returns it to the unfiled set. */
 export async function setPhotoFolder(
   id: string,
@@ -487,6 +531,17 @@ export async function setPhotoFolder(
     return { ok: false, message: 'Give the folder a name.' };
   }
   const supabase = await createClient();
+  if (clean) {
+    const { data: savedFolder } = await supabase
+      .from('restaurant_gallery_folders')
+      .select('id')
+      .eq('restaurant_id', owned.id)
+      .eq('name', clean)
+      .maybeSingle();
+    if (!savedFolder) {
+      return { ok: false, message: 'Create that folder before moving photos.' };
+    }
+  }
   const { error } = await supabase
     .from('restaurant_photos')
     .update({ gallery_category: clean })
@@ -514,12 +569,34 @@ export async function renameGalleryFolder(
   if (!next) return { ok: false, message: 'Give the folder a name.' };
   if (current === next) return { ok: true };
   const supabase = await createClient();
-  const { error } = await supabase
+  const { error: folderError } = await supabase
+    .from('restaurant_gallery_folders')
+    .update({ name: next })
+    .eq('restaurant_id', owned.id)
+    .eq('name', current);
+  if (folderError) {
+    return {
+      ok: false,
+      message:
+        folderError.code === '23505'
+          ? 'A folder with that name already exists.'
+          : folderError.message,
+    };
+  }
+  const { error: photoError } = await supabase
     .from('restaurant_photos')
     .update({ gallery_category: next })
     .eq('restaurant_id', owned.id)
     .eq('gallery_category', current);
-  if (error) return { ok: false, message: error.message };
+  if (photoError) {
+    // Best-effort rollback keeps the folder label aligned with its photos.
+    await supabase
+      .from('restaurant_gallery_folders')
+      .update({ name: current })
+      .eq('restaurant_id', owned.id)
+      .eq('name', next);
+    return { ok: false, message: photoError.message };
+  }
   revalidateOwnerAnd('/owner/photos');
   return { ok: true };
 }

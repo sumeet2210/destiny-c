@@ -18,16 +18,7 @@ export default async function OwnerAnalyticsPage() {
   ]);
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Analytics
-        </h1>
-        <p className="text-text-muted mt-1 text-[13px]">
-          How many students looked, and what they said after visiting.
-        </p>
-      </div>
-
+    <div className="w-full space-y-8">
       <section className="space-y-5" aria-labelledby="owner-views-title">
         <div>
           <h2

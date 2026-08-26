@@ -18,23 +18,51 @@ import { updateRestaurant } from '@/lib/owner/actions';
 
 export function HoursEditor({ initial }: { initial: OpeningHours }) {
   const [hours, setHours] = useState<OpeningHours>(initial);
+  const [saved, setSaved] = useState<OpeningHours>(initial);
+  const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  const dirty = JSON.stringify(hours) !== JSON.stringify(saved);
 
   const setDay = (day: DayKey, shifts: Shift[]) =>
     setHours((h) => ({ ...h, [day]: shifts }));
 
   return (
     <Card className="space-y-4">
-      <div>
-        <h2 className="font-display text-paper text-lg font-bold">
-          Opening hours
-        </h2>
-        <p className="text-text-muted mt-1 text-[13px]">
-          Split shifts are fine (lunch close, dinner reopen). A close time
-          earlier than the open time means you run past midnight. No shifts =
-          closed that day.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-display text-paper text-lg font-bold">
+            Opening hours
+          </h2>
+          <p className="text-text-muted mt-1 text-[13px]">
+            Split shifts are fine (lunch close, dinner reopen). A close time
+            earlier than the open time means you run past midnight. No shifts =
+            closed that day.
+          </p>
+        </div>
+        {editing ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={pending}
+            onClick={() => {
+              setHours(saved);
+              setEditing(false);
+            }}
+          >
+            Cancel
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditing(true)}
+          >
+            Edit
+          </Button>
+        )}
       </div>
 
       {WEEK.map((day) => {
@@ -45,28 +73,33 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
               <span className="text-paper text-sm font-medium">
                 {DAY_LABELS[day]}
               </span>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setDay(day, [...shifts, { open: '11:00', close: '23:00' }])
-                  }
-                >
-                  + shift
-                </Button>
-                {shifts.length > 0 && (
+              {editing ? (
+                <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setDay(day, [])}
+                    onClick={() =>
+                      setDay(day, [
+                        ...shifts,
+                        { open: '11:00', close: '23:00' },
+                      ])
+                    }
                   >
-                    Closed
+                    + shift
                   </Button>
-                )}
-              </div>
+                  {shifts.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDay(day, [])}
+                    >
+                      Closed
+                    </Button>
+                  )}
+                </div>
+              ) : null}
             </div>
             {shifts.length === 0 ? (
               <p className="text-text-muted text-[13px]">Closed</p>
@@ -78,6 +111,7 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
                     aria-label={`${DAY_LABELS[day]} shift ${i + 1} opens`}
                     className="w-auto font-mono"
                     value={shift.open}
+                    readOnly={!editing}
                     onChange={(e) =>
                       setDay(
                         day,
@@ -93,6 +127,7 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
                     aria-label={`${DAY_LABELS[day]} shift ${i + 1} closes`}
                     className="w-auto font-mono"
                     value={shift.close}
+                    readOnly={!editing}
                     onChange={(e) =>
                       setDay(
                         day,
@@ -102,20 +137,22 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
                       )
                     }
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Remove shift"
-                    onClick={() =>
-                      setDay(
-                        day,
-                        shifts.filter((_, j) => j !== i),
-                      )
-                    }
-                  >
-                    ✕
-                  </Button>
+                  {editing ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Remove shift"
+                      onClick={() =>
+                        setDay(
+                          day,
+                          shifts.filter((_, j) => j !== i),
+                        )
+                      }
+                    >
+                      ✕
+                    </Button>
+                  ) : null}
                 </div>
               ))
             )}
@@ -123,20 +160,26 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
         );
       })}
 
-      <Button
-        disabled={pending}
-        onClick={() =>
-          startTransition(async () => {
-            const res = await updateRestaurant({ opening_hours: hours });
-            toast(
-              res.ok ? 'Hours saved' : (res.message ?? 'Could not save'),
-              res.ok ? 'positive' : 'error',
-            );
-          })
-        }
-      >
-        {pending ? 'Saving…' : 'Save hours'}
-      </Button>
+      {editing && dirty ? (
+        <Button
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              const res = await updateRestaurant({ opening_hours: hours });
+              toast(
+                res.ok ? 'Hours saved' : (res.message ?? 'Could not save'),
+                res.ok ? 'positive' : 'error',
+              );
+              if (res.ok) {
+                setSaved(hours);
+                setEditing(false);
+              }
+            })
+          }
+        >
+          {pending ? 'Saving…' : 'Save'}
+        </Button>
+      ) : null}
     </Card>
   );
 }

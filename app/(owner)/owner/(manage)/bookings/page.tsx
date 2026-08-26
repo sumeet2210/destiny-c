@@ -34,17 +34,7 @@ export default async function OwnerBookingsPage(
       : `${bookings.length} of ${all.length} shown`;
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Bookings
-        </h1>
-        <p className="text-text-muted mt-1 text-[13px]">
-          Review incoming table requests, then accept or reject each one. You
-          can also leave a note the student will see.
-        </p>
-      </div>
-
+    <div className="w-full space-y-5">
       {all.length === 0 ? (
         <p className="text-text-muted text-sm">
           No reservations yet. New requests will appear here.

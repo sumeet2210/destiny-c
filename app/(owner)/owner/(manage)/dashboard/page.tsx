@@ -96,13 +96,6 @@ export default async function OwnerDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          {restaurant.name}
-        </h1>
-        <p className="text-accent-secondary text-[13px]">Live on Destiny</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Profile views, last 7 days"

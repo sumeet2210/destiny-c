@@ -4,7 +4,7 @@ import { HoursEditor } from '@/components/features/owner/HoursEditor';
 import { getOwnerBundle } from '@/lib/queries/owner';
 import type { OpeningHours } from '@/lib/domain/hours';
 
-export const metadata = { title: 'Profile & hours' };
+export const metadata = { title: 'Profile' };
 
 export default async function OwnerProfilePage() {
   const bundle = await getOwnerBundle();
@@ -12,10 +12,7 @@ export default async function OwnerProfilePage() {
   const r = bundle.restaurant;
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <h1 className="font-display text-paper text-2xl font-extrabold">
-        Profile &amp; hours
-      </h1>
+    <div className="w-full space-y-8">
       <ProfileForm
         initial={{
           name: r.name,

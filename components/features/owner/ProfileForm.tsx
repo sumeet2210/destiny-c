@@ -39,8 +39,11 @@ type ProfileFields = {
 
 export function ProfileForm({ initial }: { initial: ProfileFields }) {
   const [fields, setFields] = useState(initial);
+  const [saved, setSaved] = useState(initial);
+  const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  const dirty = JSON.stringify(fields) !== JSON.stringify(saved);
 
   const set = <K extends keyof ProfileFields>(
     key: K,
@@ -68,22 +71,57 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          if (!editing || !dirty) return;
           startTransition(async () => {
             const res = await updateRestaurant(fields);
             toast(
               res.ok ? 'Profile saved' : (res.message ?? 'Could not save'),
               res.ok ? 'positive' : 'error',
             );
+            if (res.ok) {
+              setSaved(fields);
+              setEditing(false);
+            }
           });
         }}
         className="space-y-4"
       >
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-paper text-lg font-bold">
+            Basic info
+          </h2>
+          {editing ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={pending}
+              onClick={() => {
+                setFields(saved);
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditing(true)}
+            >
+              Edit
+            </Button>
+          )}
+        </div>
+
         <div>
           <Label htmlFor="p-name">Name</Label>
           <Input
             id="p-name"
             value={fields.name}
             onChange={(e) => set('name', e.target.value)}
+            readOnly={!editing}
             required
           />
         </div>
@@ -93,6 +131,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             id="p-desc"
             value={fields.description ?? ''}
             onChange={(e) => set('description', e.target.value || null)}
+            readOnly={!editing}
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -102,6 +141,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               id="p-owner"
               value={fields.owner_name ?? ''}
               onChange={(e) => set('owner_name', e.target.value || null)}
+              readOnly={!editing}
             />
           </div>
           <div>
@@ -109,6 +149,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             <Select
               id="p-category"
               value={fields.restaurant_category ?? ''}
+              disabled={!editing}
               onChange={(e) =>
                 set('restaurant_category', e.target.value || null)
               }
@@ -126,6 +167,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             <Select
               id="p-area"
               value={fields.area}
+              disabled={!editing}
               onChange={(e) => set('area', e.target.value)}
             >
               {AREAS.map((a) => (
@@ -140,6 +182,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               type="number"
               min={0}
               value={fields.price_per_head ?? ''}
+              readOnly={!editing}
               onChange={(e) =>
                 set(
                   'price_per_head',
@@ -155,6 +198,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             id="p-address"
             value={fields.address ?? ''}
             onChange={(e) => set('address', e.target.value || null)}
+            readOnly={!editing}
           />
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -168,6 +212,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               aria-describedby="p-phone-help"
               value={fields.phone ?? ''}
               onChange={(e) => set('phone', e.target.value || null)}
+              readOnly={!editing}
             />
             <p id="p-phone-help" className="text-paper/60 mt-1 text-xs">
               {PHONE_HELP}
@@ -180,6 +225,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               type="number"
               step="any"
               value={fields.lat ?? ''}
+              readOnly={!editing}
               onChange={(e) =>
                 set('lat', e.target.value ? Number(e.target.value) : null)
               }
@@ -192,6 +238,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               type="number"
               step="any"
               value={fields.lng ?? ''}
+              readOnly={!editing}
               onChange={(e) =>
                 set('lng', e.target.value ? Number(e.target.value) : null)
               }
@@ -204,30 +251,35 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           <div className="flex flex-wrap gap-2">
             <Chip
               active={fields.is_veg_only}
+              disabled={!editing}
               onClick={() => set('is_veg_only', !fields.is_veg_only)}
             >
               Pure veg
             </Chip>
             <Chip
               active={fields.has_ac}
+              disabled={!editing}
               onClick={() => set('has_ac', !fields.has_ac)}
             >
               AC
             </Chip>
             <Chip
               active={fields.dine_in}
+              disabled={!editing}
               onClick={() => set('dine_in', !fields.dine_in)}
             >
               Dine-in
             </Chip>
             <Chip
               active={fields.takeaway}
+              disabled={!editing}
               onClick={() => set('takeaway', !fields.takeaway)}
             >
               Takeaway
             </Chip>
             <Chip
               active={fields.student_discount}
+              disabled={!editing}
               onClick={() => set('student_discount', !fields.student_discount)}
             >
               Student discount
@@ -242,6 +294,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               <Chip
                 key={c}
                 active={fields.cuisines.includes(c)}
+                disabled={!editing}
                 onClick={() => toggleCuisine(c)}
               >
                 {c}
@@ -257,6 +310,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               <Chip
                 key={a.key}
                 active={fields[a.key]}
+                disabled={!editing}
                 onClick={() => set(a.key, !fields[a.key])}
               >
                 {a.label}
@@ -272,6 +326,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
               <Chip
                 key={v.tag}
                 active={fields.vibe_tags.includes(v.tag)}
+                disabled={!editing}
                 onClick={() => toggleVibe(v.tag)}
               >
                 {v.label}
@@ -280,9 +335,11 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           </div>
         </div>
 
-        <Button type="submit" disabled={pending}>
-          {pending ? 'Saving…' : 'Save profile'}
-        </Button>
+        {editing && dirty ? (
+          <Button type="submit" disabled={pending}>
+            {pending ? 'Saving…' : 'Save'}
+          </Button>
+        ) : null}
       </form>
     </Card>
   );

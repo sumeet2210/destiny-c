@@ -16,17 +16,7 @@ export default async function OwnerOffersEventsPage() {
   if (!bundle) redirect('/owner/dashboard');
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="font-display text-paper text-2xl font-extrabold">
-          Offers &amp; Events
-        </h1>
-        <p className="text-text-muted mt-1 text-[13px]">
-          Everything students see as &ldquo;what&apos;s on&rdquo; at your place,
-          in one place.
-        </p>
-      </div>
-
+    <div className="w-full space-y-8">
       <section className="space-y-5" aria-labelledby="owner-offers-title">
         <div>
           <h2

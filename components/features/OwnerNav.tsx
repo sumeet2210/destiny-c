@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
+import styles from './owner-nav.module.css';
 
 // Offers/events and reviews/analytics each live on one page now, so the nav is
 // seven entries instead of nine. The old routes still resolve — they redirect —
@@ -10,7 +11,7 @@ import { cn } from '@/lib/cn';
 // match `/owner/offers-events` under the startsWith test below.
 const items = [
   { href: '/owner/dashboard', label: 'Overview' },
-  { href: '/owner/profile', label: 'Profile & hours' },
+  { href: '/owner/profile', label: 'Profile' },
   { href: '/owner/menu', label: 'Menu' },
   { href: '/owner/offers-events', label: 'Offers & Events' },
   { href: '/owner/photos', label: 'Photos' },
@@ -18,15 +19,20 @@ const items = [
   { href: '/owner/analytics', label: 'Analytics' },
 ] as const;
 
-export function OwnerNav({ horizontal = false }: { horizontal?: boolean }) {
+export function OwnerNav({
+  horizontal = false,
+  signOutAction,
+}: {
+  horizontal?: boolean;
+  signOutAction: () => Promise<void>;
+}) {
   const pathname = usePathname();
   return (
     <nav
       aria-label="Owner tools"
       className={cn(
-        horizontal
-          ? 'no-scrollbar flex gap-1 overflow-x-auto'
-          : 'flex flex-col gap-1',
+        styles.nav,
+        horizontal ? styles.horizontal : styles.vertical,
       )}
     >
       {items.map((item) => (
@@ -34,15 +40,18 @@ export function OwnerNav({ horizontal = false }: { horizontal?: boolean }) {
           key={item.href}
           href={item.href}
           className={cn(
-            'rounded-control shrink-0 px-3 py-2 text-sm',
-            pathname.startsWith(item.href)
-              ? 'bg-surface-raised text-paper'
-              : 'text-text-muted hover:text-paper',
+            styles.link,
+            pathname.startsWith(item.href) ? styles.active : styles.inactive,
           )}
         >
           {item.label}
         </Link>
       ))}
+      <form action={signOutAction} className={styles.logoutForm}>
+        <button type="submit" className={styles.logoutButton}>
+          Log out
+        </button>
+      </form>
     </nav>
   );
 }

@@ -1,6 +1,4 @@
-import Link from 'next/link';
 import { OwnerNav } from '@/components/features/OwnerNav';
-import { Button } from '@/components/ui/Button';
 import { requireOwner } from '@/lib/auth/session';
 import { signOut } from '@/lib/auth/actions';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
@@ -16,26 +14,17 @@ export default async function OwnerManageLayout({
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-6xl">
-      <aside className="border-border-hairline hidden w-52 shrink-0 flex-col gap-1 border-r p-4 sm:flex">
-        <Link
-          href="/owner/dashboard"
-          className="font-display text-accent-primary mb-4 text-lg font-extrabold"
-        >
-          Destiny
-        </Link>
-        <OwnerNav />
-        <form action={signOut} className="mt-auto">
-          <Button type="submit" variant="ghost" size="sm" className="w-full">
-            Log out
-          </Button>
-        </form>
+    <div className="flex min-h-full w-full bg-[#101010]">
+      <aside className="hidden w-60 shrink-0 sm:flex">
+        <OwnerNav signOutAction={signOut} />
       </aside>
       <div className="min-w-0 flex-1">
-        <div className="border-border-hairline border-b p-3 sm:hidden">
-          <OwnerNav horizontal />
+        <div className="sm:hidden">
+          <OwnerNav horizontal signOutAction={signOut} />
         </div>
-        <div className="p-4 sm:p-6">{children}</div>
+        <main className="bg-surface-muted min-h-full p-4 sm:rounded-tl-[1.75rem] sm:p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );

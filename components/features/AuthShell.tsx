@@ -28,51 +28,71 @@ export function AuthShell({
   description,
   children,
   footer,
+  variant = 'default',
 }: {
   audience: AuthAudience;
   title: string;
-  description: string;
+  description?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  variant?: 'default' | 'portal';
 }) {
   const copy = audienceCopy[audience];
+  const isPortal = variant === 'portal';
 
   return (
     <main
-      className={cn(styles.page, audience === 'student' && styles.inAppShell)}
+      className={cn(
+        styles.page,
+        audience === 'student' && styles.inAppShell,
+        isPortal && styles.portalPage,
+      )}
     >
-      <div className={styles.frame}>
-        <section className={styles.media} aria-label={copy.headline}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={copy.image} alt="" aria-hidden="true" />
-          <div className={styles.mediaShade} aria-hidden="true" />
-          <div className={styles.mediaCopy}>
-            <h2>{copy.headline}</h2>
-            <p>{copy.detail}</p>
-          </div>
-        </section>
+      <div className={cn(styles.frame, isPortal && styles.portalFrame)}>
+        {!isPortal ? (
+          <section className={styles.media} aria-label={copy.headline}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={copy.image} alt="" aria-hidden="true" />
+            <div className={styles.mediaShade} aria-hidden="true" />
+            <div className={styles.mediaCopy}>
+              <h2>{copy.headline}</h2>
+              <p>{copy.detail}</p>
+            </div>
+          </section>
+        ) : null}
 
-        <section className={styles.formPanel} aria-labelledby="auth-title">
-          <div className={styles.panelTop}>
-            {audience === 'owner' ? (
+        <section
+          className={cn(styles.formPanel, isPortal && styles.portalFormPanel)}
+          aria-labelledby="auth-title"
+        >
+          <div
+            className={cn(styles.panelTop, isPortal && styles.portalPanelTop)}
+          >
+            {!isPortal && audience === 'owner' ? (
               <Link href="/" aria-label="Destiny home" className={styles.logo}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/brand/destiny-wordmark.png" alt="Destiny" />
               </Link>
-            ) : (
+            ) : !isPortal ? (
               <span aria-hidden="true" />
-            )}
+            ) : null}
 
-            <Link href="/" className={styles.backLink}>
+            <Link
+              href="/"
+              aria-label="Back to discovery"
+              className={styles.backLink}
+            >
               <BackIcon />
-              Back to discovery
+              {!isPortal ? 'Back to discovery' : null}
             </Link>
           </div>
 
-          <div className={styles.formWrap}>
+          <div
+            className={cn(styles.formWrap, isPortal && styles.portalFormWrap)}
+          >
             <header className={styles.heading}>
               <h1 id="auth-title">{title}</h1>
-              <p>{description}</p>
+              {description ? <p>{description}</p> : null}
             </header>
 
             {children}

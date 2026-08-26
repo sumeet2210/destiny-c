@@ -23,7 +23,7 @@ export default function OwnerLoginPage() {
     <AuthShell
       audience="owner"
       title="Restaurant Portal"
-      description="Join Destiny with a new restaurant profile, or log in to manage an existing listing."
+      variant="portal"
       footer={
         <p>
           Student? <Link href="/login">Use student login</Link>

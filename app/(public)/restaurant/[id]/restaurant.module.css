@@ -1034,6 +1034,29 @@
   text-overflow: ellipsis;
 }
 
+/* Owner-declared facilities. A plain list, so screen readers announce the
+   count — these are facts about the place, not controls. */
+.facilityList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  padding: 0;
+  list-style: none;
+}
+.facilityPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--paper);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
 .offerCard {
   position: relative;
   overflow: hidden;

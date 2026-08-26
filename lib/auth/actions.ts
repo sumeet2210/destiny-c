@@ -6,6 +6,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { isStudentEmail } from '@/config/auth';
+import { normalizeStudentPatch } from '@/lib/domain/student-preferences';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 
 export type AuthResult = { ok: boolean; message?: string };
@@ -145,13 +146,30 @@ export async function ownerSignup(
 
 /**
  * P9-3: activity sharing is opt-in and OFF by default (config/social.ts).
- * Also lets the student set their hostel, shown to friends only.
+ * Also carries the student's hostel (friends only) and taste preferences.
+ *
+ * The patch is rebuilt from an allowlist rather than forwarded, because these
+ * arguments arrive over the network: the parameter type below is a compile-time
+ * convenience, and the "users update own profile" RLS policy only checks that
+ * the row belongs to the caller — not which columns are written. Without
+ * normalizeStudentPatch, `{ role: 'owner' }` would be a valid escalation.
  */
 export async function updateStudentProfile(input: {
+  full_name?: string | null;
+  phone?: string | null;
   hostel?: string | null;
   share_activity?: boolean;
+  food_type?: string | null;
+  favorite_cuisines?: string[];
+  spice_preference?: string | null;
 }): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const normalized = normalizeStudentPatch(input as Record<string, unknown>);
+  if (!normalized.ok) return { ok: false, message: normalized.message };
+  // Nothing recognisable to write. Reported as success because the student's
+  // intent — "leave my profile as it is" — has been honoured.
+  if (Object.keys(normalized.patch).length === 0) return { ok: true };
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -159,9 +177,14 @@ export async function updateStudentProfile(input: {
   if (!user) return { ok: false, message: 'Not logged in.' };
   const { error } = await supabase
     .from('users')
-    .update(input)
+    .update(normalized.patch)
     .eq('id', user.id);
-  if (error) return { ok: false, message: error.message };
+  if (error) {
+    // Same rule as friendlyAuthError: the student cannot act on a Postgres
+    // message, and constraint names are not theirs to read.
+    console.error('[profile]', error.message);
+    return { ok: false, message: 'Could not save that. Try again.' };
+  }
   revalidatePath('/account');
   return { ok: true };
 }

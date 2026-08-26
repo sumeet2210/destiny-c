@@ -13,9 +13,27 @@
 // makes (see lib/queries/catalog.ts).
 import type { BookingStatus } from './booking';
 
-/** The status buckets an owner can filter by, plus the unfiltered default. */
+/**
+ * The status buckets an owner can filter by, plus the unfiltered default.
+ *
+ * "coming" is the only bucket that is not a status: it spans every reservation
+ * still ahead of the owner (requested, confirmed, unconfirmed) so a busy day
+ * can be read in one chip. The single-status buckets stay, because "which
+ * requests still need my decision" and "who did I already accept" are different
+ * questions, and "all" stays the default so completed visits never disappear.
+ */
 export type BookingStatusFilter =
-  'all' | 'requested' | 'confirmed' | 'cancelled';
+  'all' | 'coming' | 'requested' | 'confirmed' | 'cancelled';
+
+/**
+ * Statuses that make up the "coming" bucket: everything the owner may still
+ * host. Completed visits and cancellations are done with, so they are out.
+ */
+const COMING: readonly BookingStatus[] = [
+  'requested',
+  'confirmed',
+  'unconfirmed',
+];
 
 /**
  * A raw search param: absent, a single value, or repeated (?k=a&k=b).
@@ -38,6 +56,7 @@ const firstValue = (raw: RawParam): string | undefined =>
 export function parseStatusFilter(raw: RawParam): BookingStatusFilter {
   const value = firstValue(raw);
   switch (value) {
+    case 'coming':
     case 'requested':
     case 'confirmed':
     case 'cancelled':
@@ -62,8 +81,9 @@ export type FilterableBooking = {
  * Applies the status bucket and the guest-name search, in original order.
  *
  * Plain substring matching, not a regex, so a search term can never be a
- * pattern. Statuses outside the four buckets (unconfirmed, completed) stay
- * reachable under "all".
+ * pattern. Statuses outside the named buckets (unconfirmed, completed) stay
+ * reachable under "all"; "coming" gathers the three statuses still ahead of the
+ * owner, which is the only bucket that matches more than one status.
  */
 export function filterOwnerBookings<T extends FilterableBooking>(
   bookings: readonly T[],
@@ -73,7 +93,11 @@ export function filterOwnerBookings<T extends FilterableBooking>(
   const guest = normalizeGuestQuery(filters.guest);
 
   return bookings.filter((booking) => {
-    if (status !== 'all' && booking.status !== status) return false;
+    if (status === 'coming') {
+      if (!COMING.includes(booking.status)) return false;
+    } else if (status !== 'all' && booking.status !== status) {
+      return false;
+    }
     if (guest === '') return true;
     // A booking with no name on file cannot match a name search.
     return (booking.studentName ?? '').toLowerCase().includes(guest);

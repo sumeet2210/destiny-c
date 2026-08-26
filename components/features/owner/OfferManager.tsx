@@ -14,6 +14,7 @@ type Offer = {
   title: string;
   description: string | null;
   discount_text: string | null;
+  starts_at: string;
   expires_at: string;
   is_active: boolean;
   flagged_count: number;
@@ -25,8 +26,18 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
   const [pending, startTransition] = useTransition();
   const toast = useToast();
 
+  const started = (o: Offer) => new Date(o.starts_at).getTime() <= mountedAt;
   const live = offers.filter(
-    (o) => o.is_active && new Date(o.expires_at).getTime() > mountedAt,
+    (o) =>
+      o.is_active && started(o) && new Date(o.expires_at).getTime() > mountedAt,
+  );
+  // Scheduled for later — active but not yet started, so it must not be
+  // reported as live.
+  const scheduled = offers.filter(
+    (o) =>
+      o.is_active &&
+      !started(o) &&
+      new Date(o.expires_at).getTime() > mountedAt,
   );
   const past = offers.filter(
     (o) => !o.is_active || new Date(o.expires_at).getTime() <= mountedAt,
@@ -81,6 +92,30 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
         </Card>
       ))}
 
+      {scheduled.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-text-muted text-sm">
+            Scheduled to go live later ({scheduled.length})
+          </p>
+          {scheduled.map((o) => (
+            <Card key={o.id} className="py-2 text-[13px]">
+              <span className="text-paper font-medium">{o.title}</span>
+              <span className="text-text-muted">
+                {' '}
+                · starts{' '}
+                {new Date(o.starts_at).toLocaleString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  timeZone: 'Asia/Kolkata',
+                })}
+              </span>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {past.length > 0 && (
         <details className="text-text-muted text-sm">
           <summary className="cursor-pointer">
@@ -113,12 +148,16 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
           onSubmit={(e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
+            const startsLocal = String(fd.get('starts_at') || '');
             const expiresLocal = String(fd.get('expires_at') || '');
             startTransition(async () => {
               const res = await createOffer({
                 title: String(fd.get('title')),
                 description: String(fd.get('description') || ''),
                 discount_text: String(fd.get('discount_text') || ''),
+                starts_at: startsLocal
+                  ? new Date(startsLocal).toISOString()
+                  : null,
                 expires_at: expiresLocal
                   ? new Date(expiresLocal).toISOString()
                   : undefined,
@@ -155,6 +194,15 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
               id="of-desc"
               name="description"
               placeholder="Any conditions — timings, ID needed…"
+            />
+          </div>
+          <div>
+            <Label htmlFor="of-start">Starts (leave empty = right now)</Label>
+            <Input
+              id="of-start"
+              name="starts_at"
+              type="datetime-local"
+              className="font-mono"
             />
           </div>
           <div>

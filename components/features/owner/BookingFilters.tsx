@@ -11,8 +11,11 @@ import {
 
 // Labels mirror the owner-facing wording in OwnerBookingRow, so a chip and the
 // badge on the row it selects never describe the same booking differently.
+// "Still ahead" is the one chip that spans statuses — it is deliberately not
+// called "Coming", which already means the narrower "owner accepted it".
 const options: { value: BookingStatusFilter; label: string }[] = [
   { value: 'all', label: 'All' },
+  { value: 'coming', label: 'Still ahead' },
   { value: 'requested', label: 'Incoming' },
   { value: 'confirmed', label: 'Coming' },
   { value: 'cancelled', label: 'Cancelled' },

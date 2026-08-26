@@ -7,6 +7,7 @@ import { ReviewForm } from '@/components/features/ReviewForm';
 import { ReviewList } from '@/components/features/ReviewList';
 import { SaveToggle } from '@/components/features/SaveToggle';
 import { DestinyPage } from '@/components/ui/DestinyPage';
+import { AMENITIES } from '@/config/restaurant-profile';
 import { VIBES } from '@/config/vibes';
 import { getSessionUser } from '@/lib/auth/session';
 import { canReview } from '@/lib/domain/booking';
@@ -36,6 +37,17 @@ const DETAIL_ARTWORK: Record<string, string> = {
 };
 const PHOTO_LABELS = ['Cover', 'Food', 'Interior', 'Ambience', 'Kitchen'];
 
+/**
+ * Caption each gallery photo with the folder its owner filed it under, falling
+ * back to the old positional labels for photos that were uploaded before
+ * folders existed.
+ */
+function photoLabels(photos: string[], folders: Record<string, string>) {
+  return photos.map(
+    (url, index) => folders[url] ?? PHOTO_LABELS[index] ?? `Photo ${index + 1}`,
+  );
+}
+
 export async function generateMetadata(
   props: PageProps<'/restaurant/[id]'>,
 ): Promise<Metadata> {
@@ -57,7 +69,16 @@ export default async function RestaurantPage(
   ]);
   if (!detail) notFound();
 
-  const { summary, row, menu, menuPhotos, offers, events, reviews } = detail;
+  const {
+    summary,
+    row,
+    menu,
+    menuPhotos,
+    galleryFolders,
+    offers,
+    events,
+    reviews,
+  } = detail;
   const artwork = DETAIL_ARTWORK[row.name];
   const photos = artwork
     ? [artwork, ...summary.photos.filter((photo) => photo !== artwork)]
@@ -79,13 +100,18 @@ export default async function RestaurantPage(
     .toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Kolkata' })
     .toLowerCase() as DayKey;
   const todayHours = hours ? formatDayShifts(hours[todayKey]) : 'Not listed';
+  // Owner-declared cuisines are the best answer when the owner has filled them
+  // in; craving tags and vibes stay as the fallback so a profile that predates
+  // the cuisine field reads exactly as it did before.
   const cuisine =
+    row.cuisines.slice(0, 3).join(' · ') ||
     summary.cravingTags.slice(0, 2).join(' · ') ||
     row.vibe_tags
       .slice(0, 2)
       .map((tag) => VIBES.find((vibe) => vibe.tag === tag)?.label ?? tag)
       .join(' · ') ||
     'Local favourite';
+  const facilities = AMENITIES.filter((amenity) => row[amenity.key]);
   const address = row.address || row.area;
   const reviewableBooking = isStudent
     ? bookings.find(
@@ -117,7 +143,7 @@ export default async function RestaurantPage(
                 <ProfileGalleryButton
                   photos={photos}
                   restaurantName={row.name}
-                  labels={PHOTO_LABELS}
+                  labels={photoLabels(photos, galleryFolders)}
                 />
               ) : null}
               <SaveToggle
@@ -174,6 +200,36 @@ export default async function RestaurantPage(
             </div>
           </div>
         </header>
+
+        {row.restaurant_category || facilities.length ? (
+          <section className={styles.section} aria-labelledby="know-title">
+            <div className={styles.sectionHeader}>
+              <div>
+                <h2 id="know-title">Good to know</h2>
+              </div>
+            </div>
+            {row.restaurant_category ? (
+              <div className={styles.infoGrid}>
+                <div className={styles.infoCard}>
+                  <PinIcon />
+                  <span>
+                    <small>Type of place</small>
+                    <strong>{row.restaurant_category}</strong>
+                  </span>
+                </div>
+              </div>
+            ) : null}
+            {facilities.length ? (
+              <ul className={styles.facilityList}>
+                {facilities.map((amenity) => (
+                  <li key={amenity.key} className={styles.facilityPill}>
+                    {amenity.label}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className={styles.section} aria-labelledby="offers-title">
           <div className={styles.sectionHeader}>

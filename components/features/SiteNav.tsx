@@ -28,10 +28,13 @@ export function SiteHeader({
   const pathname = usePathname();
   const onHome = pathname === '/';
   const onSaved = pathname === '/saved' || pathname.startsWith('/saved/');
+  const onBookingsIndex = pathname === '/bookings';
   const onEvents = pathname === '/events' || pathname.startsWith('/events/');
   const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
   const onBookingPage = /^\/restaurant\/[^/]+\/book\/?$/.test(pathname);
   const onStudentLogin = pathname === '/login';
+  const onStudentAccount = pathname === '/account';
+  const onStudentReviews = pathname === '/reviews';
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -53,10 +56,17 @@ export function SiteHeader({
     };
   }, [menuOpen]);
 
-  if (onEvents || onRestaurantProfile || onBookingPage || onStudentLogin)
+  if (
+    onEvents ||
+    onRestaurantProfile ||
+    onBookingPage ||
+    onStudentLogin ||
+    onStudentAccount ||
+    onStudentReviews
+  )
     return null;
 
-  if (onHome || onSaved) {
+  if (onHome || onSaved || onBookingsIndex) {
     return (
       <>
         <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">

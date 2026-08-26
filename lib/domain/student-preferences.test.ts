@@ -118,10 +118,10 @@ describe('normalizeStudentPatch', () => {
     });
   });
 
-  it('drops unknown cuisines instead of failing the save', () => {
+  it('keeps bounded custom cuisines after configured options', () => {
     expect(
       patchOf({ favorite_cuisines: ['Indian', 'Klingon', 'Biryani'] }),
-    ).toEqual({ favorite_cuisines: ['Indian', 'Biryani'] });
+    ).toEqual({ favorite_cuisines: ['Indian', 'Biryani', 'Klingon'] });
   });
 
   it('does not mutate its input', () => {
@@ -158,11 +158,21 @@ describe('normalizeFavoriteCuisines', () => {
     expect(normalizeFavoriteCuisines(['Indian', 'Indian'])).toEqual(['Indian']);
   });
 
-  it('is case-sensitive, matching the stored vocabulary exactly', () => {
-    expect(normalizeFavoriteCuisines(['indian'])).toEqual([]);
+  it('canonicalizes configured cuisines case-insensitively', () => {
+    expect(normalizeFavoriteCuisines(['indian'])).toEqual(['Indian']);
   });
 
   it('ignores non-string entries', () => {
     expect(normalizeFavoriteCuisines([null, 7, 'Indian'])).toEqual(['Indian']);
+  });
+
+  it('trims, clamps and case-insensitively deduplicates custom cuisines', () => {
+    expect(
+      normalizeFavoriteCuisines([
+        '  Korean   BBQ ',
+        'korean bbq',
+        'x'.repeat(100),
+      ]),
+    ).toEqual(['Korean BBQ', 'x'.repeat(40)]);
   });
 });

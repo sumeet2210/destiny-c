@@ -3,20 +3,24 @@
 import { useState, useTransition } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
+import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import {
   FAVORITE_CUISINES,
   FOOD_TYPES,
   SPICE_PREFERENCES,
-  isFavoriteCuisine,
   isFoodType,
   isSpicePreference,
-  type FavoriteCuisine,
   type FoodType,
   type SpicePreference,
 } from '@/config/food-preferences';
 import { updateStudentProfile } from '@/lib/auth/actions';
 import { cn } from '@/lib/cn';
+import {
+  MAX_CUSTOM_CUISINE_LENGTH,
+  MAX_FAVORITE_CUISINES,
+  normalizeFavoriteCuisines,
+} from '@/lib/domain/student-preferences';
 
 /**
  * The student's taste map: food type, favourite cuisines, spice level.
@@ -29,9 +33,9 @@ import { cn } from '@/lib/cn';
  * from an answer, both because it is honest and because whatever eventually
  * reads these columns must be able to tell "no preference" from "vegetarian".
  *
- * Incoming values are re-checked against config/food-preferences.ts rather than
- * trusted: they are plain text columns behind a CHECK constraint, so a
- * vocabulary that ever shrinks would otherwise leave a dead value selected.
+ * Incoming values are normalized before display. Configured options retain
+ * their stable order, while student-authored cuisines remain available after a
+ * refresh instead of being discarded.
  */
 export function FoodPreferences({
   initialFoodType,
@@ -43,15 +47,16 @@ export function FoodPreferences({
   initialSpicePreference: string | null;
 }) {
   const savedFoodType = isFoodType(initialFoodType) ? initialFoodType : null;
-  const savedCuisines = (initialFavoriteCuisines ?? []).filter(
-    isFavoriteCuisine,
+  const savedCuisines = normalizeFavoriteCuisines(
+    initialFavoriteCuisines ?? [],
   );
   const savedSpice = isSpicePreference(initialSpicePreference)
     ? initialSpicePreference
     : null;
 
   const [foodType, setFoodType] = useState<FoodType | null>(savedFoodType);
-  const [cuisines, setCuisines] = useState<FavoriteCuisine[]>(savedCuisines);
+  const [cuisines, setCuisines] = useState<string[]>(savedCuisines);
+  const [customCuisine, setCustomCuisine] = useState('');
   const [spice, setSpice] = useState<SpicePreference | null>(savedSpice);
   // Start on the editor only when there is nothing to summarise. A student who
   // answered one of the three still gets the summary, with the rest reading
@@ -62,12 +67,19 @@ export function FoodPreferences({
   const [pending, startTransition] = useTransition();
   const toast = useToast();
 
-  const toggleCuisine = (cuisine: FavoriteCuisine) =>
+  const toggleCuisine = (cuisine: string) =>
     setCuisines((current) =>
-      current.includes(cuisine)
-        ? current.filter((item) => item !== cuisine)
-        : [...current, cuisine],
+      current.some((item) => item.toLowerCase() === cuisine.toLowerCase())
+        ? current.filter((item) => item.toLowerCase() !== cuisine.toLowerCase())
+        : normalizeFavoriteCuisines([...current, cuisine]),
     );
+
+  const customCuisines = cuisines.filter(
+    (cuisine) =>
+      !FAVORITE_CUISINES.some(
+        (configured) => configured.toLowerCase() === cuisine.toLowerCase(),
+      ),
+  );
 
   const save = () =>
     startTransition(async () => {
@@ -189,7 +201,47 @@ export function FoodPreferences({
                   {cuisine}
                 </Chip>
               ))}
+              {customCuisines.map((cuisine) => (
+                <Chip
+                  key={cuisine}
+                  active
+                  onClick={() => toggleCuisine(cuisine)}
+                >
+                  {cuisine}
+                </Chip>
+              ))}
             </div>
+            <form
+              className="mt-3 flex items-center gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const next = normalizeFavoriteCuisines([
+                  ...cuisines,
+                  customCuisine,
+                ]);
+                if (next.length > cuisines.length) setCuisines(next);
+                setCustomCuisine('');
+              }}
+            >
+              <Input
+                aria-label="Custom favourite cuisine"
+                value={customCuisine}
+                maxLength={MAX_CUSTOM_CUISINE_LENGTH}
+                disabled={cuisines.length >= MAX_FAVORITE_CUISINES}
+                placeholder="Add your own cuisine"
+                onChange={(event) => setCustomCuisine(event.target.value)}
+              />
+              <button
+                type="submit"
+                disabled={
+                  !customCuisine.trim() ||
+                  cuisines.length >= MAX_FAVORITE_CUISINES
+                }
+                className="rounded-control border-border-hairline bg-surface-raised text-paper hover:border-accent-primary inline-flex min-h-10 shrink-0 items-center border px-3 text-[12px] font-extrabold disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                + Add
+              </button>
+            </form>
           </fieldset>
 
           <fieldset className="space-y-2">

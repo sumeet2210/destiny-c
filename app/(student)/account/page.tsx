@@ -1,7 +1,5 @@
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { FoodPreferences } from '@/components/features/FoodPreferences';
-import { SharingToggle } from '@/components/features/SharingToggle';
 import { requireStudent } from '@/lib/auth/session';
 import { signOut } from '@/lib/auth/actions';
 import Link from 'next/link';
@@ -13,13 +11,23 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto max-w-md space-y-5 px-4 py-6">
-      <div>
-        <p className="text-accent-primary text-xs font-extrabold tracking-[0.14em] uppercase">
-          Student profile
-        </p>
-        <h1 className="font-display text-paper mt-1 text-2xl font-extrabold">
-          Your Destiny
-        </h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-accent-primary text-xs font-extrabold tracking-[0.14em] uppercase">
+            Student profile
+          </p>
+          <h1 className="font-display text-paper mt-1 text-2xl font-extrabold">
+            Your profile
+          </h1>
+        </div>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="rounded-control inline-flex min-h-8 items-center justify-center bg-[#3a3a3a] px-3 py-1.5 text-[12px] font-bold whitespace-nowrap text-[#d0d0d0] transition-colors hover:bg-[#505050] hover:text-white"
+          >
+            Log out
+          </button>
+        </form>
       </div>
 
       <Card className="space-y-3">
@@ -45,17 +53,6 @@ export default async function AccountPage() {
         initialFavoriteCuisines={user.favorite_cuisines}
         initialSpicePreference={user.spice_preference}
       />
-
-      <SharingToggle
-        initialValue={user.share_activity}
-        initialHostel={user.hostel}
-      />
-
-      <form action={signOut}>
-        <Button type="submit" variant="outline" className="w-full">
-          Log out
-        </Button>
-      </form>
     </main>
   );
 }

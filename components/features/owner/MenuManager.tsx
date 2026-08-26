@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -40,6 +41,7 @@ export function MenuManager({
   items: Item[];
   sections: string[];
 }) {
+  const router = useRouter();
   const availableSections = sections.length > 0 ? sections : ['Menu'];
   const [editing, setEditing] = useState<Item | null>(null);
   const [beforeEdit, setBeforeEdit] = useState<Item | null>(null);
@@ -65,7 +67,10 @@ export function MenuManager({
         res.ok ? 'Menu saved' : (res.message ?? 'Could not save'),
         res.ok ? 'positive' : 'error',
       );
-      if (res.ok) closeEditor();
+      if (res.ok) {
+        closeEditor();
+        router.refresh();
+      }
     });
   };
 
@@ -102,6 +107,7 @@ export function MenuManager({
                 if (res.ok) {
                   setSectionName('');
                   setAddingSection(false);
+                  router.refresh();
                 }
               });
             }}
@@ -179,10 +185,16 @@ export function MenuManager({
                           size="sm"
                           onClick={() =>
                             startTransition(async () => {
-                              await upsertMenuItem({
+                              const res = await upsertMenuItem({
                                 ...item,
                                 is_available: !item.is_available,
                               });
+                              if (res.ok) router.refresh();
+                              else
+                                toast(
+                                  res.message ?? 'Could not update item',
+                                  'error',
+                                );
                             })
                           }
                         >
@@ -204,7 +216,8 @@ export function MenuManager({
                           onClick={() =>
                             startTransition(async () => {
                               const res = await deleteMenuItem(item.id!);
-                              if (!res.ok)
+                              if (res.ok) router.refresh();
+                              else
                                 toast(
                                   res.message ?? 'Could not delete',
                                   'error',

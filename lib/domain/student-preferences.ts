@@ -134,12 +134,35 @@ export function normalizeProfileText(
 }
 
 /**
- * Keeps only known cuisines, deduplicated, in config order.
+ * Keeps configured cuisines in config order, then bounded custom cuisines.
  *
- * Config order rather than the order the student clicked, so two students with
- * the same tastes produce the same array and the value is stable across saves.
+ * Matching is case-insensitive and every value is deduplicated. This keeps the
+ * stored array stable without discarding a cuisine a student typed themselves.
  */
+export const MAX_FAVORITE_CUISINES = 20;
+export const MAX_CUSTOM_CUISINE_LENGTH = 40;
+
 export function normalizeFavoriteCuisines(raw: readonly unknown[]): string[] {
-  const chosen = new Set(raw);
-  return FAVORITE_CUISINES.filter((cuisine) => chosen.has(cuisine));
+  const configuredByName = new Map(
+    FAVORITE_CUISINES.map((cuisine) => [cuisine.toLowerCase(), cuisine]),
+  );
+  const configured = new Set<string>();
+  const custom: string[] = [];
+  const seen = new Set<string>();
+
+  for (const value of raw) {
+    const clean = normalizeProfileText(value, MAX_CUSTOM_CUISINE_LENGTH);
+    if (!clean) continue;
+    const key = clean.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const canonical = configuredByName.get(key);
+    if (canonical) configured.add(canonical);
+    else custom.push(clean);
+  }
+
+  return [
+    ...FAVORITE_CUISINES.filter((cuisine) => configured.has(cuisine)),
+    ...custom,
+  ].slice(0, MAX_FAVORITE_CUISINES);
 }

@@ -203,8 +203,8 @@ export default async function SavedPage() {
 function SavedBackLink({ className = '' }: { className?: string }) {
   return (
     <Link
-      href="/"
-      aria-label="Back to home"
+      href="/account"
+      aria-label="Back to profile"
       className={`border-border-hairline bg-surface-muted text-paper hover:bg-surface-raised grid size-10 shrink-0 place-items-center rounded-full border transition-colors ${className}`}
     >
       <svg

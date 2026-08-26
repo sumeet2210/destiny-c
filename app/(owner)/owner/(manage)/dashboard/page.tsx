@@ -128,14 +128,9 @@ export default async function OwnerDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <QuickLink
-          href="/owner/offers"
-          title="Post a live offer"
-          body="Today's special, a student discount, whatever gets them in the door. Expires end-of-day unless you say otherwise."
-        />
-        <QuickLink
-          href="/owner/events"
-          title="Post an event"
-          body="Live music, quiz night, a screening — events reach the whole campus feed."
+          href="/owner/offers-events"
+          title="Post an offer or event"
+          body="Today's special, a student discount, live music, a quiz night. Offers expire end-of-day unless you say otherwise; events reach the whole campus feed."
         />
         <QuickLink
           href="/owner/menu"

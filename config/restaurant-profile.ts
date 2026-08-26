@@ -42,12 +42,12 @@ export function isCuisine(value: string): value is Cuisine {
 /** Amenity toggles, in the order the profile form and public page show them. */
 export const AMENITIES = [
   { key: 'delivery', label: 'Delivery' },
-  { key: 'outdoor_seating', label: 'Outdoor seating' },
+  { key: 'outdoor_seating', label: 'Outdoor Seating' },
   { key: 'parking', label: 'Parking' },
   { key: 'wifi', label: 'Wi-Fi' },
-  { key: 'upi_card', label: 'UPI / card accepted' },
-  { key: 'wheelchair_accessible', label: 'Wheelchair accessible' },
-  { key: 'family_friendly', label: 'Family friendly' },
+  { key: 'upi_card', label: 'UPI/Card' },
+  { key: 'wheelchair_accessible', label: 'Wheelchair Accessible' },
+  { key: 'family_friendly', label: 'Family Friendly' },
 ] as const;
 
 export type AmenityKey = (typeof AMENITIES)[number]['key'];

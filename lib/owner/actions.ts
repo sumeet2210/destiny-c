@@ -60,6 +60,7 @@ const revalidateOwnerAnd = (path: string) => {
  */
 function normalizeProfilePatch(
   patch: Record<string, unknown>,
+  { requirePhone = false }: { requirePhone?: boolean } = {},
 ): string | undefined {
   const lengths: Record<string, number> = {
     name: 120,
@@ -90,6 +91,7 @@ function normalizeProfilePatch(
       if (!phone) return PHONE_HELP;
       patch.phone = phone;
     } else if (raw === '' || raw === null) {
+      if (requirePhone) return PHONE_HELP;
       patch.phone = null;
     }
   }
@@ -155,7 +157,9 @@ export async function updateRestaurant(
   delete patch.status;
   delete patch.owner_id;
   delete patch.id;
-  const invalid = normalizeProfilePatch(patch as Record<string, unknown>);
+  const invalid = normalizeProfilePatch(patch as Record<string, unknown>, {
+    requirePhone: 'phone' in patch,
+  });
   if (invalid) return { ok: false, message: invalid };
   const supabase = await createClient();
   const { error } = await supabase

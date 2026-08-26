@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { cn } from '@/lib/cn';
 
 const field =
@@ -10,14 +11,18 @@ export function Input({
   return <input className={cn(field, className)} {...rest} />;
 }
 
-export function Textarea({
-  className,
-  ...rest
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export const Textarea = forwardRef<
+  HTMLTextAreaElement,
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>
+>(function Textarea({ className, ...rest }, ref) {
   return (
-    <textarea className={cn(field, 'min-h-24 resize-y', className)} {...rest} />
+    <textarea
+      ref={ref}
+      className={cn(field, 'min-h-24 resize-y', className)}
+      {...rest}
+    />
   );
-}
+});
 
 export function Select({
   className,

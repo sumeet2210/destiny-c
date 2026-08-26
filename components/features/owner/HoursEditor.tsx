@@ -30,16 +30,9 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
   return (
     <Card className="space-y-4">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-paper text-lg font-bold">
-            Opening hours
-          </h2>
-          <p className="text-text-muted mt-1 text-[13px]">
-            Split shifts are fine (lunch close, dinner reopen). A close time
-            earlier than the open time means you run past midnight. No shifts =
-            closed that day.
-          </p>
-        </div>
+        <h2 className="font-display text-paper text-lg font-bold">
+          Opening hours
+        </h2>
         {editing ? (
           <Button
             type="button"

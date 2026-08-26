@@ -1,13 +1,15 @@
 // PRD §5.3. Why you're going — orthogonal to cravings. Decide before P3-8.
-// The full PRD list is eight vibes; SETUP.md's six-item placeholder was stale.
+// Keep the stored `study` tag for existing discovery matches while showing the
+// broader "Work" label requested by the profile UI.
 export const VIBES = [
   { tag: 'chill', label: 'Chill' },
-  { tag: 'study', label: 'Study' },
-  { tag: 'group', label: 'Group hangout' },
+  { tag: 'group', label: 'Group Hangout' },
   { tag: 'date', label: 'Date' },
-  { tag: 'latenight', label: 'Late night' },
-  { tag: 'quick', label: 'Quick bite' },
-  { tag: 'comfort', label: 'Comfort food' },
+  { tag: 'latenight', label: 'Late Night' },
+  { tag: 'quick', label: 'Quick Bite' },
+  { tag: 'comfort', label: 'Comfort Food' },
   { tag: 'celebration', label: 'Celebration' },
+  { tag: 'study', label: 'Work' },
+  { tag: 'family', label: 'Family' },
 ] as const;
 export type VibeTag = (typeof VIBES)[number]['tag'];

@@ -318,17 +318,9 @@
   line-height: 1.15;
 }
 
-.ownerOptionDetail {
-  grid-column: 1;
-  max-width: 32ch;
-  font-size: 0.77rem;
-  font-weight: 600;
-  line-height: 1.45;
-}
-
 .ownerOptionArrow {
   display: grid;
-  grid-row: 1 / span 3;
+  grid-row: 1 / span 2;
   grid-column: 2;
   width: 2.6rem;
   height: 2.6rem;
@@ -433,6 +425,10 @@
 }
 
 .portalPage .ownerLoginBox .primaryButton {
+  width: auto;
+  min-width: 8rem;
+  justify-self: start;
+  justify-content: center;
   border-color: #d0d0d0;
   background: #d0d0d0;
   color: #101010;

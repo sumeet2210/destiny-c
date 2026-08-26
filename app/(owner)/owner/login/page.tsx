@@ -27,9 +27,6 @@ export default function OwnerLoginPage() {
           aria-labelledby="owner-login-title"
         >
           <header className={styles.ownerLoginHeading}>
-            <span className={styles.ownerOptionEyebrow}>
-              Already on Destiny
-            </span>
             <h2 id="owner-login-title">Log in to your account</h2>
           </header>
 
@@ -96,9 +93,6 @@ export default function OwnerLoginPage() {
         <Link href="/owner/signup" className={styles.ownerJoinCard}>
           <span className={styles.ownerOptionEyebrow}>New to Destiny</span>
           <strong>List your restaurant</strong>
-          <span className={styles.ownerOptionDetail}>
-            Create a restaurant profile and join Destiny.
-          </span>
           <span className={styles.ownerOptionArrow} aria-hidden="true">
             <SubmitArrow />
           </span>

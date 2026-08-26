@@ -22,74 +22,97 @@ export default function OwnerLoginPage() {
   return (
     <AuthShell
       audience="owner"
-      title="Welcome back."
-      description="Log in to manage your restaurant profile, menu, offers, events, and bookings."
+      title="Restaurant Portal"
+      description="Join Destiny with a new restaurant profile, or log in to manage an existing listing."
       footer={
         <p>
-          New here? <Link href="/owner/signup">List your restaurant</Link>
-          <br />
           Student? <Link href="/login">Use student login</Link>
         </p>
       }
     >
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          startTransition(async () => {
-            setError(null);
-            const res = await ownerLogin(email.trim(), password);
-            if (!res.ok) setError(res.message ?? 'Login failed.');
-            else router.push('/owner/dashboard');
-          });
-        }}
-        className={styles.form}
-      >
-        <div className={styles.fieldGroup}>
-          <Label htmlFor="email" className={styles.label}>
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            autoFocus
-            className={styles.field}
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </div>
+      <div className={styles.ownerOptions}>
+        <Link href="/owner/signup" className={styles.ownerJoinCard}>
+          <span className={styles.ownerOptionEyebrow}>New to Destiny</span>
+          <strong>List your restaurant</strong>
+          <span className={styles.ownerOptionDetail}>
+            Create a restaurant profile and join Destiny.
+          </span>
+          <span className={styles.ownerOptionArrow} aria-hidden="true">
+            <SubmitArrow />
+          </span>
+        </Link>
 
-        <div className={styles.fieldGroup}>
-          <Label htmlFor="password" className={styles.label}>
-            Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            className={styles.field}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </div>
-
-        {error ? (
-          <p role="alert" className={styles.error}>
-            {error}
-          </p>
-        ) : null}
-
-        <Button
-          type="submit"
-          className={styles.primaryButton}
-          disabled={pending}
+        <section
+          className={styles.ownerLoginBox}
+          aria-labelledby="owner-login-title"
         >
-          {pending ? 'Logging in...' : 'Log in'}
-          {!pending ? <SubmitArrow /> : null}
-        </Button>
-      </form>
+          <header className={styles.ownerLoginHeading}>
+            <span className={styles.ownerOptionEyebrow}>
+              Already on Destiny
+            </span>
+            <h2 id="owner-login-title">Log in to your account</h2>
+          </header>
+
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              startTransition(async () => {
+                setError(null);
+                const res = await ownerLogin(email.trim(), password);
+                if (!res.ok) setError(res.message ?? 'Login failed.');
+                else router.replace('/owner/dashboard');
+              });
+            }}
+            className={styles.form}
+          >
+            <div className={styles.fieldGroup}>
+              <Label htmlFor="email" className={styles.label}>
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                autoFocus
+                className={styles.field}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <Label htmlFor="password" className={styles.label}>
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className={styles.field}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </div>
+
+            {error ? (
+              <p role="alert" className={styles.error}>
+                {error}
+              </p>
+            ) : null}
+
+            <Button
+              type="submit"
+              className={styles.primaryButton}
+              disabled={pending}
+            >
+              {pending ? 'Logging in...' : 'Log in'}
+              {!pending ? <SubmitArrow /> : null}
+            </Button>
+          </form>
+        </section>
+      </div>
     </AuthShell>
   );
 }

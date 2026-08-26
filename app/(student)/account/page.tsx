@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { FoodPreferences } from '@/components/features/FoodPreferences';
 import { SharingToggle } from '@/components/features/SharingToggle';
 import { requireStudent } from '@/lib/auth/session';
 import { signOut } from '@/lib/auth/actions';
@@ -30,13 +31,20 @@ export default async function AccountPage() {
         )}
       </Card>
 
-      <Link
-        href="/bookings"
-        className="rounded-card border-border-hairline bg-surface-muted text-paper flex min-h-16 items-center justify-between border px-4 text-sm font-extrabold no-underline transition-colors hover:border-[#1DB954]"
-      >
-        <span>My bookings</span>
-        <span aria-hidden>→</span>
-      </Link>
+      {/* The three places a student's own history lives. Saved and bookings
+          already existed; reviews had no route in from anywhere, which is why a
+          student could write one and never see it again. */}
+      <nav aria-label="Your activity" className="space-y-3">
+        <ProfileShortcut href="/saved" label="Saved places" />
+        <ProfileShortcut href="/bookings" label="My bookings" />
+        <ProfileShortcut href="/reviews" label="My reviews" />
+      </nav>
+
+      <FoodPreferences
+        initialFoodType={user.food_type}
+        initialFavoriteCuisines={user.favorite_cuisines}
+        initialSpicePreference={user.spice_preference}
+      />
 
       <SharingToggle
         initialValue={user.share_activity}
@@ -60,5 +68,17 @@ function ProfileDetail({ label, value }: { label: string; value: string }) {
       </span>
       <p className="text-paper mt-1 text-sm font-medium">{value}</p>
     </div>
+  );
+}
+
+function ProfileShortcut({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-card border-border-hairline bg-surface-muted text-paper hover:border-accent-primary flex min-h-16 items-center justify-between border px-4 text-sm font-extrabold no-underline transition-colors"
+    >
+      <span>{label}</span>
+      <span aria-hidden>→</span>
+    </Link>
   );
 }

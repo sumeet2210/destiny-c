@@ -38,6 +38,9 @@ users
   nitw_verified     boolean
   no_show_count     int default 0
   share_activity    boolean default false   -- [v2] opt-in, gates the social layer
+  food_type         text            -- [v2] CHECK'd against config/food-preferences
+  favorite_cuisines text[] not null default '{}'   -- [v2] free vocabulary, no CHECK
+  spice_preference  text            -- [v2] CHECK'd: low | medium | high
   created_at        timestamptz
 
 restaurants
@@ -231,6 +234,13 @@ manually in the Supabase table editor during testing.
 **Public unauthenticated read:** `restaurants`, `menu_items`, `offers`, `restaurant_photos`,
 `events` — browsing must not require login.
 
+**RLS guards rows, not columns.** `users update own profile` is `using (id = auth.uid())`,
+which says nothing about _which_ columns a student may write — and a server action's parameter
+types are erased at runtime. So every student self-write goes through the allowlist in
+`lib/domain/student-preferences.ts`, which is the only thing standing between a crafted action
+payload and `role = 'owner'` or `nitw_verified = true` on the caller's own row. Any new
+student-writable column belongs on that list; nothing else may be forwarded to `.update()`.
+
 **The two policies most likely to be wrong**, so test them explicitly with three accounts
 (a friend, a non-friend, and a friend with sharing off):
 
@@ -317,18 +327,22 @@ Copy rule, unchanged and important: this is profile views, not footfall. The UI 
     /quiz/page.tsx                [v2]
   /(student)
     /login/page.tsx
+    /account/page.tsx             profile, taste map, sharing
     /bookings/page.tsx
+    /reviews/page.tsx             what this student has written
     /saved/page.tsx               [v2]
     /friends/page.tsx             [v2]
   /(owner)
     /owner/login/page.tsx
     /owner/dashboard/page.tsx
     /owner/menu/page.tsx
-    /owner/offers/page.tsx
-    /owner/events/page.tsx        [v2]
+    /owner/offers-events/page.tsx offers + events, one page
+    /owner/offers/page.tsx        → redirects to offers-events
+    /owner/events/page.tsx        → redirects to offers-events   [v2]
     /owner/photos/page.tsx        [v2]
     /owner/bookings/page.tsx
-    /owner/analytics/page.tsx
+    /owner/analytics/page.tsx     views + reviews, one page
+    /owner/reviews/page.tsx       → redirects to analytics
   /api
     /bookings/route.ts
     /offers/route.ts

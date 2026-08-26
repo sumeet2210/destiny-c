@@ -45,31 +45,6 @@ const rid = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
 const oid = (n: number) => `00000000-0000-4000-8001-00000000000${n}`;
 export const SEED_OWNER_IDS = [1, 2, 3, 4, 5, 6].map(oid);
 
-const profileDetails = {
-  owner_name: null,
-  restaurant_category: null,
-  cuisines: [],
-  delivery: false,
-  outdoor_seating: false,
-  parking: false,
-  wifi: false,
-  upi_card: false,
-  wheelchair_accessible: false,
-  family_friendly: false,
-} satisfies Pick<
-  SeedRestaurant,
-  | 'owner_name'
-  | 'restaurant_category'
-  | 'cuisines'
-  | 'delivery'
-  | 'outdoor_seating'
-  | 'parking'
-  | 'wifi'
-  | 'upi_card'
-  | 'wheelchair_accessible'
-  | 'family_friendly'
->;
-
 // Deterministic ids for children so fallback-mode links are stable.
 let miCounter = 0;
 const mid = () =>
@@ -77,7 +52,6 @@ const mid = () =>
 
 export const seedRestaurants: SeedRestaurant[] = [
   {
-    ...profileDetails,
     id: rid(1),
     owner_id: oid(1),
     name: 'Biryani Adda',
@@ -105,11 +79,10 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '12:00', close: '23:00' }],
     },
     cover_image_url: '/seed/biryani-adda.svg',
-    status: 'live',
+    status: 'active',
     created_at: daysAgo(90),
   },
   {
-    ...profileDetails,
     id: rid(2),
     owner_id: oid(2),
     name: 'Momo Nation',
@@ -137,11 +110,10 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '12:00', close: '22:00' }],
     },
     cover_image_url: '/seed/momo-nation.svg',
-    status: 'live',
+    status: 'active',
     created_at: daysAgo(75),
   },
   {
-    ...profileDetails,
     id: rid(3),
     owner_id: oid(3),
     name: 'Chai Theory',
@@ -169,11 +141,10 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '09:00', close: '00:30' }],
     },
     cover_image_url: '/seed/chai-theory.svg',
-    status: 'live',
+    status: 'active',
     created_at: daysAgo(120),
   },
   {
-    ...profileDetails,
     id: rid(4),
     owner_id: oid(4),
     name: 'Southern Spice Tiffins',
@@ -216,11 +187,10 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '07:00', close: '14:00' }],
     },
     cover_image_url: '/seed/southern-spice.svg',
-    status: 'live',
+    status: 'active',
     created_at: daysAgo(60),
   },
   {
-    ...profileDetails,
     id: rid(5),
     owner_id: oid(5),
     name: 'Scoops & Stories',
@@ -248,11 +218,10 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '12:00', close: '23:30' }],
     },
     cover_image_url: '/seed/scoops-stories.svg',
-    status: 'live',
+    status: 'active',
     created_at: daysAgo(45),
   },
   {
-    ...profileDetails,
     id: rid(6),
     owner_id: oid(6),
     name: 'Hunter Road Grill',
@@ -280,7 +249,7 @@ export const seedRestaurants: SeedRestaurant[] = [
       sun: [{ open: '13:00', close: '23:30' }],
     },
     cover_image_url: '/seed/hunter-grill.svg',
-    status: 'live',
+    status: 'active',
     created_at: daysAgo(30),
   },
 ];
@@ -473,7 +442,6 @@ const photos = (
     restaurant_id: restaurantId,
     url,
     kind,
-    gallery_category: kind === 'gallery' ? 'Gallery' : null,
     sort_order: i,
     created_at: daysAgo(20),
   }));

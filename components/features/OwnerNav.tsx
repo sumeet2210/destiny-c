@@ -5,11 +5,14 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
 
 const items = [
-  { href: '/owner/profile', label: 'Profile' },
+  { href: '/owner/dashboard', label: 'Overview' },
+  { href: '/owner/profile', label: 'Profile & hours' },
   { href: '/owner/menu', label: 'Menu' },
-  { href: '/owner/offers-events', label: 'Offers & Events' },
+  { href: '/owner/offers', label: 'Offers' },
+  { href: '/owner/events', label: 'Events' },
   { href: '/owner/photos', label: 'Photos' },
   { href: '/owner/bookings', label: 'Bookings' },
+  { href: '/owner/reviews', label: 'Reviews' },
   { href: '/owner/analytics', label: 'Analytics' },
 ] as const;
 
@@ -17,11 +20,10 @@ export function OwnerNav({ horizontal = false }: { horizontal?: boolean }) {
   const pathname = usePathname();
   return (
     <nav
-      aria-label="Owner tools"
       className={cn(
         horizontal
-          ? 'no-scrollbar flex gap-1.5 overflow-x-auto'
-          : 'flex flex-col gap-2',
+          ? 'no-scrollbar flex gap-1 overflow-x-auto'
+          : 'flex flex-col gap-1',
       )}
     >
       {items.map((item) => (
@@ -29,20 +31,13 @@ export function OwnerNav({ horizontal = false }: { horizontal?: boolean }) {
           key={item.href}
           href={item.href}
           className={cn(
-            'rounded-control relative shrink-0 transition-all',
-            horizontal ? 'px-4 py-2.5 text-[15px] font-semibold' : 'px-4 py-3',
+            'rounded-control shrink-0 px-3 py-2 text-sm',
             pathname.startsWith(item.href)
-              ? horizontal
-                ? 'from-accent-primary/15 to-surface-raised text-accent-primary bg-gradient-to-b shadow-sm'
-                : 'from-accent-primary/10 via-canvas to-canvas text-accent-primary -mr-4 rounded-r-none bg-gradient-to-r pr-8 shadow-[0_12px_30px_rgba(0,0,0,0.12)]'
-              : horizontal
-                ? 'text-text-muted hover:text-paper'
-                : 'text-text-muted hover:text-paper hover:translate-x-1',
+              ? 'bg-surface-raised text-paper'
+              : 'text-text-muted hover:text-paper',
           )}
         >
-          <span className={cn('block', !horizontal && 'text-lg font-semibold')}>
-            {item.label}
-          </span>
+          {item.label}
         </Link>
       ))}
     </nav>

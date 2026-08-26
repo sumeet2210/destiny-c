@@ -26,7 +26,7 @@ export default function OwnerLoginPage() {
       description="Log in to manage your restaurant profile, menu, offers, events, and bookings."
       footer={
         <p>
-          New here? <Link href="/owner/apply">List your restaurant</Link>
+          New here? <Link href="/owner/signup">List your restaurant</Link>
           <br />
           Student? <Link href="/login">Use student login</Link>
         </p>

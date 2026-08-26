@@ -36,90 +36,6 @@
   padding-bottom: 4rem;
 }
 
-.student,
-.student .frame {
-  background: #101010;
-  color: #ededed;
-  color-scheme: dark;
-}
-
-.student .frame {
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
-}
-
-.student .formPanel {
-  background: #181818;
-}
-
-.student .panelTop {
-  justify-content: flex-start;
-}
-
-.student .backLink {
-  padding-inline: 0;
-}
-
-.student .formWrap {
-  margin: 0 auto;
-  padding-block: clamp(1rem, 3vh, 2.5rem) 2rem;
-}
-
-.student .backLink,
-.student .heading h1,
-.page.student .label,
-.student .stepDetail strong,
-.student .footer a {
-  color: #ededed;
-}
-
-.student .heading p,
-.student .fieldHint,
-.student .stepDetail,
-.page.student .secondaryButton,
-.student .textButton,
-.student .footer {
-  color: #8a8a8a;
-}
-
-.page.student .field {
-  border-color: #505050;
-  background: #202020;
-  color: #ededed;
-}
-
-.page.student .field:hover,
-.page.student .field:focus {
-  border-color: #1db954;
-}
-
-.student .notice {
-  background: #202020;
-}
-
-.student .error {
-  border: 1px solid #505050;
-  background: #202020;
-  color: #ededed;
-}
-
-.page.student .primaryButton:hover:not(:disabled) {
-  border-color: #1db954;
-  background: #101010;
-  color: #1db954;
-}
-
-.page.student .secondaryButton:hover,
-.student .textButton:hover,
-.student .footer a:hover,
-.student .backLink:hover {
-  color: #1db954;
-}
-
-.student .footer {
-  border-color: #505050;
-}
-
 .page ::selection {
   background: #1db954;
   color: #2b2b2b;
@@ -379,15 +295,6 @@
   background: #2b2b2b;
   color: #ededed;
   filter: none;
-}
-
-.page .compactButton {
-  width: fit-content;
-  min-height: 2.75rem;
-  justify-self: start;
-  justify-content: center;
-  gap: 0.55rem;
-  padding-inline: 1rem;
 }
 
 .page .secondaryButton,

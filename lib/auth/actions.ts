@@ -6,14 +6,6 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { isStudentEmail } from '@/config/auth';
-import {
-  isFavoriteCuisine,
-  isFoodType,
-  isSpicePreference,
-  type FavoriteCuisine,
-  type FoodType,
-  type SpicePreference,
-} from '@/config/food-preferences';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 
 export type AuthResult = { ok: boolean; message?: string };
@@ -72,38 +64,8 @@ function friendlyAuthError(error: { message: string; code?: string }): string {
   return 'Something went wrong on our side. Try again in a moment.';
 }
 
-function studentProfileDetails(fullName: string, phone: string) {
-  const normalizedName = fullName.trim();
-  const compactPhone = phone.replace(/[\s()-]/g, '');
-  const digits = compactPhone.startsWith('+91')
-    ? compactPhone.slice(3)
-    : compactPhone;
-
-  if (normalizedName.length < 2 || normalizedName.length > 120) {
-    return { ok: false as const, message: 'Enter your full name.' };
-  }
-  if (!/^\d{10}$/.test(digits)) {
-    return {
-      ok: false as const,
-      message: 'Enter a valid 10-digit Indian phone number.',
-    };
-  }
-
-  return {
-    ok: true as const,
-    fullName: normalizedName,
-    phone: `+91${digits}`,
-  };
-}
-
-export async function requestStudentOtp(
-  email: string,
-  fullName: string,
-  phone: string,
-): Promise<AuthResult> {
+export async function requestStudentOtp(email: string): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
-  const profile = studentProfileDetails(fullName, phone);
-  if (!profile.ok) return profile;
   if (!isStudentEmail(email)) {
     return {
       ok: false,
@@ -114,14 +76,7 @@ export async function requestStudentOtp(
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: {
-      shouldCreateUser: true,
-      data: {
-        role: 'student',
-        full_name: profile.fullName,
-        phone: profile.phone,
-      },
-    },
+    options: { shouldCreateUser: true, data: { role: 'student' } },
   });
   if (error) return { ok: false, message: friendlyAuthError(error) };
   return { ok: true };
@@ -130,12 +85,8 @@ export async function requestStudentOtp(
 export async function verifyStudentOtp(
   email: string,
   token: string,
-  fullName: string,
-  phone: string,
 ): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
-  const profile = studentProfileDetails(fullName, phone);
-  if (!profile.ok) return profile;
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({
     email,
@@ -148,21 +99,10 @@ export async function verifyStudentOtp(
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    const { error: profileError } = await supabase
+    await supabase
       .from('users')
-      .update({
-        nitw_verified: true,
-        full_name: profile.fullName,
-        phone: profile.phone,
-      })
+      .update({ nitw_verified: true })
       .eq('id', user.id);
-    if (profileError) {
-      console.error('[auth] student profile update', profileError.message);
-      return {
-        ok: false,
-        message: 'Your email is verified, but we could not save your profile.',
-      };
-    }
   }
   revalidatePath('/', 'layout');
   return { ok: true };
@@ -180,12 +120,27 @@ export async function ownerLogin(
   return { ok: true };
 }
 
-export async function ownerSignup(): Promise<AuthResult> {
-  return {
-    ok: false,
-    message:
-      'Restaurant accounts can only be created from an approved application.',
-  };
+export async function ownerSignup(
+  email: string,
+  password: string,
+  fullName: string,
+): Promise<AuthResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { role: 'owner', full_name: fullName } },
+  });
+  if (error) return { ok: false, message: friendlyAuthError(error) };
+  if (!data.session) {
+    return {
+      ok: true,
+      message: 'Check your email to confirm the account, then log in.',
+    };
+  }
+  revalidatePath('/', 'layout');
+  return { ok: true };
 }
 
 /**
@@ -207,50 +162,6 @@ export async function updateStudentProfile(input: {
     .update(input)
     .eq('id', user.id);
   if (error) return { ok: false, message: error.message };
-  revalidatePath('/account');
-  return { ok: true };
-}
-
-export async function updateStudentFoodPreferences(input: {
-  foodType: FoodType | null;
-  favoriteCuisines: FavoriteCuisine[];
-  spicePreference: SpicePreference | null;
-}): Promise<AuthResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
-  if (!input.foodType || !isFoodType(input.foodType)) {
-    return { ok: false, message: 'Choose your food type.' };
-  }
-  if (!input.spicePreference || !isSpicePreference(input.spicePreference)) {
-    return { ok: false, message: 'Choose your spice preference.' };
-  }
-
-  const favoriteCuisines = [...new Set(input.favoriteCuisines)];
-  if (
-    favoriteCuisines.length === 0 ||
-    favoriteCuisines.some((cuisine) => !isFavoriteCuisine(cuisine))
-  ) {
-    return { ok: false, message: 'Choose at least one favorite cuisine.' };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, message: 'Not logged in.' };
-
-  const { error } = await supabase
-    .from('users')
-    .update({
-      food_type: input.foodType,
-      favorite_cuisines: favoriteCuisines,
-      spice_preference: input.spicePreference,
-    })
-    .eq('id', user.id);
-  if (error) {
-    console.error('[profile] food preferences', error.message);
-    return { ok: false, message: 'Could not save your food preferences.' };
-  }
-
   revalidatePath('/account');
   return { ok: true };
 }

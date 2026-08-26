@@ -7,21 +7,44 @@ import {
 } from './booking-filters';
 
 describe('parseStatusFilter', () => {
-  it('accepts cancelled', () => {
+  it('accepts the three real buckets', () => {
+    expect(parseStatusFilter('requested')).toBe('requested');
+    expect(parseStatusFilter('confirmed')).toBe('confirmed');
     expect(parseStatusFilter('cancelled')).toBe('cancelled');
   });
 
-  it('uses coming as the default and for stale values', () => {
-    expect(parseStatusFilter(undefined)).toBe('coming');
-    expect(parseStatusFilter('')).toBe('coming');
-    expect(parseStatusFilter('requested')).toBe('coming');
-    expect(parseStatusFilter('confirmed')).toBe('coming');
-    expect(parseStatusFilter('bogus')).toBe('coming');
+  it('passes "all" through', () => {
+    expect(parseStatusFilter('all')).toBe('all');
   });
 
-  it('uses the first repeated parameter', () => {
-    expect(parseStatusFilter(['cancelled', 'coming'])).toBe('cancelled');
-    expect(parseStatusFilter([])).toBe('coming');
+  it('falls back to "all" for a missing param', () => {
+    expect(parseStatusFilter(undefined)).toBe('all');
+    expect(parseStatusFilter(null)).toBe('all');
+    expect(parseStatusFilter('')).toBe('all');
+  });
+
+  it('falls back to "all" for a hand-typed or hostile value', () => {
+    expect(parseStatusFilter('bogus')).toBe('all');
+    expect(parseStatusFilter("'; drop table bookings; --")).toBe('all');
+  });
+
+  it('is case-sensitive, so odd casing degrades to "all" not to an error', () => {
+    expect(parseStatusFilter('Confirmed')).toBe('all');
+  });
+
+  it('does not expose statuses the owner cannot filter by', () => {
+    // These are real booking statuses but not offered as buckets; they must
+    // not become filterable through the URL.
+    expect(parseStatusFilter('unconfirmed')).toBe('all');
+    expect(parseStatusFilter('completed')).toBe('all');
+  });
+
+  it('collapses a repeated param to its first value', () => {
+    // URLSearchParams.get() in the filter bar returns the first value, so the
+    // page must agree or the highlighted chip would contradict the rows.
+    expect(parseStatusFilter(['requested', 'confirmed'])).toBe('requested');
+    expect(parseStatusFilter(['bogus', 'confirmed'])).toBe('all');
+    expect(parseStatusFilter([])).toBe('all');
   });
 });
 
@@ -30,9 +53,15 @@ describe('normalizeGuestQuery', () => {
     expect(normalizeGuestQuery('  Aarav  ')).toBe('aarav');
   });
 
-  it('treats an absent or blank value as no search', () => {
+  it('treats absent and whitespace-only input as no search', () => {
     expect(normalizeGuestQuery(undefined)).toBe('');
+    expect(normalizeGuestQuery(null)).toBe('');
     expect(normalizeGuestQuery('   ')).toBe('');
+  });
+
+  it('collapses a repeated param to its first value', () => {
+    expect(normalizeGuestQuery(['Priya', 'Rohit'])).toBe('priya');
+    expect(normalizeGuestQuery([])).toBe('');
   });
 });
 
@@ -44,53 +73,120 @@ const bookings: FilterableBooking[] = [
   { status: 'completed', studentName: null },
 ];
 
+const names = (rows: FilterableBooking[]) => rows.map((r) => r.studentName);
+
 describe('filterOwnerBookings', () => {
-  it('groups active booking states under coming', () => {
-    expect(filterOwnerBookings(bookings, {}).map((row) => row.status)).toEqual([
-      'requested',
-      'confirmed',
-      'unconfirmed',
-    ]);
+  it('returns everything when nothing is filtered', () => {
+    expect(filterOwnerBookings(bookings, {})).toHaveLength(5);
   });
 
-  it('shows only cancelled bookings in cancelled', () => {
+  it('keeps statuses outside the four buckets reachable under "all"', () => {
+    const all = filterOwnerBookings(bookings, { status: 'all' });
+    expect(all.map((r) => r.status)).toContain('unconfirmed');
+    expect(all.map((r) => r.status)).toContain('completed');
+  });
+
+  it('filters to requested only', () => {
     expect(
-      filterOwnerBookings(bookings, { status: 'cancelled' }).map(
-        (row) => row.studentName,
-      ),
+      names(filterOwnerBookings(bookings, { status: 'requested' })),
+    ).toEqual(['Aarav Sharma']);
+  });
+
+  it('filters to confirmed only', () => {
+    expect(
+      names(filterOwnerBookings(bookings, { status: 'confirmed' })),
+    ).toEqual(['Priya Nair']);
+  });
+
+  it('filters to cancelled only', () => {
+    expect(
+      names(filterOwnerBookings(bookings, { status: 'cancelled' })),
     ).toEqual(['Rohit Verma']);
   });
 
-  it('does not include completed bookings in either current bucket', () => {
-    expect(
-      filterOwnerBookings(bookings, {}).some(
-        (row) => row.status === 'completed',
-      ),
-    ).toBe(false);
-    expect(
-      filterOwnerBookings(bookings, { status: 'cancelled' }).some(
-        (row) => row.status === 'completed',
-      ),
-    ).toBe(false);
+  it('ignores an invalid status rather than returning nothing', () => {
+    expect(filterOwnerBookings(bookings, { status: 'nonsense' })).toHaveLength(
+      5,
+    );
   });
 
-  it('combines status and case-insensitive guest search', () => {
+  it('searches guest names case-insensitively', () => {
+    expect(names(filterOwnerBookings(bookings, { guest: 'PRIYA' }))).toEqual([
+      'Priya Nair',
+    ]);
+  });
+
+  it('matches on a substring, including surnames', () => {
+    expect(names(filterOwnerBookings(bookings, { guest: 'verma' }))).toEqual([
+      'Rohit Verma',
+    ]);
+  });
+
+  it('tolerates padded search terms', () => {
+    expect(names(filterOwnerBookings(bookings, { guest: '  nair ' }))).toEqual([
+      'Priya Nair',
+    ]);
+  });
+
+  it('can match several guests', () => {
+    expect(names(filterOwnerBookings(bookings, { guest: 'aarav' }))).toEqual([
+      'Aarav Sharma',
+      'Aarav Menon',
+    ]);
+  });
+
+  it('never matches a booking with no name against a search', () => {
+    const found = filterOwnerBookings(bookings, { guest: 'a' });
+    expect(found.every((r) => r.studentName !== null)).toBe(true);
+  });
+
+  it('still includes nameless bookings when there is no search', () => {
+    expect(names(filterOwnerBookings(bookings, { status: 'all' }))).toContain(
+      null,
+    );
+  });
+
+  it('applies status and search together', () => {
+    // 'aarav' alone matches two rows; the status narrows it to one.
     expect(
-      filterOwnerBookings(bookings, { guest: 'AARAV' }).map(
-        (row) => row.studentName,
+      names(
+        filterOwnerBookings(bookings, { status: 'requested', guest: 'aarav' }),
       ),
-    ).toEqual(['Aarav Sharma', 'Aarav Menon']);
+    ).toEqual(['Aarav Sharma']);
+  });
+
+  it('returns an empty list when the combination matches nothing', () => {
     expect(
-      filterOwnerBookings(bookings, {
-        status: 'cancelled',
-        guest: 'aarav',
-      }),
+      filterOwnerBookings(bookings, { status: 'confirmed', guest: 'aarav' }),
     ).toEqual([]);
+    expect(filterOwnerBookings(bookings, { guest: 'zzzz' })).toEqual([]);
   });
 
-  it('preserves the input and treats search text literally', () => {
+  it('treats a blank search as no search at all', () => {
+    expect(filterOwnerBookings(bookings, { guest: '   ' })).toHaveLength(5);
+    expect(filterOwnerBookings(bookings, { guest: '' })).toHaveLength(5);
+  });
+
+  it('preserves the incoming order', () => {
+    const found = filterOwnerBookings(bookings, { guest: 'aarav' });
+    expect(found[0]?.studentName).toBe('Aarav Sharma');
+    expect(found[1]?.studentName).toBe('Aarav Menon');
+  });
+
+  it('does not mutate the input list', () => {
     const input = [...bookings];
-    expect(filterOwnerBookings(input, { guest: '.*' })).toEqual([]);
+    filterOwnerBookings(input, { status: 'requested', guest: 'aarav' });
     expect(input).toEqual(bookings);
+  });
+
+  it('treats a search term as text, never as a pattern', () => {
+    // A regex-flavoured term must match literally and find nothing here.
+    expect(filterOwnerBookings(bookings, { guest: '.*' })).toEqual([]);
+  });
+
+  it('filters on the first value of a repeated param', () => {
+    expect(
+      names(filterOwnerBookings(bookings, { status: ['requested', 'all'] })),
+    ).toEqual(['Aarav Sharma']);
   });
 });

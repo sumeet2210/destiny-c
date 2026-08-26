@@ -54,6 +54,30 @@ async function publicClient() {
   );
 }
 
+/**
+ * A failed catalog read used to collapse straight into `?? []`, which turned a
+ * hard Postgres error into a blank homepage with nothing in the logs — an enum
+ * rename once broke `restaurant_is_active()` and took menus, offers, photos,
+ * events and reviews down silently for days. Keep degrading gracefully so one
+ * broken table can't 500 the whole page, but say so loudly.
+ */
+function rows<T>(
+  label: string,
+  result: {
+    data: T[] | null;
+    error: { message: string; code?: string } | null;
+  },
+): T[] {
+  if (result.error) {
+    console.error(
+      `[catalog] ${label} read failed:`,
+      result.error.code ?? '',
+      result.error.message,
+    );
+  }
+  return result.data ?? [];
+}
+
 /** One catalog fetch per request, shared by every page section (React.cache). */
 export const getCatalog = cache(async (): Promise<Catalog> => {
   if (!isConfigured()) {
@@ -92,14 +116,17 @@ export const getCatalog = cache(async (): Promise<Catalog> => {
     ]);
 
   return {
-    restaurants: restaurants.data ?? [],
-    menuItems: menuItems.data ?? [],
-    offers: offers.data ?? [],
-    photos: photos.data ?? [],
-    events: events.data ?? [],
-    reviews: reviews.data ?? [],
+    restaurants: rows('restaurants', restaurants),
+    menuItems: rows('menu_items', menuItems),
+    offers: rows('offers', offers),
+    photos: rows('restaurant_photos', photos),
+    events: rows('events', events),
+    reviews: rows('reviews', reviews),
     trendingViews: new Map(
-      (trending.data ?? []).map((t) => [t.restaurant_id, Number(t.views)]),
+      rows('trending_restaurants', trending).map((t) => [
+        t.restaurant_id,
+        Number(t.views),
+      ]),
     ),
   };
 });
@@ -307,6 +334,12 @@ export type RestaurantDetail = {
   row: Tables<'restaurants'>;
   menu: Tables<'menu_items'>[];
   menuPhotos: string[];
+  /**
+   * Owner-named folder for each gallery URL, so the profile gallery can caption
+   * a photo with what it actually shows. Keyed by URL because `summary.photos`
+   * stays a plain string[] — many callers only need the URLs.
+   */
+  galleryFolders: Record<string, string>;
   offers: Tables<'offers'>[];
   events: (Tables<'events'> & { restaurantName: string })[];
   reviews: Tables<'reviews'>[];
@@ -328,6 +361,16 @@ export async function getRestaurantDetail(
     menuPhotos: catalog.photos
       .filter((p) => p.restaurant_id === id && p.kind === 'menu_photo')
       .map((p) => p.url),
+    galleryFolders: Object.fromEntries(
+      catalog.photos
+        .filter(
+          (p) =>
+            p.restaurant_id === id &&
+            p.kind === 'gallery' &&
+            p.gallery_category,
+        )
+        .map((p) => [p.url, p.gallery_category as string]),
+    ),
     offers: catalog.offers
       .filter((o) => o.restaurant_id === id)
       .sort(

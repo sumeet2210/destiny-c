@@ -5,9 +5,7 @@
 
 import { revalidatePath } from 'next/cache';
 import {
-  normalizeCategory,
   normalizeCoordinate,
-  normalizeCuisines,
   normalizeGalleryFolder,
   normalizeIndianPhone,
   normalizeText,
@@ -18,7 +16,7 @@ import {
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import type { TablesInsert, TablesUpdate } from '@/types/db';
 
-export type ActionResult = { ok: boolean; message?: string };
+export type ActionResult = { ok: boolean; message?: string; url?: string };
 
 const NOT_CONFIGURED: ActionResult = {
   ok: false,
@@ -47,6 +45,25 @@ const revalidateOwnerAnd = (path: string) => {
   revalidatePath('/owner', 'layout');
   revalidatePath(path);
 };
+
+function normalizeOptionList(
+  values: unknown,
+  { maxItems = 20, maxLength = 60 } = {},
+): string[] {
+  if (!Array.isArray(values)) return [];
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    if (typeof value !== 'string') continue;
+    const clean = normalizeText(value, maxLength);
+    const key = clean?.toLocaleLowerCase('en-IN');
+    if (!clean || !key || seen.has(key)) continue;
+    seen.add(key);
+    result.push(clean);
+    if (result.length === maxItems) break;
+  }
+  return result;
+}
 
 // ---------------------------------------------------------------------------
 // Restaurant profile (P4-3 create, P5-2 edit, P5-3 hours)
@@ -108,12 +125,23 @@ function normalizeProfilePatch(
   }
 
   if ('restaurant_category' in patch) {
-    patch.restaurant_category = normalizeCategory(
+    patch.restaurant_category = normalizeText(
       patch.restaurant_category as string | null,
+      60,
     );
   }
-  if ('cuisines' in patch && Array.isArray(patch.cuisines)) {
-    patch.cuisines = normalizeCuisines(patch.cuisines as string[]);
+  for (const field of [
+    'restaurant_categories',
+    'cuisines',
+    'custom_facilities',
+    'vibe_tags',
+  ] as const) {
+    if (field in patch) patch[field] = normalizeOptionList(patch[field]);
+  }
+  if ('restaurant_categories' in patch) {
+    const categories = patch.restaurant_categories as string[];
+    // Keep the legacy singular field in sync for older consumers.
+    patch.restaurant_category = categories[0] ?? null;
   }
   return undefined;
 }
@@ -182,18 +210,66 @@ export async function upsertMenuItem(input: {
   is_veg: boolean;
   craving_tags: string[];
   is_available: boolean;
+  section_name: string;
 }): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const owned = await ownedRestaurantId();
   if (!owned.ok) return owned;
   const supabase = await createClient();
-  const { id, ...fields } = input;
+  const sectionName = normalizeText(input.section_name, 60);
+  if (!sectionName) return { ok: false, message: 'Choose a menu subsection.' };
+  const name = normalizeText(input.name, 120);
+  if (!name) return { ok: false, message: 'Give the menu item a name.' };
+  if (!Number.isFinite(input.price) || input.price < 0) {
+    return { ok: false, message: 'Enter a valid price.' };
+  }
+  const { data: section } = await supabase
+    .from('restaurant_menu_sections')
+    .select('id')
+    .eq('restaurant_id', owned.id)
+    .eq('name', sectionName)
+    .maybeSingle();
+  if (!section) return { ok: false, message: 'Create that subsection first.' };
+  const { id, ...inputFields } = input;
+  const fields = { ...inputFields, name, section_name: sectionName };
   const { error } = id
     ? await supabase.from('menu_items').update(fields).eq('id', id)
     : await supabase
         .from('menu_items')
         .insert({ ...fields, restaurant_id: owned.id });
   if (error) return { ok: false, message: error.message };
+  revalidateOwnerAnd('/owner/menu');
+  return { ok: true };
+}
+
+export async function createMenuSection(name: string): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const owned = await ownedRestaurantId();
+  if (!owned.ok) return owned;
+  const clean = normalizeText(name, 60);
+  if (!clean) return { ok: false, message: 'Give the subsection a name.' };
+  const supabase = await createClient();
+  const { data: last } = await supabase
+    .from('restaurant_menu_sections')
+    .select('sort_order')
+    .eq('restaurant_id', owned.id)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const { error } = await supabase.from('restaurant_menu_sections').insert({
+    restaurant_id: owned.id,
+    name: clean,
+    sort_order: (last?.sort_order ?? -1) + 1,
+  });
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === '23505'
+          ? 'That subsection already exists.'
+          : error.message,
+    };
+  }
   revalidateOwnerAnd('/owner/menu');
   return { ok: true };
 }
@@ -217,6 +293,7 @@ export async function createOffer(input: {
   discount_text?: string;
   starts_at?: string | null;
   expires_at?: string; // defaults to end of day IST (PRD §5.5)
+  image_url: string;
 }): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const owned = await ownedRestaurantId();
@@ -224,6 +301,8 @@ export async function createOffer(input: {
 
   const title = normalizeText(input.title, 120);
   if (!title) return { ok: false, message: 'Give the offer a title.' };
+  const imageUrl = normalizeText(input.image_url, 500);
+  if (!imageUrl) return { ok: false, message: 'Add an offer photo.' };
 
   let expires = input.expires_at;
   if (!expires) {
@@ -246,6 +325,7 @@ export async function createOffer(input: {
     // immediately), which is what the baseline form has always done.
     ...(input.starts_at ? { starts_at: input.starts_at } : {}),
     expires_at: expires,
+    image_url: imageUrl,
   });
   if (error) return { ok: false, message: error.message };
   revalidateOwnerAnd('/owner/offers-events');
@@ -262,6 +342,7 @@ export async function updateOffer(
     | 'starts_at'
     | 'expires_at'
     | 'is_active'
+    | 'image_url'
   >,
 ): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
@@ -325,11 +406,15 @@ export async function upsertEvent(input: {
   location_details?: string;
   ticket_url?: string;
   is_cancelled?: boolean;
+  cover_image_url?: string | null;
 }): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const owned = await ownedRestaurantId();
   if (!owned.ok) return owned;
   const startsAt = new Date(input.starts_at);
+  if (!input.id && !normalizeText(input.cover_image_url, 500)) {
+    return { ok: false, message: 'Add an event photo.' };
+  }
   const publishLimit = Date.now() + 15 * 24 * 60 * 60 * 1000;
   if (!Number.isFinite(startsAt.getTime())) {
     return { ok: false, message: 'Choose a valid event date and time.' };
@@ -360,6 +445,9 @@ export async function upsertEvent(input: {
     entry_fee: fields.entry_fee ?? null,
     location_details: fields.location_details || null,
     ticket_url: fields.ticket_url || null,
+    ...(fields.cover_image_url !== undefined
+      ? { cover_image_url: normalizeText(fields.cover_image_url, 500) }
+      : {}),
   };
   const { error } = id
     ? await supabase.from('events').update(payload).eq('id', id)
@@ -377,6 +465,31 @@ export async function upsertEvent(input: {
 // ---------------------------------------------------------------------------
 
 const MAX_UPLOAD_BYTES = 1_500_000;
+
+export async function uploadPromotionImage(
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const owned = await ownedRestaurantId();
+  if (!owned.ok) return owned;
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: 'No file received.' };
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return { ok: false, message: 'Image is too large even after resizing.' };
+  }
+  const supabase = await createClient();
+  const path = `${owned.id}/promotions/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+  const { error } = await supabase.storage
+    .from('restaurant-images')
+    .upload(path, file, { contentType: 'image/webp' });
+  if (error) return { ok: false, message: error.message };
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('restaurant-images').getPublicUrl(path);
+  return { ok: true, url: publicUrl };
+}
 
 export async function uploadPhoto(formData: FormData): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
@@ -437,7 +550,7 @@ export async function uploadPhoto(formData: FormData): Promise<ActionResult> {
     });
     if (error) return { ok: false, message: error.message };
   }
-  revalidateOwnerAnd('/owner/photos');
+  revalidateOwnerAnd('/owner/profile');
   revalidatePath('/owner/menu');
   return { ok: true };
 }
@@ -465,7 +578,7 @@ export async function deletePhoto(id: string): Promise<ActionResult> {
         .remove([photo.url.slice(idx + marker.length)]);
     }
   }
-  revalidateOwnerAnd('/owner/photos');
+  revalidateOwnerAnd('/owner/profile');
   revalidatePath('/owner/menu');
   return { ok: true };
 }
@@ -480,7 +593,7 @@ export async function reorderPhotos(ids: string[]): Promise<ActionResult> {
       .eq('id', ids[i]);
     if (error) return { ok: false, message: error.message };
   }
-  revalidateOwnerAnd('/owner/photos');
+  revalidateOwnerAnd('/owner/profile');
   revalidatePath('/owner/menu');
   return { ok: true };
 }
@@ -514,7 +627,7 @@ export async function createGalleryFolder(name: string): Promise<ActionResult> {
           : error.message,
     };
   }
-  revalidateOwnerAnd('/owner/photos');
+  revalidateOwnerAnd('/owner/profile');
   return { ok: true };
 }
 
@@ -548,7 +661,7 @@ export async function setPhotoFolder(
     .eq('id', id)
     .eq('restaurant_id', owned.id);
   if (error) return { ok: false, message: error.message };
-  revalidateOwnerAnd('/owner/photos');
+  revalidateOwnerAnd('/owner/profile');
   return { ok: true };
 }
 
@@ -597,6 +710,6 @@ export async function renameGalleryFolder(
       .eq('name', next);
     return { ok: false, message: photoError.message };
   }
-  revalidateOwnerAnd('/owner/photos');
+  revalidateOwnerAnd('/owner/profile');
   return { ok: true };
 }

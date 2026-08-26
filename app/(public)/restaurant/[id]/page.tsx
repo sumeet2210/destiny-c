@@ -112,6 +112,16 @@ export default async function RestaurantPage(
       .join(' · ') ||
     'Local favourite';
   const facilities = AMENITIES.filter((amenity) => row[amenity.key]);
+  const facilityLabels = [
+    ...facilities.map((facility) => facility.label),
+    ...(row.custom_facilities ?? []),
+  ];
+  const categories =
+    (row.restaurant_categories?.length ?? 0) > 0
+      ? row.restaurant_categories
+      : row.restaurant_category
+        ? [row.restaurant_category]
+        : [];
   const address = row.address || row.area;
   const reviewableBooking = isStudent
     ? bookings.find(
@@ -194,6 +204,7 @@ export default async function RestaurantPage(
                   id: item.id,
                   name: item.name,
                   price: item.price,
+                  section_name: item.section_name ?? 'Menu',
                 }))}
                 menuPhotos={menuPhotos}
               />
@@ -201,29 +212,29 @@ export default async function RestaurantPage(
           </div>
         </header>
 
-        {row.restaurant_category || facilities.length ? (
+        {categories.length || facilityLabels.length ? (
           <section className={styles.section} aria-labelledby="know-title">
             <div className={styles.sectionHeader}>
               <div>
                 <h2 id="know-title">Good to know</h2>
               </div>
             </div>
-            {row.restaurant_category ? (
+            {categories.length ? (
               <div className={styles.infoGrid}>
                 <div className={styles.infoCard}>
                   <PinIcon />
                   <span>
                     <small>Type of place</small>
-                    <strong>{row.restaurant_category}</strong>
+                    <strong>{categories.join(' · ')}</strong>
                   </span>
                 </div>
               </div>
             ) : null}
-            {facilities.length ? (
+            {facilityLabels.length ? (
               <ul className={styles.facilityList}>
-                {facilities.map((amenity) => (
-                  <li key={amenity.key} className={styles.facilityPill}>
-                    {amenity.label}
+                {facilityLabels.map((facility) => (
+                  <li key={facility} className={styles.facilityPill}>
+                    {facility}
                   </li>
                 ))}
               </ul>
@@ -239,6 +250,14 @@ export default async function RestaurantPage(
           </div>
           {offers[0] ? (
             <article className={styles.offerCard}>
+              {offers[0].image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+                <img
+                  src={offers[0].image_url}
+                  alt=""
+                  className={styles.promotionImage}
+                />
+              ) : null}
               <div className={styles.offerTopline}>
                 <span className={styles.offerKicker}>Live now</span>
                 <time dateTime={offers[0].starts_at}>
@@ -272,6 +291,14 @@ export default async function RestaurantPage(
                   className={styles.eventCard}
                   data-event-type={event.event_type}
                 >
+                  {event.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+                    <img
+                      src={event.cover_image_url}
+                      alt=""
+                      className={styles.promotionImage}
+                    />
+                  ) : null}
                   <div className={styles.eventTopline}>
                     <span className={styles.eventTypePill}>
                       {formatEventType(event.event_type)}

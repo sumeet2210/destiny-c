@@ -4,14 +4,13 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import {
   AMENITIES,
   CUISINES,
-  RESTAURANT_CATEGORIES,
   type AmenityKey,
 } from '@/config/restaurant-profile';
 import { VIBES } from '@/config/vibes';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
-import { Input, Label, Select, Textarea } from '@/components/ui/Input';
+import { Input, Label, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { updateRestaurant } from '@/lib/owner/actions';
 
@@ -31,8 +30,9 @@ type ProfileFields = {
   price_per_head: number | null;
   vibe_tags: string[];
   owner_name: string | null;
-  restaurant_category: string | null;
+  restaurant_categories: string[];
   cuisines: string[];
+  custom_facilities: string[];
 } & Record<AmenityKey, boolean>;
 
 const PRIMARY_FACILITIES = [
@@ -42,11 +42,20 @@ const PRIMARY_FACILITIES = [
 ] as const;
 
 const phoneDigitsFrom = (phone: string | null) => {
-  const digits = (phone ?? '').replace(/\D/g, '');
-  return digits.length === 12 && digits.startsWith('91')
-    ? digits.slice(2)
-    : digits.slice(0, 10);
+  const national = phone?.startsWith('+91') ? phone.slice(3) : (phone ?? '');
+  return national.replace(/\D/g, '').slice(0, 10);
 };
+
+const includesOption = (values: string[], value: string) =>
+  values.some((item) => item.toLowerCase() === value.toLowerCase());
+
+const addOption = (values: string[], value: string) => {
+  const clean = value.replace(/\s+/g, ' ').trim();
+  return clean && !includesOption(values, clean) ? [...values, clean] : values;
+};
+
+const removeOption = (values: string[], value: string) =>
+  values.filter((item) => item.toLowerCase() !== value.toLowerCase());
 
 export function ProfileForm({ initial }: { initial: ProfileFields }) {
   const [fields, setFields] = useState(initial);
@@ -87,6 +96,14 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         ? fields.cuisines.filter((item) => item !== cuisine)
         : [...fields.cuisines, cuisine],
     );
+
+  const customCuisines = fields.cuisines.filter(
+    (cuisine) => !CUISINES.includes(cuisine as (typeof CUISINES)[number]),
+  );
+  const configuredVibes = new Set<string>(VIBES.map((vibe) => vibe.tag));
+  const customVibes = fields.vibe_tags.filter(
+    (tag) => !configuredVibes.has(tag),
+  );
 
   const useCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -212,21 +229,36 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="p-category">Restaurant category</Label>
-              <Select
-                id="p-category"
-                value={fields.restaurant_category ?? ''}
-                disabled={!editing}
-                onChange={(event) =>
-                  set('restaurant_category', event.target.value || null)
-                }
-              >
-                <option value="">Not set</option>
-                {RESTAURANT_CATEGORIES.map((category) => (
-                  <option key={category}>{category}</option>
+            <div className="space-y-2">
+              <Label>Restaurant categories</Label>
+              <div className="flex flex-wrap gap-2">
+                {fields.restaurant_categories.map((category) => (
+                  <Chip
+                    key={category}
+                    active
+                    disabled={!editing}
+                    onClick={() =>
+                      set(
+                        'restaurant_categories',
+                        removeOption(fields.restaurant_categories, category),
+                      )
+                    }
+                  >
+                    {category}
+                  </Chip>
                 ))}
-              </Select>
+                <OptionAdder
+                  key={`category-${editing}`}
+                  label="category"
+                  disabled={!editing}
+                  onAdd={(category) =>
+                    set(
+                      'restaurant_categories',
+                      addOption(fields.restaurant_categories, category),
+                    )
+                  }
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="p-phone">Phone no.</Label>
@@ -369,6 +401,26 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
                 {cuisine}
               </Chip>
             ))}
+            {customCuisines.map((cuisine) => (
+              <Chip
+                key={cuisine}
+                active
+                disabled={!editing}
+                onClick={() =>
+                  set('cuisines', removeOption(fields.cuisines, cuisine))
+                }
+              >
+                {cuisine}
+              </Chip>
+            ))}
+            <OptionAdder
+              key={`cuisine-${editing}`}
+              label="cuisine"
+              disabled={!editing}
+              onAdd={(cuisine) =>
+                set('cuisines', addOption(fields.cuisines, cuisine))
+              }
+            />
           </div>
         </section>
 
@@ -404,6 +456,32 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             >
               Student Discount
             </Chip>
+            {fields.custom_facilities.map((facility) => (
+              <Chip
+                key={facility}
+                active
+                disabled={!editing}
+                onClick={() =>
+                  set(
+                    'custom_facilities',
+                    removeOption(fields.custom_facilities, facility),
+                  )
+                }
+              >
+                {facility}
+              </Chip>
+            ))}
+            <OptionAdder
+              key={`facility-${editing}`}
+              label="facility"
+              disabled={!editing}
+              onAdd={(facility) =>
+                set(
+                  'custom_facilities',
+                  addOption(fields.custom_facilities, facility),
+                )
+              }
+            />
           </div>
         </section>
 
@@ -422,6 +500,26 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
                 {vibe.label}
               </Chip>
             ))}
+            {customVibes.map((vibe) => (
+              <Chip
+                key={vibe}
+                active
+                disabled={!editing}
+                onClick={() =>
+                  set('vibe_tags', removeOption(fields.vibe_tags, vibe))
+                }
+              >
+                {vibe}
+              </Chip>
+            ))}
+            <OptionAdder
+              key={`vibe-${editing}`}
+              label="vibe"
+              disabled={!editing}
+              onAdd={(vibe) =>
+                set('vibe_tags', addOption(fields.vibe_tags, vibe))
+              }
+            />
           </div>
         </section>
 
@@ -466,5 +564,72 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         ) : null}
       </form>
     </Card>
+  );
+}
+
+function OptionAdder({
+  label,
+  disabled,
+  onAdd,
+}: {
+  label: string;
+  disabled: boolean;
+  onAdd: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState('');
+
+  if (!open || disabled) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+      >
+        + Add {label}
+      </Button>
+    );
+  }
+
+  return (
+    <span className="flex min-w-52 items-center gap-2">
+      <Input
+        aria-label={`Custom ${label}`}
+        value={value}
+        autoFocus
+        maxLength={60}
+        onChange={(event) => setValue(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            onAdd(value);
+            setValue('');
+            setOpen(false);
+          }
+        }}
+      />
+      <Button
+        type="button"
+        size="sm"
+        disabled={!value.trim()}
+        onClick={() => {
+          onAdd(value);
+          setValue('');
+          setOpen(false);
+        }}
+      >
+        Add
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(false)}
+      >
+        Cancel
+      </Button>
+    </span>
   );
 }

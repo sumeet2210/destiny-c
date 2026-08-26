@@ -275,6 +275,7 @@ export type Database = {
           name: string;
           price: number;
           restaurant_id: string;
+          section_name: string;
         };
         Insert: {
           craving_tags?: string[];
@@ -285,6 +286,7 @@ export type Database = {
           name: string;
           price: number;
           restaurant_id: string;
+          section_name?: string;
         };
         Update: {
           craving_tags?: string[];
@@ -295,6 +297,7 @@ export type Database = {
           name?: string;
           price?: number;
           restaurant_id?: string;
+          section_name?: string;
         };
         Relationships: [
           {
@@ -314,6 +317,7 @@ export type Database = {
           expires_at: string;
           flagged_count: number;
           id: string;
+          image_url: string | null;
           is_active: boolean;
           restaurant_id: string;
           starts_at: string;
@@ -326,6 +330,7 @@ export type Database = {
           expires_at: string;
           flagged_count?: number;
           id?: string;
+          image_url?: string | null;
           is_active?: boolean;
           restaurant_id: string;
           starts_at?: string;
@@ -338,6 +343,7 @@ export type Database = {
           expires_at?: string;
           flagged_count?: number;
           id?: string;
+          image_url?: string | null;
           is_active?: boolean;
           restaurant_id?: string;
           starts_at?: string;
@@ -424,6 +430,38 @@ export type Database = {
           },
         ];
       };
+      restaurant_menu_sections: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          restaurant_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          restaurant_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          restaurant_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'restaurant_menu_sections_restaurant_id_fkey';
+            columns: ['restaurant_id'];
+            isOneToOne: false;
+            referencedRelation: 'restaurants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       restaurant_photos: {
         Row: {
           created_at: string;
@@ -469,6 +507,7 @@ export type Database = {
           cover_image_url: string | null;
           created_at: string;
           cuisines: string[];
+          custom_facilities: string[];
           delivery: boolean;
           description: string | null;
           dine_in: boolean;
@@ -487,6 +526,7 @@ export type Database = {
           phone: string | null;
           price_per_head: number | null;
           restaurant_category: string | null;
+          restaurant_categories: string[];
           status: Database['public']['Enums']['restaurant_status'];
           student_discount: boolean;
           takeaway: boolean;
@@ -501,6 +541,7 @@ export type Database = {
           cover_image_url?: string | null;
           created_at?: string;
           cuisines?: string[];
+          custom_facilities?: string[];
           delivery?: boolean;
           description?: string | null;
           dine_in?: boolean;
@@ -519,6 +560,7 @@ export type Database = {
           phone?: string | null;
           price_per_head?: number | null;
           restaurant_category?: string | null;
+          restaurant_categories?: string[];
           status?: Database['public']['Enums']['restaurant_status'];
           student_discount?: boolean;
           takeaway?: boolean;
@@ -533,6 +575,7 @@ export type Database = {
           cover_image_url?: string | null;
           created_at?: string;
           cuisines?: string[];
+          custom_facilities?: string[];
           delivery?: boolean;
           description?: string | null;
           dine_in?: boolean;
@@ -551,6 +594,7 @@ export type Database = {
           phone?: string | null;
           price_per_head?: number | null;
           restaurant_category?: string | null;
+          restaurant_categories?: string[];
           status?: Database['public']['Enums']['restaurant_status'];
           student_discount?: boolean;
           takeaway?: boolean;

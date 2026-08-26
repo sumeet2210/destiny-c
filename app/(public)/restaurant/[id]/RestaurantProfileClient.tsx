@@ -180,6 +180,7 @@ type MenuItem = {
   id: string;
   name: string;
   price: number;
+  section_name: string;
 };
 
 export function ProfileMenuButton({
@@ -278,6 +279,13 @@ export function ProfileMenu({
     ? items.filter((item) => item.name.toLowerCase().includes(normalizedQuery))
     : items;
   const previewItems = showAllItems ? filteredItems : filteredItems.slice(0, 2);
+  const groupedPreview = previewItems.reduce<Record<string, MenuItem[]>>(
+    (groups, item) => {
+      (groups[item.section_name] ??= []).push(item);
+      return groups;
+    },
+    {},
+  );
   const photoSources = menuPhotos.length ? menuPhotos : MENU_PLACEHOLDER_IMAGES;
 
   return (
@@ -328,13 +336,20 @@ export function ProfileMenu({
         </div>
       ) : (
         <div className={styles.menuListWrap}>
-          <div className={styles.menuGrid}>
+          <div className={styles.menuSectionList}>
             {previewItems.length ? (
-              previewItems.map((item) => (
-                <article key={item.id} className={styles.menuCard}>
-                  <strong>{item.name}</strong>
-                  <span>₹{item.price}</span>
-                </article>
+              Object.entries(groupedPreview).map(([section, sectionItems]) => (
+                <section key={section}>
+                  <h3 className={styles.menuSectionTitle}>{section}</h3>
+                  <div className={styles.menuGrid}>
+                    {sectionItems.map((item) => (
+                      <article key={item.id} className={styles.menuCard}>
+                        <strong>{item.name}</strong>
+                        <span>₹{item.price}</span>
+                      </article>
+                    ))}
+                  </div>
+                </section>
               ))
             ) : (
               <p className={styles.menuEmptyState}>

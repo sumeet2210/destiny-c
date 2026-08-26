@@ -47,14 +47,19 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
             Cancel
           </Button>
         ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setEditing(true)}
-          >
-            Edit
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditing(true)}
+            >
+              Edit
+            </Button>
+            <Button type="button" size="sm" onClick={() => setEditing(true)}>
+              + Shift
+            </Button>
+          </div>
         )}
       </div>
 
@@ -79,7 +84,7 @@ export function HoursEditor({ initial }: { initial: OpeningHours }) {
                       ])
                     }
                   >
-                    + shift
+                    + Add shift
                   </Button>
                   {shifts.length > 0 && (
                     <Button

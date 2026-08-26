@@ -11,9 +11,9 @@ import styles from './owner-nav.module.css';
 // match `/owner/offers-events` under the startsWith test below.
 const items = [
   { href: '/owner/profile', label: 'Profile' },
+  { href: '/owner/hours', label: 'Timing & Hours' },
   { href: '/owner/menu', label: 'Menu' },
   { href: '/owner/offers-events', label: 'Offers & Events' },
-  { href: '/owner/photos', label: 'Photos' },
   { href: '/owner/bookings', label: 'Bookings' },
   { href: '/owner/analytics', label: 'Analytics' },
 ] as const;

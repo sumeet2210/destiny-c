@@ -7,7 +7,12 @@ import { Input, Label, Textarea } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
 import { OfferBadge } from '@/components/features/OfferBadge';
-import { createOffer, updateOffer } from '@/lib/owner/actions';
+import { resizeToWebp } from '@/components/features/owner/PhotoManager';
+import {
+  createOffer,
+  updateOffer,
+  uploadPromotionImage,
+} from '@/lib/owner/actions';
 
 type Offer = {
   id: string;
@@ -18,6 +23,7 @@ type Offer = {
   expires_at: string;
   is_active: boolean;
   flagged_count: number;
+  image_url: string | null;
 };
 
 export function OfferManager({ offers }: { offers: Offer[] }) {
@@ -56,6 +62,14 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
 
       {live.map((o) => (
         <Card key={o.id} className="space-y-2">
+          {o.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+            <img
+              src={o.image_url}
+              alt=""
+              className="rounded-control aspect-[8/3] w-full max-w-xl object-cover"
+            />
+          ) : null}
           <OfferBadge
             title={o.title}
             discountText={o.discount_text}
@@ -148,9 +162,31 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
           onSubmit={(e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
+            const photo = fd.get('photo');
+            if (!(photo instanceof File) || photo.size === 0) {
+              toast('Add an offer photo.', 'error');
+              return;
+            }
             const startsLocal = String(fd.get('starts_at') || '');
             const expiresLocal = String(fd.get('expires_at') || '');
             startTransition(async () => {
+              let upload;
+              try {
+                const blob = await resizeToWebp(photo);
+                const imageData = new FormData();
+                imageData.set(
+                  'file',
+                  new File([blob], 'offer.webp', { type: 'image/webp' }),
+                );
+                upload = await uploadPromotionImage(imageData);
+              } catch {
+                toast('Could not process that image', 'error');
+                return;
+              }
+              if (!upload.ok || !upload.url) {
+                toast(upload.message ?? 'Could not upload photo', 'error');
+                return;
+              }
               const res = await createOffer({
                 title: String(fd.get('title')),
                 description: String(fd.get('description') || ''),
@@ -161,6 +197,7 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
                 expires_at: expiresLocal
                   ? new Date(expiresLocal).toISOString()
                   : undefined,
+                image_url: upload.url,
               });
               toast(
                 res.ok ? 'Offer is live' : (res.message ?? 'Failed'),
@@ -171,6 +208,16 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
           }}
           className="space-y-4"
         >
+          <div>
+            <Label htmlFor="of-photo">Offer photo</Label>
+            <Input
+              id="of-photo"
+              name="photo"
+              type="file"
+              accept="image/*"
+              required
+            />
+          </div>
           <div>
             <Label htmlFor="of-title">Title</Label>
             <Input

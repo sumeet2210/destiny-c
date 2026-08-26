@@ -40,6 +40,7 @@ export default async function OwnerOffersEventsPage() {
             expires_at: o.expires_at,
             is_active: o.is_active,
             flagged_count: o.flagged_count,
+            image_url: o.image_url,
           }))}
         />
       </section>
@@ -72,6 +73,7 @@ export default async function OwnerOffersEventsPage() {
             location_details: e.location_details,
             ticket_url: e.ticket_url,
             is_cancelled: e.is_cancelled,
+            cover_image_url: e.cover_image_url,
           }))}
         />
       </section>

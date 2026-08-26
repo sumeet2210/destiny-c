@@ -1,13 +1,15 @@
 import { redirect } from 'next/navigation';
 import { ProfileForm } from '@/components/features/owner/ProfileForm';
-import { HoursEditor } from '@/components/features/owner/HoursEditor';
-import { getOwnerBundle } from '@/lib/queries/owner';
-import type { OpeningHours } from '@/lib/domain/hours';
+import { PhotoManager } from '@/components/features/owner/PhotoManager';
+import { getOwnerBundle, getOwnerGalleryFolders } from '@/lib/queries/owner';
 
 export const metadata = { title: 'Profile' };
 
 export default async function OwnerProfilePage() {
-  const bundle = await getOwnerBundle();
+  const [bundle, folders] = await Promise.all([
+    getOwnerBundle(),
+    getOwnerGalleryFolders(),
+  ]);
   if (!bundle) redirect('/owner/dashboard');
   const r = bundle.restaurant;
 
@@ -30,8 +32,14 @@ export default async function OwnerProfilePage() {
           price_per_head: r.price_per_head,
           vibe_tags: r.vibe_tags,
           owner_name: r.owner_name,
-          restaurant_category: r.restaurant_category,
+          restaurant_categories:
+            (r.restaurant_categories?.length ?? 0) > 0
+              ? r.restaurant_categories
+              : r.restaurant_category
+                ? [r.restaurant_category]
+                : [],
           cuisines: r.cuisines,
+          custom_facilities: r.custom_facilities ?? [],
           delivery: r.delivery,
           outdoor_seating: r.outdoor_seating,
           parking: r.parking,
@@ -41,7 +49,16 @@ export default async function OwnerProfilePage() {
           family_friendly: r.family_friendly,
         }}
       />
-      <HoursEditor initial={(r.opening_hours as OpeningHours | null) ?? {}} />
+      <PhotoManager
+        coverUrl={r.cover_image_url}
+        folderNames={folders.map((folder) => folder.name)}
+        photos={bundle.photos.map((photo) => ({
+          id: photo.id,
+          url: photo.url,
+          kind: photo.kind,
+          gallery_category: photo.gallery_category,
+        }))}
+      />
     </div>
   );
 }

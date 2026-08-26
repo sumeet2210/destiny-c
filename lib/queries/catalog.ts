@@ -357,7 +357,11 @@ export async function getRestaurantDetail(
     row,
     menu: catalog.menuItems
       .filter((m) => m.restaurant_id === id)
-      .sort((a, b) => a.name.localeCompare(b.name)),
+      .sort(
+        (a, b) =>
+          (a.section_name ?? 'Menu').localeCompare(b.section_name ?? 'Menu') ||
+          a.name.localeCompare(b.name),
+      ),
     menuPhotos: catalog.photos
       .filter((p) => p.restaurant_id === id && p.kind === 'menu_photo')
       .map((p) => p.url),

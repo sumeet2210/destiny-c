@@ -7,7 +7,8 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { EventCard } from '@/components/features/EventCard';
-import { upsertEvent } from '@/lib/owner/actions';
+import { resizeToWebp } from '@/components/features/owner/PhotoManager';
+import { uploadPromotionImage, upsertEvent } from '@/lib/owner/actions';
 
 type OwnerEvent = {
   id: string;
@@ -20,6 +21,7 @@ type OwnerEvent = {
   location_details: string | null;
   ticket_url: string | null;
   is_cancelled: boolean;
+  cover_image_url: string | null;
 };
 
 const toLocalInput = (iso: string | null) => {
@@ -59,6 +61,14 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
 
       {upcoming.map((e) => (
         <div key={e.id} className="space-y-1">
+          {e.cover_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+            <img
+              src={e.cover_image_url}
+              alt=""
+              className="rounded-control aspect-[8/3] w-full max-w-xl object-cover"
+            />
+          ) : null}
           <EventCard
             title={e.title}
             eventType={e.event_type}
@@ -127,11 +137,39 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               const startTime = String(fd.get('start_time'));
               const endDate = String(fd.get('end_date'));
               const endTime = String(fd.get('end_time'));
+              const photo = fd.get('photo');
+              const photoFile =
+                photo instanceof File && photo.size > 0 ? photo : null;
+              if (!editing.id && !photoFile) {
+                toast('Add an event photo.', 'error');
+                return;
+              }
               if (Boolean(endDate) !== Boolean(endTime)) {
                 toast('Choose both an end date and end time.', 'error');
                 return;
               }
               startTransition(async () => {
+                let coverImageUrl = editing.cover_image_url ?? null;
+                if (photoFile) {
+                  let upload;
+                  try {
+                    const blob = await resizeToWebp(photoFile);
+                    const imageData = new FormData();
+                    imageData.set(
+                      'file',
+                      new File([blob], 'event.webp', { type: 'image/webp' }),
+                    );
+                    upload = await uploadPromotionImage(imageData);
+                  } catch {
+                    toast('Could not process that image', 'error');
+                    return;
+                  }
+                  if (!upload.ok || !upload.url) {
+                    toast(upload.message ?? 'Could not upload photo', 'error');
+                    return;
+                  }
+                  coverImageUrl = upload.url;
+                }
                 const res = await upsertEvent({
                   id: editing.id,
                   title: String(fd.get('title')),
@@ -149,6 +187,7 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                     : null,
                   location_details: String(fd.get('location_details') || ''),
                   ticket_url: String(fd.get('ticket_url') || ''),
+                  cover_image_url: coverImageUrl,
                 });
                 toast(
                   res.ok ? 'Event saved' : (res.message ?? 'Failed'),
@@ -159,6 +198,18 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
             }}
             className="space-y-4"
           >
+            <div>
+              <Label htmlFor="ev-photo">
+                Event photo{editing.id ? ' (optional to replace)' : ''}
+              </Label>
+              <Input
+                id="ev-photo"
+                name="photo"
+                type="file"
+                accept="image/*"
+                required={!editing.id}
+              />
+            </div>
             <div>
               <Label htmlFor="ev-title">Title</Label>
               <Input

@@ -78,6 +78,23 @@ export async function getOwnerGalleryFolders(): Promise<
   return data ?? [];
 }
 
+/** Owner-created menu groupings, including empty groups. */
+export async function getOwnerMenuSections(): Promise<
+  Tables<'restaurant_menu_sections'>[]
+> {
+  if (!isSupabaseConfigured()) return [];
+  const bundle = await getOwnerBundle();
+  if (!bundle) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('restaurant_menu_sections')
+    .select('*')
+    .eq('restaurant_id', bundle.restaurant.id)
+    .order('sort_order')
+    .order('created_at');
+  return data ?? [];
+}
+
 export type OwnerBooking = Tables<'bookings'> & {
   studentName: string | null;
   studentNoShows: number;

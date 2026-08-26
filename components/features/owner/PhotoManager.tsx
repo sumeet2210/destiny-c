@@ -36,7 +36,7 @@ const SUGGESTED_FOLDERS = [
   'Outdoor Seating',
 ];
 
-async function resizeToWebp(file: File, maxDim = 1600): Promise<Blob> {
+export async function resizeToWebp(file: File, maxDim = 1600): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');

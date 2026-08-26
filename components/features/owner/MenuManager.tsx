@@ -4,11 +4,15 @@ import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
-import { Input, Label } from '@/components/ui/Input';
+import { Input, Label, Select } from '@/components/ui/Input';
 import { MenuRow } from '@/components/ui/MenuRow';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
-import { deleteMenuItem, upsertMenuItem } from '@/lib/owner/actions';
+import {
+  createMenuSection,
+  deleteMenuItem,
+  upsertMenuItem,
+} from '@/lib/owner/actions';
 
 type Item = {
   id?: string;
@@ -17,24 +21,36 @@ type Item = {
   is_veg: boolean;
   craving_tags: string[];
   is_available: boolean;
+  section_name: string;
 };
 
-const blank: Item = {
+const blank = (sectionName: string): Item => ({
   name: '',
   price: 0,
   is_veg: false,
   craving_tags: [],
   is_available: true,
-};
+  section_name: sectionName,
+});
 
-export function MenuManager({ items }: { items: Item[] }) {
+export function MenuManager({
+  items,
+  sections,
+}: {
+  items: Item[];
+  sections: string[];
+}) {
+  const availableSections = sections.length > 0 ? sections : ['Menu'];
   const [editing, setEditing] = useState<Item | null>(null);
   const [beforeEdit, setBeforeEdit] = useState<Item | null>(null);
+  const [addingSection, setAddingSection] = useState(false);
+  const [sectionName, setSectionName] = useState('');
   const [pending, startTransition] = useTransition();
   const toast = useToast();
   const dirty =
     editing !== null &&
-    JSON.stringify(editing) !== JSON.stringify(beforeEdit ?? blank);
+    JSON.stringify(editing) !==
+      JSON.stringify(beforeEdit ?? blank(availableSections[0]));
 
   const closeEditor = () => {
     setEditing(null);
@@ -55,74 +71,158 @@ export function MenuManager({ items }: { items: Item[] }) {
 
   return (
     <div className="space-y-4">
-      <Button
-        onClick={() => {
-          setBeforeEdit(null);
-          setEditing(blank);
-        }}
-      >
-        + Add item
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={() => {
+            setBeforeEdit(null);
+            setEditing(blank(availableSections[0]));
+          }}
+        >
+          + Add item
+        </Button>
+        <Button variant="outline" onClick={() => setAddingSection(true)}>
+          + Add subsection
+        </Button>
+      </div>
 
-      {items.length === 0 ? (
-        <p className="text-text-muted text-sm">
-          No items yet — add the first one.
-        </p>
-      ) : (
-        <Card className="grid gap-x-6 sm:grid-cols-2">
-          {items.map((item) => (
-            <div key={item.id} className="group flex items-center gap-2">
-              <div className="flex-1">
-                <MenuRow
-                  name={item.name}
-                  price={item.price}
-                  isVeg={item.is_veg}
-                  unavailable={!item.is_available}
-                />
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    startTransition(async () => {
-                      await upsertMenuItem({
-                        ...item,
-                        is_available: !item.is_available,
-                      });
-                    })
-                  }
-                >
-                  {item.is_available ? 'Sold out' : 'Back in'}
-                </Button>
+      {addingSection ? (
+        <Card>
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              startTransition(async () => {
+                const res = await createMenuSection(sectionName);
+                toast(
+                  res.ok
+                    ? 'Subsection added'
+                    : (res.message ?? 'Could not add subsection'),
+                  res.ok ? 'positive' : 'error',
+                );
+                if (res.ok) {
+                  setSectionName('');
+                  setAddingSection(false);
+                }
+              });
+            }}
+          >
+            <div className="min-w-56 flex-1">
+              <Label htmlFor="menu-section-name">Subsection name</Label>
+              <Input
+                id="menu-section-name"
+                required
+                maxLength={60}
+                placeholder="Starters"
+                value={sectionName}
+                onChange={(event) => setSectionName(event.target.value)}
+              />
+            </div>
+            <Button type="submit" size="sm" disabled={pending}>
+              Save
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setAddingSection(false)}
+            >
+              Cancel
+            </Button>
+          </form>
+        </Card>
+      ) : null}
+
+      <div className="space-y-4">
+        {availableSections.map((section) => {
+          const sectionItems = items.filter(
+            (item) => item.section_name === section,
+          );
+          return (
+            <Card key={section} className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-paper text-base font-semibold">
+                  {section}
+                </h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setBeforeEdit(item);
-                    setEditing(item);
+                    setBeforeEdit(null);
+                    setEditing(blank(section));
                   }}
                 >
-                  Edit
-                </Button>
-                <Button
-                  variant="urgent-text"
-                  size="sm"
-                  onClick={() =>
-                    startTransition(async () => {
-                      const res = await deleteMenuItem(item.id!);
-                      if (!res.ok)
-                        toast(res.message ?? 'Could not delete', 'error');
-                    })
-                  }
-                >
-                  ✕
+                  + Add item
                 </Button>
               </div>
-            </div>
-          ))}
-        </Card>
-      )}
+              {sectionItems.length === 0 ? (
+                <p className="text-text-muted text-[13px]">
+                  No items in this subsection yet.
+                </p>
+              ) : (
+                <div className="grid gap-x-6 sm:grid-cols-2">
+                  {sectionItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group flex items-center gap-2"
+                    >
+                      <div className="flex-1">
+                        <MenuRow
+                          name={item.name}
+                          price={item.price}
+                          isVeg={item.is_veg}
+                          unavailable={!item.is_available}
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            startTransition(async () => {
+                              await upsertMenuItem({
+                                ...item,
+                                is_available: !item.is_available,
+                              });
+                            })
+                          }
+                        >
+                          {item.is_available ? 'Sold out' : 'Back in'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setBeforeEdit(item);
+                            setEditing(item);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="urgent-text"
+                          size="sm"
+                          onClick={() =>
+                            startTransition(async () => {
+                              const res = await deleteMenuItem(item.id!);
+                              if (!res.ok)
+                                toast(
+                                  res.message ?? 'Could not delete',
+                                  'error',
+                                );
+                            })
+                          }
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
 
       <Sheet
         open={editing !== null}
@@ -137,6 +237,21 @@ export function MenuManager({ items }: { items: Item[] }) {
             }}
             className="space-y-4"
           >
+            <div>
+              <Label htmlFor="mi-section">Subsection</Label>
+              <Select
+                id="mi-section"
+                required
+                value={editing.section_name}
+                onChange={(e) =>
+                  setEditing({ ...editing, section_name: e.target.value })
+                }
+              >
+                {availableSections.map((section) => (
+                  <option key={section}>{section}</option>
+                ))}
+              </Select>
+            </div>
             <div>
               <Label htmlFor="mi-name">Item name</Label>
               <Input

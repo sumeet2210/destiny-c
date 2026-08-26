@@ -2,12 +2,19 @@
 
 import { useState, useTransition } from 'react';
 import { AREAS } from '@/config/areas';
+import {
+  AMENITIES,
+  CUISINES,
+  RESTAURANT_CATEGORIES,
+  type AmenityKey,
+} from '@/config/restaurant-profile';
 import { VIBES } from '@/config/vibes';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
+import { PHONE_HELP } from '@/lib/domain/owner-profile';
 import { updateRestaurant } from '@/lib/owner/actions';
 
 type ProfileFields = {
@@ -25,7 +32,10 @@ type ProfileFields = {
   student_discount: boolean;
   price_per_head: number | null;
   vibe_tags: string[];
-};
+  owner_name: string | null;
+  restaurant_category: string | null;
+  cuisines: string[];
+} & Record<AmenityKey, boolean>;
 
 export function ProfileForm({ initial }: { initial: ProfileFields }) {
   const [fields, setFields] = useState(initial);
@@ -43,6 +53,14 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
       fields.vibe_tags.includes(tag)
         ? fields.vibe_tags.filter((t) => t !== tag)
         : [...fields.vibe_tags, tag],
+    );
+
+  const toggleCuisine = (cuisine: string) =>
+    set(
+      'cuisines',
+      fields.cuisines.includes(cuisine)
+        ? fields.cuisines.filter((c) => c !== cuisine)
+        : [...fields.cuisines, cuisine],
     );
 
   return (
@@ -76,6 +94,31 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             value={fields.description ?? ''}
             onChange={(e) => set('description', e.target.value || null)}
           />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="p-owner">Owner / manager name</Label>
+            <Input
+              id="p-owner"
+              value={fields.owner_name ?? ''}
+              onChange={(e) => set('owner_name', e.target.value || null)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="p-category">Category</Label>
+            <Select
+              id="p-category"
+              value={fields.restaurant_category ?? ''}
+              onChange={(e) =>
+                set('restaurant_category', e.target.value || null)
+              }
+            >
+              <option value="">Not set</option>
+              {RESTAURANT_CATEGORIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </Select>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -120,9 +163,15 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             <Input
               id="p-phone"
               type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              aria-describedby="p-phone-help"
               value={fields.phone ?? ''}
               onChange={(e) => set('phone', e.target.value || null)}
             />
+            <p id="p-phone-help" className="text-paper/60 mt-1 text-xs">
+              {PHONE_HELP}
+            </p>
           </div>
           <div>
             <Label htmlFor="p-lat">Latitude</Label>
@@ -183,6 +232,36 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             >
               Student discount
             </Chip>
+          </div>
+        </div>
+
+        <div>
+          <Label>Cuisines</Label>
+          <div className="flex flex-wrap gap-2">
+            {CUISINES.map((c) => (
+              <Chip
+                key={c}
+                active={fields.cuisines.includes(c)}
+                onClick={() => toggleCuisine(c)}
+              >
+                {c}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label>Facilities</Label>
+          <div className="flex flex-wrap gap-2">
+            {AMENITIES.map((a) => (
+              <Chip
+                key={a.key}
+                active={fields[a.key]}
+                onClick={() => set(a.key, !fields[a.key])}
+              >
+                {a.label}
+              </Chip>
+            ))}
           </div>
         </div>
 

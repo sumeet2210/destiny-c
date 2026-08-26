@@ -32,6 +32,16 @@ export default async function OwnerProfilePage() {
           student_discount: r.student_discount,
           price_per_head: r.price_per_head,
           vibe_tags: r.vibe_tags,
+          owner_name: r.owner_name,
+          restaurant_category: r.restaurant_category,
+          cuisines: r.cuisines,
+          delivery: r.delivery,
+          outdoor_seating: r.outdoor_seating,
+          parking: r.parking,
+          wifi: r.wifi,
+          upi_card: r.upi_card,
+          wheelchair_accessible: r.wheelchair_accessible,
+          family_friendly: r.family_friendly,
         }}
       />
       <HoursEditor initial={(r.opening_hours as OpeningHours | null) ?? {}} />

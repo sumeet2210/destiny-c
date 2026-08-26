@@ -43,7 +43,7 @@ export default function OwnerLoginPage() {
                 setError(null);
                 const res = await ownerLogin(email.trim(), password);
                 if (!res.ok) setError(res.message ?? 'Login failed.');
-                else router.replace('/owner/dashboard');
+                else router.replace('/owner/profile');
               });
             }}
             className={styles.form}

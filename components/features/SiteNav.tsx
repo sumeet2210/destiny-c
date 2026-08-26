@@ -31,6 +31,7 @@ export function SiteHeader({
   const onEvents = pathname === '/events' || pathname.startsWith('/events/');
   const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
   const onBookingPage = /^\/restaurant\/[^/]+\/book\/?$/.test(pathname);
+  const onStudentLogin = pathname === '/login';
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -52,7 +53,8 @@ export function SiteHeader({
     };
   }, [menuOpen]);
 
-  if (onEvents || onRestaurantProfile || onBookingPage) return null;
+  if (onEvents || onRestaurantProfile || onBookingPage || onStudentLogin)
+    return null;
 
   if (onHome || onSaved) {
     return (

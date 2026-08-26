@@ -7,7 +7,9 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { isStudentEmail } from '@/config/auth';
 import {
+  normalizeIndianPhone,
   normalizeOwnerSignupRestaurant,
+  PHONE_HELP,
   type OwnerSignupRestaurant,
   type OwnerSignupRestaurantInput,
 } from '@/lib/domain/owner-profile';
@@ -16,6 +18,12 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import type { User } from '@supabase/supabase-js';
 
 export type AuthResult = { ok: boolean; message?: string };
+
+export type StudentOtpInput = {
+  email: string;
+  name: string;
+  phone: string;
+};
 
 export type OwnerSignupInput = OwnerSignupRestaurantInput & {
   email: string;
@@ -27,6 +35,18 @@ const NOT_CONFIGURED: AuthResult = {
   message:
     'Auth needs a Supabase project. Add the env vars from .env.example to log in.',
 };
+
+function normalizeStudentOtpProfile(
+  input: StudentOtpInput,
+): { ok: true; name: string; phone: string } | { ok: false; message: string } {
+  const normalized = normalizeStudentPatch({ full_name: input.name });
+  if (!normalized.ok) return normalized;
+  const name = normalized.patch.full_name;
+  if (!name) return { ok: false, message: 'Enter your name.' };
+  const phone = normalizeIndianPhone(input.phone);
+  if (!phone) return { ok: false, message: PHONE_HELP };
+  return { ok: true, name, phone };
+}
 
 /**
  * Supabase's raw auth errors are written for developers — "email rate limit
@@ -132,8 +152,11 @@ async function ensureOwnerRestaurant(
   return null;
 }
 
-export async function requestStudentOtp(email: string): Promise<AuthResult> {
+export async function requestStudentOtp(
+  input: StudentOtpInput,
+): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const email = input.email.trim();
   if (!isStudentEmail(email)) {
     return {
       ok: false,
@@ -141,24 +164,42 @@ export async function requestStudentOtp(email: string): Promise<AuthResult> {
         'Use your NITW student email — that’s what keeps this campus-only.',
     };
   }
+  const profile = normalizeStudentOtpProfile(input);
+  if (!profile.ok) return profile;
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: true, data: { role: 'student' } },
+    options: {
+      shouldCreateUser: true,
+      data: {
+        role: 'student',
+        full_name: profile.name,
+        phone: profile.phone,
+      },
+    },
   });
   if (error) return { ok: false, message: friendlyAuthError(error) };
   return { ok: true };
 }
 
 export async function verifyStudentOtp(
-  email: string,
-  token: string,
+  input: StudentOtpInput & { token: string },
 ): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const email = input.email.trim();
+  if (!isStudentEmail(email)) {
+    return {
+      ok: false,
+      message:
+        'Use your NITW student email — that’s what keeps this campus-only.',
+    };
+  }
+  const profile = normalizeStudentOtpProfile(input);
+  if (!profile.ok) return profile;
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({
     email,
-    token,
+    token: input.token,
     type: 'email',
   });
   if (error) return { ok: false, message: friendlyAuthError(error) };
@@ -167,10 +208,22 @@ export async function verifyStudentOtp(
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    await supabase
+    const { error: profileError } = await supabase
       .from('users')
-      .update({ nitw_verified: true })
-      .eq('id', user.id);
+      .update({
+        nitw_verified: true,
+        full_name: profile.name,
+        phone: profile.phone,
+      })
+      .eq('id', user.id)
+      .eq('role', 'student');
+    if (profileError) {
+      console.error('[student-onboarding]', profileError.message);
+      return {
+        ok: false,
+        message: 'You are signed in, but your profile could not be saved.',
+      };
+    }
   }
   revalidatePath('/', 'layout');
   return { ok: true };

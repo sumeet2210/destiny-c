@@ -36,22 +36,30 @@ export function AuthShell({
   description?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  variant?: 'default' | 'portal';
+  variant?: 'default' | 'portal' | 'minimal';
   titleNowrap?: boolean;
 }) {
   const copy = audienceCopy[audience];
   const isPortal = variant === 'portal';
+  const isMinimal = variant === 'minimal';
 
   return (
     <main
       className={cn(
         styles.page,
         audience === 'student' && styles.inAppShell,
-        isPortal && styles.portalPage,
+        (isPortal || isMinimal) && styles.portalPage,
+        isMinimal && styles.minimalPage,
       )}
     >
-      <div className={cn(styles.frame, isPortal && styles.portalFrame)}>
-        {!isPortal ? (
+      <div
+        className={cn(
+          styles.frame,
+          isPortal && styles.portalFrame,
+          isMinimal && styles.minimalFrame,
+        )}
+      >
+        {!isPortal && !isMinimal ? (
           <section className={styles.media} aria-label={copy.headline}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={copy.image} alt="" aria-hidden="true" />
@@ -64,33 +72,47 @@ export function AuthShell({
         ) : null}
 
         <section
-          className={cn(styles.formPanel, isPortal && styles.portalFormPanel)}
+          className={cn(
+            styles.formPanel,
+            isPortal && styles.portalFormPanel,
+            isMinimal && styles.minimalFormPanel,
+          )}
           aria-labelledby="auth-title"
         >
-          <div
-            className={cn(styles.panelTop, isPortal && styles.portalPanelTop)}
-          >
-            {!isPortal && audience === 'owner' ? (
-              <Link href="/" aria-label="Destiny home" className={styles.logo}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/destiny-wordmark.png" alt="Destiny" />
-              </Link>
-            ) : !isPortal ? (
-              <span aria-hidden="true" />
-            ) : null}
-
-            <Link
-              href="/"
-              aria-label="Back to discovery"
-              className={styles.backLink}
+          {!isMinimal ? (
+            <div
+              className={cn(styles.panelTop, isPortal && styles.portalPanelTop)}
             >
-              <BackIcon />
-              {!isPortal ? 'Back to discovery' : null}
-            </Link>
-          </div>
+              {!isPortal && audience === 'owner' ? (
+                <Link
+                  href="/"
+                  aria-label="Destiny home"
+                  className={styles.logo}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/brand/destiny-wordmark.png" alt="Destiny" />
+                </Link>
+              ) : !isPortal ? (
+                <span aria-hidden="true" />
+              ) : null}
+
+              <Link
+                href="/"
+                aria-label="Back to discovery"
+                className={styles.backLink}
+              >
+                <BackIcon />
+                {!isPortal ? 'Back to discovery' : null}
+              </Link>
+            </div>
+          ) : null}
 
           <div
-            className={cn(styles.formWrap, isPortal && styles.portalFormWrap)}
+            className={cn(
+              styles.formWrap,
+              isPortal && styles.portalFormWrap,
+              isMinimal && styles.minimalFormWrap,
+            )}
           >
             <header className={styles.heading}>
               <h1

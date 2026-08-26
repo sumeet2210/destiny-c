@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { CRAVINGS } from '@/config/cravings';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -30,8 +29,17 @@ const blank: Item = {
 
 export function MenuManager({ items }: { items: Item[] }) {
   const [editing, setEditing] = useState<Item | null>(null);
+  const [beforeEdit, setBeforeEdit] = useState<Item | null>(null);
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  const dirty =
+    editing !== null &&
+    JSON.stringify(editing) !== JSON.stringify(beforeEdit ?? blank);
+
+  const closeEditor = () => {
+    setEditing(null);
+    setBeforeEdit(null);
+  };
 
   const save = () => {
     if (!editing) return;
@@ -41,20 +49,27 @@ export function MenuManager({ items }: { items: Item[] }) {
         res.ok ? 'Menu saved' : (res.message ?? 'Could not save'),
         res.ok ? 'positive' : 'error',
       );
-      if (res.ok) setEditing(null);
+      if (res.ok) closeEditor();
     });
   };
 
   return (
     <div className="space-y-4">
-      <Button onClick={() => setEditing(blank)}>+ Add item</Button>
+      <Button
+        onClick={() => {
+          setBeforeEdit(null);
+          setEditing(blank);
+        }}
+      >
+        + Add item
+      </Button>
 
       {items.length === 0 ? (
         <p className="text-text-muted text-sm">
           No items yet — add the first one.
         </p>
       ) : (
-        <Card>
+        <Card className="grid gap-x-6 sm:grid-cols-2">
           {items.map((item) => (
             <div key={item.id} className="group flex items-center gap-2">
               <div className="flex-1">
@@ -83,7 +98,10 @@ export function MenuManager({ items }: { items: Item[] }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setEditing(item)}
+                  onClick={() => {
+                    setBeforeEdit(item);
+                    setEditing(item);
+                  }}
                 >
                   Edit
                 </Button>
@@ -108,7 +126,7 @@ export function MenuManager({ items }: { items: Item[] }) {
 
       <Sheet
         open={editing !== null}
-        onClose={() => setEditing(null)}
+        onClose={closeEditor}
         title={editing?.id ? 'Edit item' : 'Add item'}
       >
         {editing && (
@@ -147,41 +165,32 @@ export function MenuManager({ items }: { items: Item[] }) {
             <div className="flex gap-2">
               <Chip
                 active={editing.is_veg}
+                className={
+                  editing.is_veg
+                    ? '!border-green-600 !bg-green-600 !text-white'
+                    : undefined
+                }
                 onClick={() => setEditing({ ...editing, is_veg: true })}
               >
                 Veg
               </Chip>
               <Chip
                 active={!editing.is_veg}
+                className={
+                  !editing.is_veg
+                    ? '!border-red-600 !bg-red-600 !text-white'
+                    : undefined
+                }
                 onClick={() => setEditing({ ...editing, is_veg: false })}
               >
                 Non-veg
               </Chip>
             </div>
-            <div>
-              <Label>Craving tags (helps students find it)</Label>
-              <div className="flex flex-wrap gap-2">
-                {CRAVINGS.map((c) => (
-                  <Chip
-                    key={c.tag}
-                    active={editing.craving_tags.includes(c.tag)}
-                    onClick={() =>
-                      setEditing({
-                        ...editing,
-                        craving_tags: editing.craving_tags.includes(c.tag)
-                          ? editing.craving_tags.filter((t) => t !== c.tag)
-                          : [...editing.craving_tags, c.tag],
-                      })
-                    }
-                  >
-                    {c.label}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-            <Button type="submit" disabled={pending} className="w-full">
-              {pending ? 'Saving…' : 'Save item'}
-            </Button>
+            {dirty ? (
+              <Button type="submit" disabled={pending} className="w-full">
+                {pending ? 'Saving…' : 'Save'}
+              </Button>
+            ) : null}
           </form>
         )}
       </Sheet>

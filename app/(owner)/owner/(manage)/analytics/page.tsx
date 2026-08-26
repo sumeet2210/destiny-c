@@ -6,19 +6,53 @@
 import { ReviewList } from '@/components/features/ReviewList';
 import { AnalyticsView } from '@/components/features/owner/AnalyticsView';
 import { Card } from '@/components/ui/Card';
-import { getOwnerAnalytics, getOwnerReviews } from '@/lib/queries/owner';
+import {
+  getOwnerAnalytics,
+  getOwnerBundle,
+  getOwnerReviews,
+} from '@/lib/queries/owner';
+import { nowMs } from '@/lib/now';
 
 export const metadata = { title: 'Analytics' };
 
 export default async function OwnerAnalyticsPage() {
-  // Both read the cached owner bundle, so this is two queries, not two rounds.
-  const [analytics, reviews] = await Promise.all([
+  // All three reads reuse the cached owner bundle within this request.
+  const [analytics, reviews, bundle] = await Promise.all([
     getOwnerAnalytics(),
     getOwnerReviews(),
+    getOwnerBundle(),
   ]);
+  const now = nowMs();
+  const liveOffers =
+    bundle?.offers.filter(
+      (offer) =>
+        offer.is_active &&
+        new Date(offer.starts_at).getTime() <= now &&
+        new Date(offer.expires_at).getTime() > now,
+    ).length ?? 0;
+  const upcomingEvents =
+    bundle?.events.filter(
+      (event) =>
+        !event.is_cancelled && new Date(event.starts_at).getTime() > now,
+    ).length ?? 0;
 
   return (
     <div className="w-full space-y-8">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <p className="text-text-muted text-[13px]">Live offers</p>
+          <p className="font-display text-paper mt-1 text-2xl font-bold">
+            {liveOffers}
+          </p>
+        </Card>
+        <Card>
+          <p className="text-text-muted text-[13px]">Upcoming events</p>
+          <p className="font-display text-paper mt-1 text-2xl font-bold">
+            {upcomingEvents}
+          </p>
+        </Card>
+      </div>
+
       <section className="space-y-5" aria-labelledby="owner-views-title">
         <div>
           <h2
@@ -52,13 +86,8 @@ export default async function OwnerAnalyticsPage() {
             id="owner-reviews-title"
             className="font-display text-paper text-xl font-bold"
           >
-            Reviews
+            Ratings &amp; Reviews
           </h2>
-          <p className="text-text-muted mt-1 text-[13px]">
-            Only students who booked a table and showed up can leave a review,
-            so every one of these is from a real diner. Reviewers stay anonymous
-            — you see the rating and what they wrote, not who they are.
-          </p>
         </div>
 
         {!reviews ? (
@@ -78,7 +107,7 @@ export default async function OwnerAnalyticsPage() {
                 </p>
               </Card>
               <Card>
-                <p className="text-text-muted text-[13px]">Total reviews</p>
+                <p className="text-text-muted text-[13px]">Total ratings</p>
                 <p className="font-display text-paper mt-1 text-2xl font-bold">
                   {reviews.count}
                 </p>

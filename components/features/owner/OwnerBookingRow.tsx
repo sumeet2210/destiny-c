@@ -52,7 +52,7 @@ export function OwnerBookingRow({
         <p className="text-paper text-sm font-semibold">
           {booking.studentName ?? 'A student'}
           <span className="text-accent-primary ml-2 font-mono text-[13px]">
-            {booking.headcount} pax
+            {booking.headcount} {booking.headcount === 1 ? 'guest' : 'guests'}
           </span>
         </p>
         <span className={cn('text-[12px]', display.tone)}>{display.label}</span>

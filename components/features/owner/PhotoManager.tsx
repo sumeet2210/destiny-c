@@ -54,13 +54,16 @@ async function resizeToWebp(file: File, maxDim = 1600): Promise<Blob> {
 export function PhotoManager({
   coverUrl,
   photos,
+  mode = 'gallery',
 }: {
-  coverUrl: string | null;
+  coverUrl?: string | null;
   photos: Photo[];
+  mode?: 'gallery' | 'menu';
 }) {
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [uploadFolder, setUploadFolder] = useState('');
+  const [addingFolder, setAddingFolder] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameTo, setRenameTo] = useState('');
   const toast = useToast();
@@ -193,209 +196,244 @@ export function PhotoManager({
         onChange={(e) => onFile(e.target.files?.[0])}
       />
 
-      <Card className="space-y-3">
-        <h2 className="text-paper text-sm font-semibold">Cover photo</h2>
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- storage URL, pre-resized
-          <img
-            src={coverUrl}
-            alt="Cover"
-            className="rounded-control aspect-[8/5] w-full object-cover"
-          />
-        ) : (
-          <p className="text-text-muted text-[13px]">
-            No cover yet — this is the first thing students see.
-          </p>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={uploading}
-          onClick={() => pickFile('gallery', true)}
-        >
-          {uploading
-            ? 'Uploading…'
-            : coverUrl
-              ? 'Replace cover'
-              : 'Upload cover'}
-        </Button>
-      </Card>
+      {mode === 'gallery' ? (
+        <>
+          <Card className="space-y-3">
+            <h2 className="text-paper text-sm font-semibold">Cover photo</h2>
+            {coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- storage URL, pre-resized
+              <img
+                src={coverUrl}
+                alt="Cover"
+                className="rounded-control aspect-[8/5] w-full max-w-xs object-cover"
+              />
+            ) : (
+              <p className="text-text-muted text-[13px]">
+                No cover yet — this is the first thing students see.
+              </p>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              onClick={() => pickFile('gallery', true)}
+            >
+              {uploading
+                ? 'Uploading…'
+                : coverUrl
+                  ? 'Replace cover'
+                  : 'Upload cover'}
+            </Button>
+          </Card>
 
-      <Card className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-paper text-sm font-semibold">Gallery</h2>
-            <p className="text-text-muted text-[12px]">
-              Group photos into folders so students can jump straight to the
-              ambience or the food.
-            </p>
-          </div>
-        </div>
+          <Card className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-paper text-sm font-semibold">Gallery</h2>
+                <p className="text-text-muted text-[12px]">
+                  Group photos into folders so students can jump straight to the
+                  ambience or the food.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploading || pending}
+                onClick={() => {
+                  setUploadFolder('');
+                  setAddingFolder(true);
+                }}
+              >
+                + Add Folder
+              </Button>
+            </div>
 
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="min-w-40 flex-1">
-            <Label htmlFor="ph-folder">Add to folder</Label>
-            <Input
-              id="ph-folder"
-              list="ph-folder-options"
-              value={uploadFolder}
-              placeholder={UNFILED}
-              onChange={(e) => setUploadFolder(e.target.value)}
-            />
-            <datalist id="ph-folder-options">
-              {folderOptions.map((f) => (
-                <option key={f} value={f} />
-              ))}
-            </datalist>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={uploading || pending}
-            onClick={() => pickFile('gallery', false, uploadFolder)}
-          >
-            + Add photo
-          </Button>
-        </div>
-
-        {gallery.length === 0 ? (
-          <p className="text-text-muted text-[13px]">Nothing here yet.</p>
-        ) : (
-          folders.map((folder) => {
-            const inFolder = gallery.filter(
-              (p) => (p.gallery_category ?? UNFILED) === folder,
-            );
-            const renamable = folder !== UNFILED;
-            return (
-              <section key={folder} className="space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-paper text-[13px] font-semibold">
-                    {folder}{' '}
-                    <span className="text-text-muted font-normal">
-                      ({inFolder.length})
-                    </span>
-                  </h3>
-                  {renamable &&
-                    (renaming === folder ? (
-                      <form
-                        className="flex items-center gap-2"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          commitRename(folder);
-                        }}
-                      >
-                        <Input
-                          aria-label={`New name for ${folder}`}
-                          value={renameTo}
-                          autoFocus
-                          onChange={(e) => setRenameTo(e.target.value)}
-                        />
-                        <Button type="submit" size="sm" disabled={pending}>
-                          Save
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setRenaming(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </form>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={pending}
-                        onClick={() => {
-                          setRenaming(folder);
-                          setRenameTo(folder);
-                        }}
-                      >
-                        Rename
-                      </Button>
-                    ))}
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {inFolder.map((p, i) => (
-                    <div key={p.id} className="space-y-1">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- storage URL, pre-resized */}
-                      <img
-                        src={p.url}
-                        alt=""
-                        className="rounded-control aspect-[8/5] w-full object-cover"
-                      />
-                      <div className="flex justify-between text-[13px]">
-                        <span>
-                          <button
-                            type="button"
-                            aria-label="Move earlier"
-                            disabled={pending || uploading || i === 0}
-                            onClick={() => moveInFolder(inFolder, i, -1)}
-                            className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
-                          >
-                            ←
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Move later"
-                            disabled={
-                              pending || uploading || i === inFolder.length - 1
-                            }
-                            onClick={() => moveInFolder(inFolder, i, 1)}
-                            className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
-                          >
-                            →
-                          </button>
-                        </span>
-                        <button
-                          type="button"
-                          disabled={pending || uploading}
-                          onClick={() => remove(p.id)}
-                          className="text-accent-urgent-text px-1"
-                        >
-                          delete
-                        </button>
-                      </div>
-                      <Select
-                        aria-label="Folder for this photo"
-                        value={p.gallery_category ?? ''}
-                        disabled={pending || uploading}
-                        onChange={(e) => moveToFolder(p.id, e.target.value)}
-                        className="text-[12px]"
-                      >
-                        <option value="">{UNFILED}</option>
-                        {folderOptions.map((f) => (
-                          <option key={f} value={f}>
-                            {f}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-40 flex-1">
+                <Label htmlFor="ph-folder">
+                  {addingFolder ? 'New folder name' : 'Add photo to folder'}
+                </Label>
+                <Input
+                  id="ph-folder"
+                  list="ph-folder-options"
+                  value={uploadFolder}
+                  placeholder={UNFILED}
+                  onChange={(e) => setUploadFolder(e.target.value)}
+                />
+                <datalist id="ph-folder-options">
+                  {folderOptions.map((f) => (
+                    <option key={f} value={f} />
                   ))}
-                </div>
-              </section>
-            );
-          })
-        )}
-      </Card>
+                </datalist>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={uploading || pending}
+                onClick={() => {
+                  if (addingFolder && !uploadFolder.trim()) {
+                    toast('Give the folder a name.', 'error');
+                    return;
+                  }
+                  pickFile('gallery', false, uploadFolder);
+                  setAddingFolder(false);
+                }}
+              >
+                {addingFolder ? 'Create & add photo' : '+ Add photo'}
+              </Button>
+              {addingFolder ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAddingFolder(false)}
+                >
+                  Cancel
+                </Button>
+              ) : null}
+            </div>
 
-      <PhotoSection
-        title="Menu photos"
-        subtitle="For menus easier to photograph than to type."
-        photos={menuPhotos}
-        onAdd={() => pickFile('menu_photo')}
-        onMove={(i, d) => move(menuPhotos, i, d)}
-        onRemove={remove}
-        disabled={uploading || pending}
-      />
+            {gallery.length === 0 ? (
+              <p className="text-text-muted text-[13px]">Nothing here yet.</p>
+            ) : (
+              folders.map((folder) => {
+                const inFolder = gallery.filter(
+                  (p) => (p.gallery_category ?? UNFILED) === folder,
+                );
+                const renamable = folder !== UNFILED;
+                return (
+                  <section key={folder} className="space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-paper text-[13px] font-semibold">
+                        {folder}{' '}
+                        <span className="text-text-muted font-normal">
+                          ({inFolder.length})
+                        </span>
+                      </h3>
+                      {renamable &&
+                        (renaming === folder ? (
+                          <form
+                            className="flex items-center gap-2"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              commitRename(folder);
+                            }}
+                          >
+                            <Input
+                              aria-label={`New name for ${folder}`}
+                              value={renameTo}
+                              autoFocus
+                              onChange={(e) => setRenameTo(e.target.value)}
+                            />
+                            <Button type="submit" size="sm" disabled={pending}>
+                              Save
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setRenaming(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </form>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={pending}
+                            onClick={() => {
+                              setRenaming(folder);
+                              setRenameTo(folder);
+                            }}
+                          >
+                            Rename
+                          </Button>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {inFolder.map((p, i) => (
+                        <div key={p.id} className="space-y-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- storage URL, pre-resized */}
+                          <img
+                            src={p.url}
+                            alt=""
+                            className="rounded-control aspect-[8/5] w-full object-cover"
+                          />
+                          <div className="flex justify-between text-[13px]">
+                            <span>
+                              <button
+                                type="button"
+                                aria-label="Move earlier"
+                                disabled={pending || uploading || i === 0}
+                                onClick={() => moveInFolder(inFolder, i, -1)}
+                                className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
+                              >
+                                ←
+                              </button>
+                              <button
+                                type="button"
+                                aria-label="Move later"
+                                disabled={
+                                  pending ||
+                                  uploading ||
+                                  i === inFolder.length - 1
+                                }
+                                onClick={() => moveInFolder(inFolder, i, 1)}
+                                className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
+                              >
+                                →
+                              </button>
+                            </span>
+                            <button
+                              type="button"
+                              disabled={pending || uploading}
+                              onClick={() => remove(p.id)}
+                              className="text-accent-urgent-text px-1"
+                            >
+                              delete
+                            </button>
+                          </div>
+                          <Select
+                            aria-label="Folder for this photo"
+                            value={p.gallery_category ?? ''}
+                            disabled={pending || uploading}
+                            onChange={(e) => moveToFolder(p.id, e.target.value)}
+                            className="text-[12px]"
+                          >
+                            <option value="">{UNFILED}</option>
+                            {folderOptions.map((f) => (
+                              <option key={f} value={f}>
+                                {f}
+                              </option>
+                            ))}
+                          </Select>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })
+            )}
+          </Card>
+        </>
+      ) : (
+        <PhotoSection
+          title="Menu photos"
+          photos={menuPhotos}
+          onAdd={() => pickFile('menu_photo')}
+          onMove={(i, d) => move(menuPhotos, i, d)}
+          onRemove={remove}
+          disabled={uploading || pending}
+        />
+      )}
     </div>
   );
 }
 
 function PhotoSection({
   title,
-  subtitle,
   photos,
   onAdd,
   onMove,
@@ -403,7 +441,6 @@ function PhotoSection({
   disabled,
 }: {
   title: string;
-  subtitle?: string;
   photos: Photo[];
   onAdd: () => void;
   onMove: (index: number, dir: -1 | 1) => void;
@@ -413,12 +450,7 @@ function PhotoSection({
   return (
     <Card className="space-y-3">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-paper text-sm font-semibold">{title}</h2>
-          {subtitle && (
-            <p className="text-text-muted text-[12px]">{subtitle}</p>
-          )}
-        </div>
+        <h2 className="text-paper text-sm font-semibold">{title}</h2>
         <Button variant="outline" size="sm" disabled={disabled} onClick={onAdd}>
           + Add
         </Button>

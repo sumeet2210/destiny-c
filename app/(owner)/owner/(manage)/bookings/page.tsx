@@ -14,7 +14,8 @@ export default async function OwnerBookingsPage(
   props: PageProps<'/owner/bookings'>,
 ) {
   const searchParams = await props.searchParams;
-  const status = parseStatusFilter(searchParams.status);
+  const parsedStatus = parseStatusFilter(searchParams.status);
+  const status = parsedStatus === 'cancelled' ? 'cancelled' : 'coming';
   const guest = normalizeGuestQuery(searchParams.guest);
   // Always the owner's own rows under RLS; filtering only ever narrows them.
   const all = await listOwnerBookings();
@@ -23,7 +24,7 @@ export default async function OwnerBookingsPage(
   // Built from the parsed filters rather than the raw query string, so the file
   // can never cover a different set of rows than the page is showing.
   const exportParams = new URLSearchParams();
-  if (status !== 'all') exportParams.set('status', status);
+  exportParams.set('status', status);
   if (guest) exportParams.set('guest', guest);
   const exportQuery = exportParams.toString();
   const exportHref = `/api/owner/bookings/export${exportQuery ? `?${exportQuery}` : ''}`;

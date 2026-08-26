@@ -197,7 +197,9 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
             />
           </div>
           <div>
-            <Label htmlFor="of-start">Starts (leave empty = right now)</Label>
+            <Label htmlFor="of-start">
+              Start date and time (leave empty = right now)
+            </Label>
             <Input
               id="of-start"
               name="starts_at"
@@ -206,7 +208,9 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
             />
           </div>
           <div>
-            <Label htmlFor="of-exp">Expires (leave empty = end of today)</Label>
+            <Label htmlFor="of-exp">
+              End date and time (leave empty = end of today)
+            </Label>
             <Input
               id="of-exp"
               name="expires_at"

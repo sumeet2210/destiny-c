@@ -4,22 +4,12 @@ import { useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Chip } from '@/components/ui/Chip';
 import { Input } from '@/components/ui/Input';
-import {
-  parseStatusFilter,
-  type BookingStatusFilter,
-} from '@/lib/domain/booking-filters';
+import { parseStatusFilter } from '@/lib/domain/booking-filters';
 
-// Labels mirror the owner-facing wording in OwnerBookingRow, so a chip and the
-// badge on the row it selects never describe the same booking differently.
-// "Still ahead" is the one chip that spans statuses — it is deliberately not
-// called "Coming", which already means the narrower "owner accepted it".
-const options: { value: BookingStatusFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'coming', label: 'Still ahead' },
-  { value: 'requested', label: 'Incoming' },
-  { value: 'confirmed', label: 'Coming' },
+const options = [
+  { value: 'coming', label: 'Coming' },
   { value: 'cancelled', label: 'Cancelled' },
-];
+] as const;
 
 /**
  * URL-backed booking filters; the server remains the filtering authority.
@@ -45,7 +35,8 @@ export function BookingFilters() {
     });
   };
 
-  const active = parseStatusFilter(params.get('status'));
+  const parsed = parseStatusFilter(params.get('status'));
+  const active = parsed === 'cancelled' ? 'cancelled' : 'coming';
 
   return (
     <div className="space-y-3">
@@ -54,9 +45,7 @@ export function BookingFilters() {
           <Chip
             key={option.value}
             active={active === option.value}
-            onClick={() =>
-              set({ status: option.value === 'all' ? null : option.value })
-            }
+            onClick={() => set({ status: option.value })}
           >
             {option.label}
           </Chip>

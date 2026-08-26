@@ -6,11 +6,10 @@ import { cn } from '@/lib/cn';
 import styles from './owner-nav.module.css';
 
 // Offers/events and reviews/analytics each live on one page now, so the nav is
-// seven entries instead of nine. The old routes still resolve — they redirect —
+// six entries instead of nine. The old routes still resolve — they redirect —
 // but they are deliberately absent here: a `/owner/offers` entry would also
 // match `/owner/offers-events` under the startsWith test below.
 const items = [
-  { href: '/owner/dashboard', label: 'Overview' },
   { href: '/owner/profile', label: 'Profile' },
   { href: '/owner/menu', label: 'Menu' },
   { href: '/owner/offers-events', label: 'Offers & Events' },

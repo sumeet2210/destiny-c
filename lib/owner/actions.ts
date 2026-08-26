@@ -427,6 +427,7 @@ export async function uploadPhoto(formData: FormData): Promise<ActionResult> {
     if (error) return { ok: false, message: error.message };
   }
   revalidateOwnerAnd('/owner/photos');
+  revalidatePath('/owner/menu');
   return { ok: true };
 }
 
@@ -454,6 +455,7 @@ export async function deletePhoto(id: string): Promise<ActionResult> {
     }
   }
   revalidateOwnerAnd('/owner/photos');
+  revalidatePath('/owner/menu');
   return { ok: true };
 }
 
@@ -468,6 +470,7 @@ export async function reorderPhotos(ids: string[]): Promise<ActionResult> {
     if (error) return { ok: false, message: error.message };
   }
   revalidateOwnerAnd('/owner/photos');
+  revalidatePath('/owner/menu');
   return { ok: true };
 }
 

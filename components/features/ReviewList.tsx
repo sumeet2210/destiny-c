@@ -50,10 +50,7 @@ export function ReviewList({
 
   if (reviews.length === 0) {
     return (
-      <p className="review-empty text-text-muted text-sm">
-        No reviews yet. Reviews come from students who actually booked and
-        showed up — so the first one has to earn it.
-      </p>
+      <p className="review-empty text-text-muted text-sm">No reviews yet.</p>
     );
   }
 

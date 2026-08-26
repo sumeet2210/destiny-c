@@ -69,6 +69,16 @@ export const seedRestaurants: SeedRestaurant[] = [
     student_discount: true,
     price_per_head: 180,
     vibe_tags: ['group', 'celebration', 'comfort'],
+    owner_name: 'Biryani Adda Owner',
+    restaurant_category: 'Restaurant',
+    cuisines: ['Biryani', 'North Indian'],
+    delivery: true,
+    outdoor_seating: false,
+    parking: true,
+    wifi: false,
+    upi_card: true,
+    wheelchair_accessible: false,
+    family_friendly: true,
     opening_hours: {
       mon: [{ open: '11:30', close: '23:30' }],
       tue: [{ open: '11:30', close: '23:30' }],
@@ -100,6 +110,16 @@ export const seedRestaurants: SeedRestaurant[] = [
     student_discount: true,
     price_per_head: 100,
     vibe_tags: ['quick', 'chill'],
+    owner_name: 'Momo Nation Owner',
+    restaurant_category: 'Street food',
+    cuisines: ['Chinese', 'Fast Food'],
+    delivery: true,
+    outdoor_seating: true,
+    parking: false,
+    wifi: false,
+    upi_card: true,
+    wheelchair_accessible: false,
+    family_friendly: true,
     opening_hours: {
       mon: [{ open: '12:00', close: '22:00' }],
       tue: [{ open: '12:00', close: '22:00' }],
@@ -131,6 +151,16 @@ export const seedRestaurants: SeedRestaurant[] = [
     student_discount: false,
     price_per_head: 70,
     vibe_tags: ['study', 'latenight', 'chill'],
+    owner_name: 'Chai Theory Owner',
+    restaurant_category: 'Cafe',
+    cuisines: ['Cafe', 'Beverages', 'Fast Food'],
+    delivery: false,
+    outdoor_seating: true,
+    parking: false,
+    wifi: true,
+    upi_card: true,
+    wheelchair_accessible: false,
+    family_friendly: true,
     opening_hours: {
       mon: [{ open: '08:00', close: '02:00' }],
       tue: [{ open: '08:00', close: '02:00' }],
@@ -162,6 +192,16 @@ export const seedRestaurants: SeedRestaurant[] = [
     student_discount: true,
     price_per_head: 90,
     vibe_tags: ['comfort', 'quick'],
+    owner_name: 'Southern Spice Tiffins Owner',
+    restaurant_category: 'Restaurant',
+    cuisines: ['South Indian'],
+    delivery: true,
+    outdoor_seating: false,
+    parking: true,
+    wifi: false,
+    upi_card: true,
+    wheelchair_accessible: true,
+    family_friendly: true,
     opening_hours: {
       mon: [
         { open: '07:00', close: '11:30' },
@@ -208,6 +248,16 @@ export const seedRestaurants: SeedRestaurant[] = [
     student_discount: false,
     price_per_head: 150,
     vibe_tags: ['date', 'chill', 'celebration'],
+    owner_name: 'Scoops & Stories Owner',
+    restaurant_category: 'Dessert shop',
+    cuisines: ['Desserts', 'Beverages'],
+    delivery: true,
+    outdoor_seating: false,
+    parking: true,
+    wifi: true,
+    upi_card: true,
+    wheelchair_accessible: true,
+    family_friendly: true,
     opening_hours: {
       mon: [{ open: '13:00', close: '23:30' }],
       tue: [{ open: '13:00', close: '23:30' }],
@@ -239,6 +289,16 @@ export const seedRestaurants: SeedRestaurant[] = [
     student_discount: true,
     price_per_head: 350,
     vibe_tags: ['group', 'celebration', 'latenight'],
+    owner_name: 'Hunter Road Grill Owner',
+    restaurant_category: 'Restaurant',
+    cuisines: ['North Indian', 'Continental', 'Fast Food'],
+    delivery: false,
+    outdoor_seating: true,
+    parking: true,
+    wifi: true,
+    upi_card: true,
+    wheelchair_accessible: false,
+    family_friendly: false,
     opening_hours: {
       mon: [],
       tue: [{ open: '17:00', close: '23:59' }],
@@ -432,6 +492,19 @@ let phCounter = 0;
 const phid = () =>
   `00000000-0000-4000-8004-${String(++phCounter).padStart(12, '0')}`;
 
+/**
+ * Gallery folders are owner-authored free text, so the seed derives them from
+ * the asset names to demo the feature with real groups rather than dumping
+ * everything into one folder. Menu photos are not foldered — they render as the
+ * menu card strip, not the gallery.
+ */
+function galleryFolder(url: string, kind: 'gallery' | 'menu_photo') {
+  if (kind !== 'gallery') return null;
+  if (url.includes('gallery-food')) return 'Food & Drinks';
+  if (url.includes('gallery-interior')) return 'Interior';
+  return 'Ambience';
+}
+
 const photos = (
   restaurantId: string,
   urls: string[],
@@ -442,6 +515,7 @@ const photos = (
     restaurant_id: restaurantId,
     url,
     kind,
+    gallery_category: galleryFolder(url, kind),
     sort_order: i,
     created_at: daysAgo(20),
   }));

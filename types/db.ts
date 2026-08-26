@@ -395,6 +395,7 @@ export type Database = {
       restaurant_photos: {
         Row: {
           created_at: string;
+          gallery_category: string | null;
           id: string;
           kind: Database['public']['Enums']['photo_kind'];
           restaurant_id: string;
@@ -403,6 +404,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
+          gallery_category?: string | null;
           id?: string;
           kind?: Database['public']['Enums']['photo_kind'];
           restaurant_id: string;
@@ -411,6 +413,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          gallery_category?: string | null;
           id?: string;
           kind?: Database['public']['Enums']['photo_kind'];
           restaurant_id?: string;
@@ -433,8 +436,11 @@ export type Database = {
           area: string;
           cover_image_url: string | null;
           created_at: string;
+          cuisines: string[];
+          delivery: boolean;
           description: string | null;
           dine_in: boolean;
+          family_friendly: boolean;
           has_ac: boolean;
           id: string;
           is_veg_only: boolean;
@@ -442,21 +448,31 @@ export type Database = {
           lng: number | null;
           name: string;
           opening_hours: Json | null;
+          outdoor_seating: boolean;
           owner_id: string;
+          owner_name: string | null;
+          parking: boolean;
           phone: string | null;
           price_per_head: number | null;
+          restaurant_category: string | null;
           status: Database['public']['Enums']['restaurant_status'];
           student_discount: boolean;
           takeaway: boolean;
+          upi_card: boolean;
           vibe_tags: string[];
+          wheelchair_accessible: boolean;
+          wifi: boolean;
         };
         Insert: {
           address?: string | null;
           area: string;
           cover_image_url?: string | null;
           created_at?: string;
+          cuisines?: string[];
+          delivery?: boolean;
           description?: string | null;
           dine_in?: boolean;
+          family_friendly?: boolean;
           has_ac?: boolean;
           id?: string;
           is_veg_only?: boolean;
@@ -464,21 +480,31 @@ export type Database = {
           lng?: number | null;
           name: string;
           opening_hours?: Json | null;
+          outdoor_seating?: boolean;
           owner_id: string;
+          owner_name?: string | null;
+          parking?: boolean;
           phone?: string | null;
           price_per_head?: number | null;
+          restaurant_category?: string | null;
           status?: Database['public']['Enums']['restaurant_status'];
           student_discount?: boolean;
           takeaway?: boolean;
+          upi_card?: boolean;
           vibe_tags?: string[];
+          wheelchair_accessible?: boolean;
+          wifi?: boolean;
         };
         Update: {
           address?: string | null;
           area?: string;
           cover_image_url?: string | null;
           created_at?: string;
+          cuisines?: string[];
+          delivery?: boolean;
           description?: string | null;
           dine_in?: boolean;
+          family_friendly?: boolean;
           has_ac?: boolean;
           id?: string;
           is_veg_only?: boolean;
@@ -486,13 +512,20 @@ export type Database = {
           lng?: number | null;
           name?: string;
           opening_hours?: Json | null;
+          outdoor_seating?: boolean;
           owner_id?: string;
+          owner_name?: string | null;
+          parking?: boolean;
           phone?: string | null;
           price_per_head?: number | null;
+          restaurant_category?: string | null;
           status?: Database['public']['Enums']['restaurant_status'];
           student_discount?: boolean;
           takeaway?: boolean;
+          upi_card?: boolean;
           vibe_tags?: string[];
+          wheelchair_accessible?: boolean;
+          wifi?: boolean;
         };
         Relationships: [
           {
@@ -596,6 +629,8 @@ export type Database = {
         Row: {
           created_at: string;
           email: string;
+          favorite_cuisines: string[];
+          food_type: string | null;
           full_name: string | null;
           hostel: string | null;
           id: string;
@@ -604,10 +639,13 @@ export type Database = {
           phone: string | null;
           role: Database['public']['Enums']['user_role'];
           share_activity: boolean;
+          spice_preference: string | null;
         };
         Insert: {
           created_at?: string;
           email: string;
+          favorite_cuisines?: string[];
+          food_type?: string | null;
           full_name?: string | null;
           hostel?: string | null;
           id: string;
@@ -616,10 +654,13 @@ export type Database = {
           phone?: string | null;
           role?: Database['public']['Enums']['user_role'];
           share_activity?: boolean;
+          spice_preference?: string | null;
         };
         Update: {
           created_at?: string;
           email?: string;
+          favorite_cuisines?: string[];
+          food_type?: string | null;
           full_name?: string | null;
           hostel?: string | null;
           id?: string;
@@ -628,6 +669,7 @@ export type Database = {
           phone?: string | null;
           role?: Database['public']['Enums']['user_role'];
           share_activity?: boolean;
+          spice_preference?: string | null;
         };
         Relationships: [];
       };

@@ -17,6 +17,10 @@ describe('parseStatusFilter', () => {
     expect(parseStatusFilter('all')).toBe('all');
   });
 
+  it('accepts the synthetic "coming" bucket', () => {
+    expect(parseStatusFilter('coming')).toBe('coming');
+  });
+
   it('falls back to "all" for a missing param', () => {
     expect(parseStatusFilter(undefined)).toBe('all');
     expect(parseStatusFilter(null)).toBe('all');
@@ -102,6 +106,34 @@ describe('filterOwnerBookings', () => {
     expect(
       names(filterOwnerBookings(bookings, { status: 'cancelled' })),
     ).toEqual(['Rohit Verma']);
+  });
+
+  it('gathers every reservation still ahead under "coming"', () => {
+    const coming = filterOwnerBookings(bookings, { status: 'coming' });
+    expect(coming.map((r) => r.status)).toEqual([
+      'requested',
+      'confirmed',
+      'unconfirmed',
+    ]);
+  });
+
+  it('leaves finished reservations out of "coming"', () => {
+    // The bucket answers "who might still walk in", so a cancellation and a
+    // visit that already happened are both noise in it.
+    const statuses = filterOwnerBookings(bookings, { status: 'coming' }).map(
+      (r) => r.status,
+    );
+    expect(statuses).not.toContain('cancelled');
+    expect(statuses).not.toContain('completed');
+  });
+
+  it('combines "coming" with a guest search', () => {
+    // Two Aaravs, one requested and one unconfirmed: both are still ahead.
+    expect(
+      names(
+        filterOwnerBookings(bookings, { status: 'coming', guest: 'aarav' }),
+      ),
+    ).toEqual(['Aarav Sharma', 'Aarav Menon']);
   });
 
   it('ignores an invalid status rather than returning nothing', () => {

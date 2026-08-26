@@ -29,6 +29,7 @@ export function AuthShell({
   children,
   footer,
   variant = 'default',
+  titleNowrap = false,
 }: {
   audience: AuthAudience;
   title: string;
@@ -36,6 +37,7 @@ export function AuthShell({
   children: React.ReactNode;
   footer?: React.ReactNode;
   variant?: 'default' | 'portal';
+  titleNowrap?: boolean;
 }) {
   const copy = audienceCopy[audience];
   const isPortal = variant === 'portal';
@@ -91,7 +93,12 @@ export function AuthShell({
             className={cn(styles.formWrap, isPortal && styles.portalFormWrap)}
           >
             <header className={styles.heading}>
-              <h1 id="auth-title">{title}</h1>
+              <h1
+                id="auth-title"
+                className={titleNowrap ? styles.nowrapTitle : undefined}
+              >
+                {title}
+              </h1>
               {description ? <p>{description}</p> : null}
             </header>
 

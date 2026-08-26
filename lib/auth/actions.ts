@@ -6,10 +6,21 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { isStudentEmail } from '@/config/auth';
+import {
+  normalizeOwnerSignupRestaurant,
+  type OwnerSignupRestaurant,
+  type OwnerSignupRestaurantInput,
+} from '@/lib/domain/owner-profile';
 import { normalizeStudentPatch } from '@/lib/domain/student-preferences';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
+import type { User } from '@supabase/supabase-js';
 
 export type AuthResult = { ok: boolean; message?: string };
+
+export type OwnerSignupInput = OwnerSignupRestaurantInput & {
+  email: string;
+  password: string;
+};
 
 const NOT_CONFIGURED: AuthResult = {
   ok: false,
@@ -65,6 +76,62 @@ function friendlyAuthError(error: { message: string; code?: string }): string {
   return 'Something went wrong on our side. Try again in a moment.';
 }
 
+function restaurantFromMetadata(user: User): OwnerSignupRestaurant | null {
+  const metadata = user.user_metadata;
+  const normalized = normalizeOwnerSignupRestaurant({
+    restaurantName: String(metadata.restaurant_name ?? ''),
+    ownerName: String(metadata.owner_name ?? ''),
+    phone: String(metadata.restaurant_phone ?? ''),
+    address: String(metadata.restaurant_address ?? ''),
+    area: String(metadata.restaurant_area ?? ''),
+  });
+  return normalized.ok ? normalized.restaurant : null;
+}
+
+/**
+ * Email confirmation can leave owner signup without a session, so the
+ * normalized listing draft is also stored in auth metadata. The first
+ * confirmed login uses it to create the pending restaurant exactly once.
+ */
+async function ensureOwnerRestaurant(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  user: User,
+  supplied?: OwnerSignupRestaurant,
+): Promise<AuthResult | null> {
+  if (user.user_metadata.role !== 'owner') return null;
+  const restaurant = supplied ?? restaurantFromMetadata(user);
+  if (!restaurant) return null;
+
+  const { data: existing, error: lookupError } = await supabase
+    .from('restaurants')
+    .select('id')
+    .eq('owner_id', user.id)
+    .limit(1)
+    .maybeSingle();
+  if (lookupError) {
+    console.error('[owner-onboarding]', lookupError.message);
+    return {
+      ok: false,
+      message: 'Could not prepare your restaurant listing. Try again.',
+    };
+  }
+  if (existing) return null;
+
+  const { error } = await supabase.from('restaurants').insert({
+    ...restaurant,
+    owner_id: user.id,
+    status: 'pending_approval',
+  });
+  if (error) {
+    console.error('[owner-onboarding]', error.message);
+    return {
+      ok: false,
+      message: 'Could not prepare your restaurant listing. Try again.',
+    };
+  }
+  return null;
+}
+
 export async function requestStudentOtp(email: string): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   if (!isStudentEmail(email)) {
@@ -115,23 +182,40 @@ export async function ownerLogin(
 ): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) return { ok: false, message: friendlyAuthError(error) };
+  const onboardingError = await ensureOwnerRestaurant(supabase, data.user);
+  if (onboardingError) return onboardingError;
   revalidatePath('/', 'layout');
   return { ok: true };
 }
 
 export async function ownerSignup(
-  email: string,
-  password: string,
-  fullName: string,
+  input: OwnerSignupInput,
 ): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const normalized = normalizeOwnerSignupRestaurant(input);
+  if (!normalized.ok) return { ok: false, message: normalized.message };
+
+  const { restaurant } = normalized;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { role: 'owner', full_name: fullName } },
+    email: input.email.trim(),
+    password: input.password,
+    options: {
+      data: {
+        role: 'owner',
+        full_name: restaurant.owner_name,
+        restaurant_name: restaurant.name,
+        owner_name: restaurant.owner_name,
+        restaurant_phone: restaurant.phone,
+        restaurant_address: restaurant.address,
+        restaurant_area: restaurant.area,
+      },
+    },
   });
   if (error) return { ok: false, message: friendlyAuthError(error) };
   if (!data.session) {
@@ -140,6 +224,18 @@ export async function ownerSignup(
       message: 'Check your email to confirm the account, then log in.',
     };
   }
+  if (!data.user) {
+    return {
+      ok: false,
+      message: 'Your account was created, but the listing could not start.',
+    };
+  }
+  const onboardingError = await ensureOwnerRestaurant(
+    supabase,
+    data.user,
+    restaurant,
+  );
+  if (onboardingError) return onboardingError;
   revalidatePath('/', 'layout');
   return { ok: true };
 }

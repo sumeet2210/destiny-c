@@ -7,6 +7,7 @@
 // first.
 
 import { CUISINES, isRestaurantCategory } from '@/config/restaurant-profile';
+import { AREAS, type Area } from '@/config/areas';
 
 /**
  * Owners type phone numbers every which way: "9848012345", "098480 12345",
@@ -27,6 +28,55 @@ export function normalizeIndianPhone(raw: string): string | null {
 
 export const PHONE_HELP =
   'Enter a 10-digit Indian mobile number, with or without +91.';
+
+export type OwnerSignupRestaurantInput = {
+  restaurantName: string;
+  ownerName: string;
+  phone: string;
+  address: string;
+  area: string;
+};
+
+export type OwnerSignupRestaurant = {
+  name: string;
+  owner_name: string;
+  phone: string;
+  address: string;
+  area: Area;
+};
+
+export function normalizeOwnerSignupRestaurant(
+  input: OwnerSignupRestaurantInput,
+):
+  | { ok: true; restaurant: OwnerSignupRestaurant }
+  | { ok: false; message: string } {
+  const name = normalizeText(input.restaurantName, 120);
+  if (!name) return { ok: false, message: 'Enter your restaurant name.' };
+
+  const ownerName = normalizeText(input.ownerName, 80);
+  if (!ownerName) return { ok: false, message: 'Enter the owner name.' };
+
+  const phone = normalizeIndianPhone(input.phone);
+  if (!phone) return { ok: false, message: PHONE_HELP };
+
+  const address = normalizeText(input.address, 240);
+  if (!address) return { ok: false, message: 'Enter the restaurant address.' };
+
+  if (!AREAS.includes(input.area as Area)) {
+    return { ok: false, message: 'Choose a valid restaurant area.' };
+  }
+
+  return {
+    ok: true,
+    restaurant: {
+      name,
+      owner_name: ownerName,
+      phone,
+      address,
+      area: input.area as Area,
+    },
+  };
+}
 
 /** Trim, collapse runs of whitespace, and clamp. Empty becomes null. */
 export function normalizeText(

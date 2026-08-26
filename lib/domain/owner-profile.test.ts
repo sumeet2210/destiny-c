@@ -6,10 +6,46 @@ import {
   normalizeCuisines,
   normalizeGalleryFolder,
   normalizeIndianPhone,
+  normalizeOwnerSignupRestaurant,
   normalizeText,
   validateEventWindow,
   validateOfferWindow,
 } from './owner-profile';
+
+describe('normalizeOwnerSignupRestaurant', () => {
+  const valid = {
+    restaurantName: '  Campus   Cafe ',
+    ownerName: '  Asha  Rao ',
+    phone: '98480 12345',
+    address: '  12, Main   Road ',
+    area: 'Kakatiya',
+  };
+
+  it('normalizes all listing details collected during owner signup', () => {
+    expect(normalizeOwnerSignupRestaurant(valid)).toEqual({
+      ok: true,
+      restaurant: {
+        name: 'Campus Cafe',
+        owner_name: 'Asha Rao',
+        phone: '+919848012345',
+        address: '12, Main Road',
+        area: 'Kakatiya',
+      },
+    });
+  });
+
+  it.each([
+    ['restaurant name', { restaurantName: ' ' }],
+    ['owner name', { ownerName: ' ' }],
+    ['phone number', { phone: '123' }],
+    ['address', { address: ' ' }],
+    ['area', { area: 'Somewhere else' }],
+  ])('rejects an invalid %s', (_label, patch) => {
+    expect(normalizeOwnerSignupRestaurant({ ...valid, ...patch }).ok).toBe(
+      false,
+    );
+  });
+});
 
 describe('normalizeIndianPhone', () => {
   it('accepts a bare 10-digit number', () => {

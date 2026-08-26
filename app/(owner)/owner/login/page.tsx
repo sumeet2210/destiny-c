@@ -8,6 +8,7 @@ import {
   SubmitArrow,
   authStyles as styles,
 } from '@/components/features/AuthShell';
+import { PasswordInput } from '@/components/features/PasswordInput';
 import { Button } from '@/components/ui/Button';
 import { Input, Label } from '@/components/ui/Input';
 import { ownerLogin } from '@/lib/auth/actions';
@@ -20,7 +21,12 @@ export default function OwnerLoginPage() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <AuthShell audience="owner" title="Restaurant Portal" variant="portal">
+    <AuthShell
+      audience="owner"
+      title="Restaurant Portal"
+      variant="portal"
+      titleNowrap
+    >
       <div className={styles.ownerOptions}>
         <section
           className={styles.ownerLoginBox}
@@ -62,9 +68,8 @@ export default function OwnerLoginPage() {
               <Label htmlFor="password" className={styles.label}>
                 Password
               </Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="current-password"
                 required
                 className={styles.field}

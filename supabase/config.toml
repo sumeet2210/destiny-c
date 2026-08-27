@@ -263,6 +263,16 @@ otp_expiry = 3600
 subject = "Your Destiny login code"
 content_path = "./supabase/templates/magic_link.html"
 
+# signInWithOtp creates a Supabase Auth user on a student's first request, so
+# GoTrue uses the confirmation template rather than the magic-link template for
+# that one email. Branch on the role metadata: students still receive the code
+# expected by /login, while password-based owners retain their confirmation
+# link. Hosted projects must copy this through Auth > Email Templates; do not
+# push this development config wholesale.
+[auth.email.template.confirmation]
+subject = '{{ if eq .Data.role "student" }}Your Destiny login code{{ else }}Confirm your Destiny account{{ end }}'
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

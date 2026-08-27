@@ -58,3 +58,10 @@ than it was requested from, and it removes the Site-URL/redirect-allow-list
 failure mode entirely. `supabase/templates/magic_link.html` prints `{{ .Token }}`
 and deliberately omits the URL. Anyone re-adding a link must add that route
 first. Affects: P4-1, P4-2.
+
+First-time students are a separate Supabase template path: because
+`shouldCreateUser` is enabled, their first OTP request is also an Auth signup and
+uses the Confirm Signup template. `supabase/templates/confirmation.html`
+therefore branches on `user_metadata.role`: students receive the same code-only
+experience, while owners retain the confirmation link required by password
+signup. Both hosted templates must be configured in the Supabase Dashboard.

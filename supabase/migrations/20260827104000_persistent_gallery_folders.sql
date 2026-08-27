@@ -1,6 +1,6 @@
--- Persist owner-created gallery folders even before they contain photos.
--- Photos keep their existing free-text gallery_category so the public gallery
--- and all existing rows continue to work without a rewrite.
+-- Empty gallery folders must persist before an owner uploads photos into them.
+-- This migration predates the consolidated owner migration so the deployed
+-- database and a clean database built from this repository share one schema.
 create table if not exists restaurant_gallery_folders (
   id            uuid primary key default gen_random_uuid(),
   restaurant_id uuid not null references restaurants (id) on delete cascade,
@@ -10,7 +10,6 @@ create table if not exists restaurant_gallery_folders (
   unique (restaurant_id, name)
 );
 
--- Treat case-only variants as the same folder.
 create unique index if not exists restaurant_gallery_folders_name_idx
   on restaurant_gallery_folders (restaurant_id, lower(name));
 
@@ -33,7 +32,7 @@ begin
 end
 $$;
 
--- Preserve every folder already represented by at least one gallery photo.
+-- Preserve folders already represented by gallery photos.
 insert into restaurant_gallery_folders (restaurant_id, name, sort_order)
 select restaurant_id, gallery_category, min(sort_order)
 from restaurant_photos
@@ -42,3 +41,5 @@ where kind = 'gallery'
   and trim(gallery_category) <> ''
 group by restaurant_id, gallery_category
 on conflict do nothing;
+
+notify pgrst, 'reload schema';

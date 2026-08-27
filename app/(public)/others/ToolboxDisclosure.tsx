@@ -48,11 +48,11 @@ export function ToolboxDisclosure({ kind }: { kind: 'about' | 'contact' }) {
                 <small className={styles.panelKicker}>Official inbox</small>
                 <a
                   className={styles.contactLink}
-                  href="mailto:hello@destiny.app"
+                  href="mailto:thedestinyconnects@gmail.com"
                 >
                   <MailIcon />
                   <span>
-                    <strong>hello@destiny.app</strong>
+                    <strong>thedestinyconnects@gmail.com</strong>
                     <small>Tap to write to us</small>
                   </span>
                 </a>

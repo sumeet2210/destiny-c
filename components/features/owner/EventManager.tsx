@@ -1,12 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { EVENT_TYPES } from '@/config/events';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Sheet } from '@/components/ui/Sheet';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
-import { EventCard } from '@/components/features/EventCard';
 import { resizeToWebp } from '@/components/features/owner/PhotoManager';
 import { uploadPromotionImage, upsertEvent } from '@/lib/owner/actions';
 
@@ -35,6 +36,7 @@ const localDate = (iso: string | null) => toLocalInput(iso).slice(0, 10);
 const localTime = (iso: string | null) => toLocalInput(iso).slice(11, 16);
 
 export function EventManager({ events }: { events: OwnerEvent[] }) {
+  const router = useRouter();
   const [editing, setEditing] = useState<Partial<OwnerEvent> | null>(null);
   const [mountedAt] = useState(() => Date.now());
   const [pending, startTransition] = useTransition();
@@ -59,53 +61,113 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
         <p className="text-text-muted text-sm">No upcoming events.</p>
       )}
 
-      {upcoming.map((e) => (
-        <div key={e.id} className="space-y-1">
-          {e.cover_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
-            <img
-              src={e.cover_image_url}
-              alt=""
-              className="rounded-control aspect-[8/3] w-full max-w-xl object-cover"
-            />
-          ) : null}
-          <EventCard
-            title={e.title}
-            eventType={e.event_type}
-            startsAt={e.starts_at}
-            description={e.description}
-          />
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setEditing(e)}>
-              Edit
-            </Button>
-            <Button
-              variant="urgent-text"
-              size="sm"
-              disabled={pending}
-              onClick={() =>
-                startTransition(async () => {
-                  const res = await upsertEvent({
-                    id: e.id,
-                    title: e.title,
-                    event_type: e.event_type,
-                    starts_at: e.starts_at,
-                    ends_at: e.ends_at,
-                    description: e.description ?? undefined,
-                    is_cancelled: true,
-                  });
-                  toast(
-                    res.ok ? 'Event cancelled' : (res.message ?? 'Failed'),
-                    res.ok ? 'positive' : 'error',
-                  );
-                })
-              }
-            >
-              Cancel event
-            </Button>
-          </div>
+      {upcoming.length > 0 && (
+        <div className="grid gap-3 xl:grid-cols-2">
+          {upcoming.map((e) => (
+            <Card key={e.id} className="p-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {e.cover_image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+                  <img
+                    src={e.cover_image_url}
+                    alt=""
+                    className="rounded-control h-28 w-full shrink-0 object-cover sm:w-32"
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div>
+                    <p className="text-accent-primary text-[10px] font-extrabold tracking-[0.08em] uppercase">
+                      {eventTypeLabel(e.event_type)}
+                    </p>
+                    <h3 className="text-paper mt-0.5 text-sm font-bold">
+                      {e.title}
+                    </h3>
+                  </div>
+                  {e.description && (
+                    <p className="text-text-muted text-[12px] leading-relaxed">
+                      {e.description}
+                    </p>
+                  )}
+                  <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-white/8 pt-2 text-[11px]">
+                    <EventDetail
+                      label="Starts"
+                      value={formatOwnerDateTime(e.starts_at)}
+                    />
+                    <EventDetail
+                      label="Ends"
+                      value={
+                        e.ends_at
+                          ? formatOwnerDateTime(e.ends_at)
+                          : 'Not specified'
+                      }
+                    />
+                    <EventDetail
+                      label="Entry"
+                      value={
+                        e.entry_fee === null
+                          ? 'Not specified'
+                          : e.entry_fee === 0
+                            ? 'Free'
+                            : `₹${e.entry_fee}`
+                      }
+                    />
+                    <EventDetail
+                      label="Location"
+                      value={e.location_details || 'Not specified'}
+                    />
+                  </dl>
+                  {e.ticket_url && (
+                    <a
+                      href={e.ticket_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-accent-primary inline-flex text-[11px] font-bold hover:underline"
+                    >
+                      Open ticket link
+                    </a>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditing(e)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="urgent-text"
+                      size="sm"
+                      disabled={pending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const res = await upsertEvent({
+                            id: e.id,
+                            title: e.title,
+                            event_type: e.event_type,
+                            starts_at: e.starts_at,
+                            ends_at: e.ends_at,
+                            description: e.description ?? undefined,
+                            is_cancelled: true,
+                          });
+                          toast(
+                            res.ok
+                              ? 'Event cancelled'
+                              : (res.message ?? 'Failed'),
+                            res.ok ? 'positive' : 'error',
+                          );
+                          if (res.ok) router.refresh();
+                        })
+                      }
+                    >
+                      Cancel event
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
-      ))}
+      )}
 
       {rest.length > 0 && (
         <details className="text-text-muted text-sm">
@@ -193,7 +255,10 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   res.ok ? 'Event saved' : (res.message ?? 'Failed'),
                   res.ok ? 'positive' : 'error',
                 );
-                if (res.ok) setEditing(null);
+                if (res.ok) {
+                  setEditing(null);
+                  router.refresh();
+                }
               });
             }}
             className="space-y-4"
@@ -330,4 +395,27 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
       </Sheet>
     </div>
   );
+}
+
+function EventDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-text-muted">{label}</dt>
+      <dd className="text-paper break-words">{value}</dd>
+    </div>
+  );
+}
+
+function eventTypeLabel(value: string) {
+  return EVENT_TYPES.find((type) => type.key === value)?.label ?? 'Event';
+}
+
+function formatOwnerDateTime(value: string) {
+  return new Date(value).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
 }

@@ -9,10 +9,8 @@ import {
 } from '@/components/features/AuthShell';
 import { PasswordInput } from '@/components/features/PasswordInput';
 import { Button } from '@/components/ui/Button';
-import { Input, Label, Select } from '@/components/ui/Input';
-import { AREAS } from '@/config/areas';
+import { Input, Label } from '@/components/ui/Input';
 import { ownerSignup } from '@/lib/auth/actions';
-import { PHONE_HELP } from '@/lib/domain/owner-profile';
 
 export default function OwnerSignupPage() {
   const router = useRouter();
@@ -20,7 +18,7 @@ export default function OwnerSignupPage() {
   const [ownerName, setOwnerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [area, setArea] = useState<(typeof AREAS)[number]>(AREAS[0]);
+  const [area, setArea] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -91,36 +89,32 @@ export default function OwnerSignupPage() {
             <Input
               id="phone"
               type="tel"
-              inputMode="tel"
+              inputMode="numeric"
               autoComplete="tel"
               required
-              aria-describedby="phone-hint"
+              minLength={10}
+              maxLength={10}
+              pattern="[0-9]{10}"
               className={styles.field}
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) =>
+                setPhone(event.target.value.replace(/\D/g, '').slice(0, 10))
+              }
             />
-            <p id="phone-hint" className={styles.fieldHint}>
-              {PHONE_HELP}
-            </p>
           </div>
 
           <div className={styles.fieldGroup}>
             <Label htmlFor="area" className={styles.label}>
               Area
             </Label>
-            <Select
+            <Input
               id="area"
+              autoComplete="address-level2"
               required
               className={styles.field}
               value={area}
-              onChange={(event) =>
-                setArea(event.target.value as (typeof AREAS)[number])
-              }
-            >
-              {AREAS.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              onChange={(event) => setArea(event.target.value)}
+            />
           </div>
 
           <div className={`${styles.fieldGroup} ${styles.signupFullRow}`}>
@@ -139,7 +133,7 @@ export default function OwnerSignupPage() {
 
           <div className={`${styles.fieldGroup} ${styles.signupFullRow}`}>
             <Label htmlFor="email" className={styles.label}>
-              Account email
+              Business email
             </Label>
             <Input
               id="email"
@@ -189,14 +183,24 @@ export default function OwnerSignupPage() {
             </p>
           ) : null}
 
-          <Button
-            type="submit"
-            className={`${styles.primaryButton} ${styles.signupSubmit}`}
-            disabled={pending}
-          >
-            {pending ? 'Creating listing...' : 'Proceed to list'}
-            {!pending ? <SubmitArrow /> : null}
-          </Button>
+          <div className={`${styles.signupFullRow} ${styles.signupSubmitRow}`}>
+            <Button
+              type="submit"
+              className={styles.primaryButton}
+              disabled={pending}
+            >
+              {pending ? 'Creating listing...' : 'Proceed to list'}
+              {!pending ? <SubmitArrow /> : null}
+            </Button>
+            <a
+              href="https://docs.google.com/document/d/1E3zXDVcLHXXsER45O7DKqvg_2dw7WD-H1cs1-vsp5r0/edit?usp=drivesdk"
+              className={styles.termsLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Terms and Conditions
+            </a>
+          </div>
         </form>
       </section>
     </AuthShell>

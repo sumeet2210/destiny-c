@@ -2210,6 +2210,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 .hero {
   min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   overflow: visible;
   border-radius: 0;
@@ -2218,7 +2219,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 .heroCopy {
   max-width: 46rem;
   align-self: start;
-  padding: 4.35rem 1.25rem 1.5rem;
+  padding: 4.35rem 1.25rem 1rem;
   transform: none;
 }
 
@@ -2242,7 +2243,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 }
 
 .specialsSection {
-  margin-top: 2.25rem;
+  margin-top: 0.75rem;
   padding: 0.35rem 1rem 1.25rem;
 }
 
@@ -2278,7 +2279,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
   .heroCopy {
     justify-content: flex-start;
-    padding: 3.85rem 1rem 1.5rem;
+    padding: 3.85rem 1rem 0.75rem;
     transform: none;
   }
 
@@ -2291,7 +2292,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   }
 
   .specialsSection {
-    margin-top: 1.65rem;
+    margin-top: 0.65rem;
     padding: 0.25rem 0.65rem 1rem;
   }
 

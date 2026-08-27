@@ -11,49 +11,18 @@ where restaurant_category is not null
   and cardinality(restaurant_categories) = 0;
 
 alter table menu_items
-  add column section_name text not null default 'Menu'
+  add column if not exists section_name text not null default 'Menu'
   check (char_length(trim(section_name)) between 1 and 60);
 
-create table restaurant_menu_sections (
-  id            uuid primary key default gen_random_uuid(),
-  restaurant_id uuid not null references restaurants (id) on delete cascade,
-  name          text not null check (char_length(trim(name)) between 1 and 60),
-  sort_order    int not null default 0,
-  created_at    timestamptz not null default now()
-);
+create unique index if not exists menu_sections_name_idx
+  on menu_sections (restaurant_id, lower(name));
 
-create unique index restaurant_menu_sections_name_idx
-  on restaurant_menu_sections (restaurant_id, lower(name));
-
-alter table restaurant_menu_sections enable row level security;
-
-create policy "owner manages own menu sections"
-  on restaurant_menu_sections
-  for all
-  using (owns_restaurant(restaurant_id))
-  with check (owns_restaurant(restaurant_id));
-
-create function create_default_restaurant_menu_section()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  insert into public.restaurant_menu_sections (restaurant_id, name)
-  values (new.id, 'Menu')
-  on conflict do nothing;
-  return new;
-end;
-$$;
-
-create trigger restaurant_default_menu_section
-after insert on restaurants
-for each row execute function create_default_restaurant_menu_section();
-
-insert into restaurant_menu_sections (restaurant_id, name, sort_order)
-select id, 'Menu', 0
-from restaurants
+-- Preserve groupings already used by legacy menu items. Restaurants without
+-- any items intentionally start with no section: the owner creates one first.
+insert into menu_sections (restaurant_id, name, sort_order)
+select restaurant_id, section_name, 0
+from menu_items
+group by restaurant_id, section_name
 on conflict do nothing;
 
-alter table offers add column image_url text;
+alter table offers add column if not exists image_url text;

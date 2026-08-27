@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -27,6 +28,7 @@ type Offer = {
 };
 
 export function OfferManager({ offers }: { offers: Offer[] }) {
+  const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [mountedAt] = useState(() => Date.now());
   const [pending, startTransition] = useTransition();
@@ -60,51 +62,86 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
         </p>
       )}
 
-      {live.map((o) => (
-        <Card key={o.id} className="space-y-2">
-          {o.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
-            <img
-              src={o.image_url}
-              alt=""
-              className="rounded-control aspect-[8/3] w-full max-w-xl object-cover"
-            />
-          ) : null}
-          <OfferBadge
-            title={o.title}
-            discountText={o.discount_text}
-            expiresAt={o.expires_at}
-          />
-          <p className="text-paper text-sm font-medium">{o.title}</p>
-          {o.description && (
-            <p className="text-text-muted text-[13px]">{o.description}</p>
-          )}
-          {o.flagged_count > 0 && (
-            <p className="text-accent-urgent-text text-[12px]">
-              {o.flagged_count} student{o.flagged_count > 1 ? 's' : ''} flagged
-              this as wrong or expired — worth a check.
-            </p>
-          )}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() =>
-                startTransition(async () => {
-                  const res = await updateOffer(o.id, { is_active: false });
-                  toast(
-                    res.ok ? 'Offer taken down' : (res.message ?? 'Failed'),
-                    res.ok ? 'positive' : 'error',
-                  );
-                })
-              }
-            >
-              Take down
-            </Button>
-          </div>
-        </Card>
-      ))}
+      {live.length > 0 && (
+        <div className="grid gap-3 xl:grid-cols-2">
+          {live.map((o) => (
+            <Card key={o.id} className="p-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {o.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+                  <img
+                    src={o.image_url}
+                    alt=""
+                    className="rounded-control h-28 w-full shrink-0 object-cover sm:w-32"
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-paper text-sm font-bold">{o.title}</p>
+                      <p className="text-accent-primary mt-0.5 text-[12px] font-semibold">
+                        {o.discount_text || 'Offer details in description'}
+                      </p>
+                    </div>
+                    <OfferBadge
+                      title={o.title}
+                      discountText={o.discount_text}
+                      expiresAt={o.expires_at}
+                    />
+                  </div>
+                  {o.description && (
+                    <p className="text-text-muted text-[12px] leading-relaxed">
+                      {o.description}
+                    </p>
+                  )}
+                  <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-white/8 pt-2 text-[11px]">
+                    <div>
+                      <dt className="text-text-muted">Started</dt>
+                      <dd className="text-paper">
+                        {formatOwnerDateTime(o.starts_at)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-text-muted">Ends</dt>
+                      <dd className="text-paper">
+                        {formatOwnerDateTime(o.expires_at)}
+                      </dd>
+                    </div>
+                  </dl>
+                  {o.flagged_count > 0 && (
+                    <p className="text-accent-urgent-text text-[11px]">
+                      {o.flagged_count} student
+                      {o.flagged_count > 1 ? 's' : ''} flagged this as wrong or
+                      expired.
+                    </p>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pending}
+                    onClick={() =>
+                      startTransition(async () => {
+                        const res = await updateOffer(o.id, {
+                          is_active: false,
+                        });
+                        toast(
+                          res.ok
+                            ? 'Offer taken down'
+                            : (res.message ?? 'Failed'),
+                          res.ok ? 'positive' : 'error',
+                        );
+                        if (res.ok) router.refresh();
+                      })
+                    }
+                  >
+                    Take down
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {scheduled.length > 0 && (
         <div className="space-y-2">
@@ -203,7 +240,10 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
                 res.ok ? 'Offer is live' : (res.message ?? 'Failed'),
                 res.ok ? 'positive' : 'error',
               );
-              if (res.ok) setCreating(false);
+              if (res.ok) {
+                setCreating(false);
+                router.refresh();
+              }
             });
           }}
           className="space-y-4"
@@ -272,4 +312,14 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
       </Sheet>
     </div>
   );
+}
+
+function formatOwnerDateTime(value: string) {
+  return new Date(value).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
 }

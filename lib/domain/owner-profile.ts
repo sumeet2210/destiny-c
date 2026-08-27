@@ -7,7 +7,6 @@
 // first.
 
 import { CUISINES, isRestaurantCategory } from '@/config/restaurant-profile';
-import { AREAS, type Area } from '@/config/areas';
 
 /**
  * Owners type phone numbers every which way: "9848012345", "098480 12345",
@@ -42,7 +41,7 @@ export type OwnerSignupRestaurant = {
   owner_name: string;
   phone: string;
   address: string;
-  area: Area;
+  area: string;
 };
 
 export function normalizeOwnerSignupRestaurant(
@@ -56,15 +55,18 @@ export function normalizeOwnerSignupRestaurant(
   const ownerName = normalizeText(input.ownerName, 80);
   if (!ownerName) return { ok: false, message: 'Enter the owner name.' };
 
-  const phone = normalizeIndianPhone(input.phone);
-  if (!phone) return { ok: false, message: PHONE_HELP };
+  const phone = /^\d{10}$/.test(input.phone)
+    ? normalizeIndianPhone(input.phone)
+    : null;
+  if (!phone) {
+    return { ok: false, message: 'Enter a valid 10-digit phone number.' };
+  }
 
   const address = normalizeText(input.address, 240);
   if (!address) return { ok: false, message: 'Enter the restaurant address.' };
 
-  if (!AREAS.includes(input.area as Area)) {
-    return { ok: false, message: 'Choose a valid restaurant area.' };
-  }
+  const area = normalizeText(input.area, 80);
+  if (!area) return { ok: false, message: 'Enter the restaurant area.' };
 
   return {
     ok: true,
@@ -73,7 +75,7 @@ export function normalizeOwnerSignupRestaurant(
       owner_name: ownerName,
       phone,
       address,
-      area: input.area as Area,
+      area,
     },
   };
 }

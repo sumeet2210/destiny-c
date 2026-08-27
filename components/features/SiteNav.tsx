@@ -161,7 +161,10 @@ function NavigationDrawer({
   const aboutPanelId = useId();
   const [contactOpen, setContactOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const links = [{ href: '/saved', label: 'Saved' }];
+  const links = [
+    { href: '/bookings', label: 'My bookings' },
+    { href: '/saved', label: 'Saved' },
+  ];
 
   const isActive = (href: string) =>
     href === '/'
@@ -240,19 +243,9 @@ function NavigationDrawer({
             >
               <div>
                 <ContactLink
-                  href="mailto:hello@destiny.app"
+                  href="mailto:thedestinyconnects@gmail.com"
                   label="Email"
-                  value="hello@destiny.app"
-                />
-                <ContactLink
-                  href="mailto:partners@destiny.app"
-                  label="Partnerships"
-                  value="partners@destiny.app"
-                />
-                <ContactLink
-                  href="tel:+919848000000"
-                  label="Phone"
-                  value="+91 98480 00000"
+                  value="thedestinyconnects@gmail.com"
                 />
               </div>
             </div>

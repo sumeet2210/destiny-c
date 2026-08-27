@@ -461,9 +461,32 @@
   margin-top: 0;
 }
 
-.signupFullRow,
-.portalPage .ownerSignupForm .signupSubmit {
+.signupFullRow {
   grid-column: 1 / -1;
+}
+
+.signupSubmitRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.termsLink {
+  color: #999999;
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: right;
+  text-decoration: underline;
+  text-decoration-color: #666666;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
+}
+
+.termsLink:hover {
+  color: #ededed;
+  text-decoration-color: #b8b8b8;
 }
 
 .portalPage .footer {
@@ -868,8 +891,7 @@
     grid-template-columns: 1fr;
   }
 
-  .signupFullRow,
-  .portalPage .ownerSignupForm .signupSubmit {
+  .signupFullRow {
     grid-column: auto;
   }
 }

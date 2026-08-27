@@ -290,7 +290,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.dateRail .dateActive {
+.dateRail button.dateActive {
   border-color: rgb(71 215 255 / 45%);
   background: linear-gradient(135deg, #1db954, #47d7ff);
   color: #101010;

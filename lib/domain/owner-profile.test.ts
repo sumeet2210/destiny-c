@@ -16,7 +16,7 @@ describe('normalizeOwnerSignupRestaurant', () => {
   const valid = {
     restaurantName: '  Campus   Cafe ',
     ownerName: '  Asha  Rao ',
-    phone: '98480 12345',
+    phone: '9848012345',
     address: '  12, Main   Road ',
     area: 'Kakatiya',
   };
@@ -39,11 +39,29 @@ describe('normalizeOwnerSignupRestaurant', () => {
     ['owner name', { ownerName: ' ' }],
     ['phone number', { phone: '123' }],
     ['address', { address: ' ' }],
-    ['area', { area: 'Somewhere else' }],
+    ['area', { area: ' ' }],
   ])('rejects an invalid %s', (_label, patch) => {
     expect(normalizeOwnerSignupRestaurant({ ...valid, ...patch }).ok).toBe(
       false,
     );
+  });
+
+  it('accepts and normalizes a manually entered area', () => {
+    const result = normalizeOwnerSignupRestaurant({
+      ...valid,
+      area: '  Nakkalagutta   Main Road ',
+    });
+
+    expect(result.ok && result.restaurant.area).toBe('Nakkalagutta Main Road');
+  });
+
+  it('requires exactly 10 digits for the signup phone field', () => {
+    expect(
+      normalizeOwnerSignupRestaurant({ ...valid, phone: '+919848012345' }).ok,
+    ).toBe(false);
+    expect(
+      normalizeOwnerSignupRestaurant({ ...valid, phone: '98480 12345' }).ok,
+    ).toBe(false);
   });
 });
 

@@ -430,7 +430,7 @@ export type Database = {
           },
         ];
       };
-      restaurant_menu_sections: {
+      menu_sections: {
         Row: {
           created_at: string;
           id: string;
@@ -454,7 +454,7 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'restaurant_menu_sections_restaurant_id_fkey';
+            foreignKeyName: 'menu_sections_restaurant_id_fkey';
             columns: ['restaurant_id'];
             isOneToOne: false;
             referencedRelation: 'restaurants';

@@ -223,12 +223,13 @@ export async function upsertMenuItem(input: {
   if (!Number.isFinite(input.price) || input.price < 0) {
     return { ok: false, message: 'Enter a valid price.' };
   }
-  const { data: section } = await supabase
-    .from('restaurant_menu_sections')
+  const { data: section, error: sectionError } = await supabase
+    .from('menu_sections')
     .select('id')
     .eq('restaurant_id', owned.id)
     .eq('name', sectionName)
     .maybeSingle();
+  if (sectionError) return { ok: false, message: sectionError.message };
   if (!section) return { ok: false, message: 'Create that subsection first.' };
   const { id, ...inputFields } = input;
   const fields = { ...inputFields, name, section_name: sectionName };
@@ -249,14 +250,15 @@ export async function createMenuSection(name: string): Promise<ActionResult> {
   const clean = normalizeText(name, 60);
   if (!clean) return { ok: false, message: 'Give the subsection a name.' };
   const supabase = await createClient();
-  const { data: last } = await supabase
-    .from('restaurant_menu_sections')
+  const { data: last, error: orderError } = await supabase
+    .from('menu_sections')
     .select('sort_order')
     .eq('restaurant_id', owned.id)
     .order('sort_order', { ascending: false })
     .limit(1)
     .maybeSingle();
-  const { error } = await supabase.from('restaurant_menu_sections').insert({
+  if (orderError) return { ok: false, message: orderError.message };
+  const { error } = await supabase.from('menu_sections').insert({
     restaurant_id: owned.id,
     name: clean,
     sort_order: (last?.sort_order ?? -1) + 1,
@@ -519,12 +521,13 @@ export async function uploadPhoto(formData: FormData): Promise<ActionResult> {
 
   const supabase = await createClient();
   if (folder) {
-    const { data: savedFolder } = await supabase
+    const { data: savedFolder, error: folderError } = await supabase
       .from('restaurant_gallery_folders')
       .select('id')
       .eq('restaurant_id', owned.id)
       .eq('name', folder)
       .maybeSingle();
+    if (folderError) return { ok: false, message: folderError.message };
     if (!savedFolder) {
       return { ok: false, message: 'Create that folder before adding photos.' };
     }
@@ -610,13 +613,14 @@ export async function createGalleryFolder(name: string): Promise<ActionResult> {
   const clean = normalizeGalleryFolder(name);
   if (!clean) return { ok: false, message: 'Give the folder a name.' };
   const supabase = await createClient();
-  const { data: lastFolder } = await supabase
+  const { data: lastFolder, error: orderError } = await supabase
     .from('restaurant_gallery_folders')
     .select('sort_order')
     .eq('restaurant_id', owned.id)
     .order('sort_order', { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (orderError) return { ok: false, message: orderError.message };
   const { error } = await supabase.from('restaurant_gallery_folders').insert({
     restaurant_id: owned.id,
     name: clean,
@@ -649,12 +653,13 @@ export async function setPhotoFolder(
   }
   const supabase = await createClient();
   if (clean) {
-    const { data: savedFolder } = await supabase
+    const { data: savedFolder, error: folderError } = await supabase
       .from('restaurant_gallery_folders')
       .select('id')
       .eq('restaurant_id', owned.id)
       .eq('name', clean)
       .maybeSingle();
+    if (folderError) return { ok: false, message: folderError.message };
     if (!savedFolder) {
       return { ok: false, message: 'Create that folder before moving photos.' };
     }
@@ -686,11 +691,13 @@ export async function renameGalleryFolder(
   if (!next) return { ok: false, message: 'Give the folder a name.' };
   if (current === next) return { ok: true };
   const supabase = await createClient();
-  const { error: folderError } = await supabase
+  const { data: renamedFolder, error: folderError } = await supabase
     .from('restaurant_gallery_folders')
     .update({ name: next })
     .eq('restaurant_id', owned.id)
-    .eq('name', current);
+    .eq('name', current)
+    .select('id')
+    .maybeSingle();
   if (folderError) {
     return {
       ok: false,
@@ -700,6 +707,7 @@ export async function renameGalleryFolder(
           : folderError.message,
     };
   }
+  if (!renamedFolder) return { ok: false, message: 'Unknown folder.' };
   const { error: photoError } = await supabase
     .from('restaurant_photos')
     .update({ gallery_category: next })

@@ -4,6 +4,7 @@
 // and menu-photo management (reorder, delete).
 
 import { useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Label, Select } from '@/components/ui/Input';
@@ -63,6 +64,7 @@ export function PhotoManager({
   photos: Photo[];
   mode?: 'gallery' | 'menu';
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -126,6 +128,7 @@ export function PhotoManager({
         res.ok ? 'Photo uploaded' : (res.message ?? 'Upload failed'),
         res.ok ? 'positive' : 'error',
       );
+      if (res.ok) router.refresh();
     } catch {
       toast('Could not process that image', 'error');
     } finally {
@@ -140,7 +143,9 @@ export function PhotoManager({
     if (j < 0 || j >= next.length) return;
     [next[index], next[j]] = [next[j], next[index]];
     startTransition(async () => {
-      await reorderPhotos(next.map((p) => p.id));
+      const res = await reorderPhotos(next.map((p) => p.id));
+      if (res.ok) router.refresh();
+      else toast(res.message ?? 'Could not reorder photos', 'error');
     });
   };
 
@@ -158,14 +163,17 @@ export function PhotoManager({
     if (a === -1 || b === -1) return;
     [next[a], next[b]] = [next[b], next[a]];
     startTransition(async () => {
-      await reorderPhotos(next.map((p) => p.id));
+      const res = await reorderPhotos(next.map((p) => p.id));
+      if (res.ok) router.refresh();
+      else toast(res.message ?? 'Could not reorder photos', 'error');
     });
   };
 
   const moveToFolder = (id: string, folder: string) =>
     startTransition(async () => {
       const res = await setPhotoFolder(id, folder || null);
-      if (!res.ok) toast(res.message ?? 'Could not move that photo', 'error');
+      if (res.ok) router.refresh();
+      else toast(res.message ?? 'Could not move that photo', 'error');
     });
 
   const commitRename = (from: string) => {
@@ -179,6 +187,7 @@ export function PhotoManager({
       if (res.ok) {
         setRenaming(null);
         setRenameTo('');
+        router.refresh();
       }
     });
   };
@@ -193,6 +202,7 @@ export function PhotoManager({
       if (res.ok) {
         setAddingFolder(false);
         setNewFolderName('');
+        router.refresh();
       }
     });
   };
@@ -200,7 +210,8 @@ export function PhotoManager({
   const remove = (id: string) =>
     startTransition(async () => {
       const res = await deletePhoto(id);
-      if (!res.ok) toast(res.message ?? 'Could not delete', 'error');
+      if (res.ok) router.refresh();
+      else toast(res.message ?? 'Could not delete', 'error');
     });
 
   return (

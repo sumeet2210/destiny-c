@@ -15,7 +15,7 @@ export default async function OwnerManageLayout({
 
   return (
     <div className="flex min-h-full w-full bg-[#101010]">
-      <aside className="hidden w-60 shrink-0 sm:flex">
+      <aside className="hidden w-60 shrink-0 self-start overflow-y-auto sm:sticky sm:top-0 sm:flex sm:h-screen">
         <OwnerNav signOutAction={signOut} />
       </aside>
       <div className="min-w-0 flex-1">

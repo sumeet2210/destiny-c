@@ -32,14 +32,9 @@ begin
 end
 $$;
 
--- Preserve folders already represented by gallery photos.
-insert into restaurant_gallery_folders (restaurant_id, name, sort_order)
-select restaurant_id, gallery_category, min(sort_order)
-from restaurant_photos
-where kind = 'gallery'
-  and gallery_category is not null
-  and trim(gallery_category) <> ''
-group by restaurant_id, gallery_category
-on conflict do nothing;
+-- gallery_category is introduced by 20260828100200_gallery_folders.sql. The
+-- later 20260828100500_persistent_gallery_folders.sql migration backfills this
+-- table after that column exists. Keeping this earlier migration limited to
+-- the folder schema makes a clean migration run ordering-safe.
 
 notify pgrst, 'reload schema';

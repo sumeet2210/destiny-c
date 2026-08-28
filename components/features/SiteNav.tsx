@@ -21,9 +21,13 @@ const tabs: ReadonlyArray<{
 export function SiteHeader({
   accountHref,
   accountLabel,
+  portalHref,
+  ownerMode,
 }: {
   accountHref: string;
   accountLabel: string;
+  portalHref: string;
+  ownerMode: boolean;
 }) {
   const pathname = usePathname();
   const onHome = pathname === '/';
@@ -82,7 +86,12 @@ export function SiteHeader({
             />
           </div>
         </header>
-        <NavigationDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+        <NavigationDrawer
+          open={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          portalHref={portalHref}
+          ownerMode={ownerMode}
+        />
       </>
     );
   }
@@ -100,15 +109,19 @@ export function SiteHeader({
             aria-label="Primary navigation"
             className="hidden items-center gap-1 rounded-full border border-[#505050] bg-white p-1 lg:flex"
           >
-            {tabs.slice(1).map((tab) => (
-              <NavLink
-                key={tab.href}
-                href={tab.href}
-                label={tab.label}
-                icon={tab.icon}
-              />
-            ))}
-            <NavLink href="/friends" label="Friends" />
+            {tabs.slice(1).map((tab) => {
+              const href =
+                ownerMode && tab.icon === 'profile' ? accountHref : tab.href;
+              return (
+                <NavLink
+                  key={tab.label}
+                  href={href}
+                  label={tab.label}
+                  icon={tab.icon}
+                />
+              );
+            })}
+            {!ownerMode ? <NavLink href="/friends" label="Friends" /> : null}
           </nav>
 
           <Link
@@ -126,7 +139,12 @@ export function SiteHeader({
           </div>
         </div>
       </header>
-      <NavigationDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <NavigationDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        portalHref={portalHref}
+        ownerMode={ownerMode}
+      />
     </>
   );
 }
@@ -152,19 +170,25 @@ function MenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
 function NavigationDrawer({
   open,
   onClose,
+  portalHref,
+  ownerMode,
 }: {
   open: boolean;
   onClose: () => void;
+  portalHref: string;
+  ownerMode: boolean;
 }) {
   const pathname = usePathname();
   const contactPanelId = useId();
   const aboutPanelId = useId();
   const [contactOpen, setContactOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const links = [
-    { href: '/bookings', label: 'My bookings' },
-    { href: '/saved', label: 'Saved' },
-  ];
+  const links = ownerMode
+    ? []
+    : [
+        { href: '/bookings', label: 'My bookings' },
+        { href: '/saved', label: 'Saved' },
+      ];
 
   const isActive = (href: string) =>
     href === '/'
@@ -286,13 +310,7 @@ function NavigationDrawer({
         </nav>
 
         <div className={styles.drawerDivider} aria-hidden />
-        {/* Always the login door: AppShell redirects owners to their dashboard
-            before this drawer can render, so a signed-in owner never sees it. */}
-        <Link
-          href="/owner/login"
-          onClick={onClose}
-          className={styles.portalCta}
-        >
+        <Link href={portalHref} onClick={onClose} className={styles.portalCta}>
           <span className={styles.portalIcon} aria-hidden>
             <PortalIcon />
           </span>
@@ -390,7 +408,11 @@ function NavLink({
   );
 }
 
-export function MobileTabBar() {
+export function MobileTabBar({
+  profileHref = '/account',
+}: {
+  profileHref?: string;
+}) {
   const pathname = usePathname();
   const onRestaurantProfile = /^\/restaurant\/[^/]+\/?$/.test(pathname);
   const onReservePage = /^\/restaurant\/[^/]+\/book\/?$/.test(pathname);
@@ -471,11 +493,12 @@ export function MobileTabBar() {
         </div>
 
         {tabs.map((tab) => {
-          const active = isTabActive(pathname, tab.href);
+          const href = tab.icon === 'profile' ? profileHref : tab.href;
+          const active = isTabActive(pathname, href);
           return (
             <Link
-              key={tab.href}
-              href={tab.href}
+              key={tab.label}
+              href={href}
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'group focus-visible:outline-inset relative z-10 flex min-h-[4.1rem] flex-col items-center justify-start gap-1 rounded-[14px] pt-0 pb-1 text-[11px] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-[#1DB954] active:scale-[0.97]',

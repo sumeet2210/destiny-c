@@ -11,7 +11,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Destiny — where NITW eats',
+    default: 'destiny',
     template: '%s · Destiny',
   },
   description:

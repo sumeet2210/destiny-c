@@ -423,6 +423,144 @@
   margin-top: 1.1rem;
 }
 
+.ownerAboutDisclosure {
+  min-width: 0;
+}
+
+.ownerAboutTrigger {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.35rem;
+  justify-self: start;
+  padding: 0.4rem 0.15rem;
+  border: 0;
+  background: transparent;
+  color: #c4c4c4;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 750;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.25rem;
+  transition:
+    color 160ms ease,
+    text-decoration-color 160ms ease;
+}
+
+.ownerAboutTrigger:hover,
+.ownerAboutDisclosure[data-open='true'] .ownerAboutTrigger {
+  color: #ededed;
+  text-decoration-color: #777777;
+}
+
+.ownerAboutChevron {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 240ms cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+.ownerAboutDisclosure[data-open='true'] .ownerAboutChevron {
+  transform: rotate(180deg);
+}
+
+.ownerAboutViewport {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.5rem);
+  transform-origin: top;
+  transition:
+    grid-template-rows 260ms cubic-bezier(0.22, 0.8, 0.25, 1),
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+.ownerAboutDisclosure[data-open='true'] .ownerAboutViewport {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.ownerAboutViewportInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ownerAboutContent {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0.2rem 0 0.35rem 0.15rem;
+  padding: 0.8rem 0 0.9rem 1rem;
+  border-left: 1px solid #555555;
+  color: #aaaaaa;
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+.ownerAboutContent h2,
+.ownerAboutContent h3,
+.ownerAboutContent p {
+  margin: 0;
+}
+
+.ownerAboutContent h2 {
+  color: #ededed;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.ownerAboutContent h3 {
+  margin-top: 0.45rem;
+  color: #ededed;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.ownerAboutContent strong {
+  color: #d6d6d6;
+}
+
+.ownerAboutIntro {
+  color: #c4c4c4;
+}
+
+.ownerPartnerReasons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.ownerPartnerReasons > div {
+  display: grid;
+  align-content: start;
+  gap: 0.15rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid #3f3f3f;
+}
+
+.ownerPartnerReasons p {
+  color: #999999;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
 .portalPage .ownerJoinCard {
   min-height: 6.75rem;
   padding: 1rem 1.1rem;
@@ -873,6 +1011,11 @@
     filter: none;
     transform: none;
   }
+
+  .ownerAboutChevron,
+  .ownerAboutViewport {
+    transition: none;
+  }
 }
 
 @media (max-width: 30rem) {
@@ -888,6 +1031,10 @@
   }
 
   .portalPage .ownerSignupForm {
+    grid-template-columns: 1fr;
+  }
+
+  .ownerPartnerReasons {
     grid-template-columns: 1fr;
   }
 

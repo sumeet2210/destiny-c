@@ -7,7 +7,6 @@ import { ReviewForm } from '@/components/features/ReviewForm';
 import { ReviewList } from '@/components/features/ReviewList';
 import { SaveToggle } from '@/components/features/SaveToggle';
 import { DestinyPage } from '@/components/ui/DestinyPage';
-import { AMENITIES } from '@/config/restaurant-profile';
 import { VIBES } from '@/config/vibes';
 import { getSessionUser } from '@/lib/auth/session';
 import { canReview } from '@/lib/domain/booking';
@@ -111,17 +110,6 @@ export default async function RestaurantPage(
       .map((tag) => VIBES.find((vibe) => vibe.tag === tag)?.label ?? tag)
       .join(' · ') ||
     'Local favourite';
-  const facilities = AMENITIES.filter((amenity) => row[amenity.key]);
-  const facilityLabels = [
-    ...facilities.map((facility) => facility.label),
-    ...(row.custom_facilities ?? []),
-  ];
-  const categories =
-    (row.restaurant_categories?.length ?? 0) > 0
-      ? row.restaurant_categories
-      : row.restaurant_category
-        ? [row.restaurant_category]
-        : [];
   const address = row.address || row.area;
   const reviewableBooking = isStudent
     ? bookings.find(
@@ -211,36 +199,6 @@ export default async function RestaurantPage(
             </div>
           </div>
         </header>
-
-        {categories.length || facilityLabels.length ? (
-          <section className={styles.section} aria-labelledby="know-title">
-            <div className={styles.sectionHeader}>
-              <div>
-                <h2 id="know-title">Good to know</h2>
-              </div>
-            </div>
-            {categories.length ? (
-              <div className={styles.infoGrid}>
-                <div className={styles.infoCard}>
-                  <PinIcon />
-                  <span>
-                    <small>Type of place</small>
-                    <strong>{categories.join(' · ')}</strong>
-                  </span>
-                </div>
-              </div>
-            ) : null}
-            {facilityLabels.length ? (
-              <ul className={styles.facilityList}>
-                {facilityLabels.map((facility) => (
-                  <li key={facility} className={styles.facilityPill}>
-                    {facility}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
-        ) : null}
 
         <section className={styles.section} aria-labelledby="offers-title">
           <div className={styles.sectionHeader}>

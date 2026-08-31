@@ -37,10 +37,23 @@ export function ToolboxDisclosure({ kind }: { kind: 'about' | 'contact' }) {
             <span className={styles.dropdownAccent} aria-hidden />
             {isAbout ? (
               <>
-                <small className={styles.panelKicker}>Built for NITW</small>
                 <p>
-                  <strong>Destiny</strong> brings restaurants, live offers, and
-                  events into one quick answer for the whole squad.
+                  <strong>
+                    Destiny is built to make campus life a little more exciting.
+                  </strong>
+                </p>
+                <p>
+                  We help students discover great places to eat, exciting
+                  offers, upcoming events, and experiences around them all in
+                  one place.
+                </p>
+                <p>
+                  From deciding where to grab a quick bite to finding your next
+                  favourite spot,{' '}
+                  <strong>
+                    Destiny helps you discover more, explore more, and make the
+                    most of your campus life.
+                  </strong>
                 </p>
               </>
             ) : (

@@ -93,20 +93,29 @@
 }
 
 .hero h1 {
+  width: fit-content;
   max-width: 9ch;
-  margin: 0.5rem 0 0;
   display: flex;
+  overflow: visible;
   flex-direction: column;
+  margin: 0.35rem 0 0;
+  padding: 0.08em 0.1em 0.12em 0.04em;
   color: #ededed;
   font-family: var(--font-display);
   font-size: clamp(4.5rem, 12.5vw, 12rem);
   font-weight: 600;
-  line-height: 0.72;
-  letter-spacing: -0.075em;
+  line-height: 0.82;
+  letter-spacing: -0.06em;
+}
+
+.hero h1 span {
+  display: block;
+  white-space: nowrap;
 }
 
 .hero h1 span:last-child {
   width: fit-content;
+  padding-right: 0.14em;
   color: transparent;
   background: linear-gradient(100deg, #1db954 5%, #47d7ff 54%, #a78bfa 96%);
   background-clip: text;

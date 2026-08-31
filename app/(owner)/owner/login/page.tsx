@@ -185,17 +185,6 @@ export default function OwnerLoginPage() {
                     </p>
                   </div>
                 </div>
-
-                <h3>Our Vision</h3>
-                <p>
-                  Our vision is to become a{' '}
-                  <strong>
-                    leading student-first discovery and experiences platform in
-                    India
-                  </strong>
-                  , connecting students with the places, experiences, and
-                  opportunities that matter to them.
-                </p>
               </section>
             </div>
           </div>

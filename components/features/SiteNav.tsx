@@ -300,12 +300,24 @@ function NavigationDrawer({
               inert={aboutOpen ? undefined : true}
             >
               <div className={styles.aboutContent}>
-                <strong>Made for the NITW scene.</strong>
                 <p>
-                  Destiny puts nearby restaurants, live offers, events and
-                  squad-worthy plans in one quick place.
+                  <strong>
+                    Destiny is built to make campus life a little more exciting.
+                  </strong>
                 </p>
-                <span>Student-first · Local · Always fresh</span>
+                <p>
+                  We help students discover great places to eat, exciting
+                  offers, upcoming events, and experiences around them all in
+                  one place.
+                </p>
+                <p>
+                  From deciding where to grab a quick bite to finding your next
+                  favourite spot,{' '}
+                  <strong>
+                    Destiny helps you discover more, explore more, and make the
+                    most of your campus life.
+                  </strong>
+                </p>
               </div>
             </div>
           </div>

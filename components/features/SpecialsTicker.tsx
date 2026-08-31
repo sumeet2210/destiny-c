@@ -218,8 +218,8 @@ export function SpecialsTicker({
 
   if (offers.length === 0 && events.length === 0) {
     return (
-      <div className="rounded-card border-border-hairline bg-surface-muted text-text-muted border p-4 text-sm">
-        No live offers or upcoming events right now — check back soon.
+      <div className="rounded-card border-border-hairline bg-surface-muted text-text-muted border p-4 text-center text-sm">
+        No live offers or upcoming events right now.
       </div>
     );
   }

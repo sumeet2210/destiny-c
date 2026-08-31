@@ -108,13 +108,8 @@ async function EventsData() {
   if (!events.length) {
     return (
       <section className={styles.emptyState}>
-        <p className={styles.sectionKicker}>The Scene</p>
         <h2>Quiet for now. Not for long.</h2>
-        <p>
-          Restaurants are lining up their next drops. Check back before the
-          weekend or browse places around campus now.
-        </p>
-        <a href="/search">Browse restaurants</a>
+        <p>Restaurants are lining up their next drops</p>
       </section>
     );
   }

@@ -1,5 +1,4 @@
 import { Card } from '@/components/ui/Card';
-import { FoodPreferences } from '@/components/features/FoodPreferences';
 import { requireStudent } from '@/lib/auth/session';
 import { signOut } from '@/lib/auth/actions';
 import Link from 'next/link';
@@ -13,11 +12,8 @@ export default async function AccountPage() {
     <main className="mx-auto max-w-md space-y-5 px-4 py-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-accent-primary text-xs font-extrabold tracking-[0.14em] uppercase">
+          <h1 className="font-display text-paper text-2xl font-extrabold">
             Student profile
-          </p>
-          <h1 className="font-display text-paper mt-1 text-2xl font-extrabold">
-            Your profile
           </h1>
         </div>
         <form action={signOut}>
@@ -47,12 +43,6 @@ export default async function AccountPage() {
         <ProfileShortcut href="/bookings" label="My bookings" />
         <ProfileShortcut href="/reviews" label="My reviews" />
       </nav>
-
-      <FoodPreferences
-        initialFoodType={user.food_type}
-        initialFavoriteCuisines={user.favorite_cuisines}
-        initialSpicePreference={user.spice_preference}
-      />
     </main>
   );
 }
@@ -72,10 +62,9 @@ function ProfileShortcut({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="rounded-card border-border-hairline bg-surface-muted text-paper hover:border-accent-primary flex min-h-16 items-center justify-between border px-4 text-sm font-extrabold no-underline transition-colors"
+      className="rounded-card border-border-hairline bg-surface-muted text-paper hover:border-accent-primary flex min-h-12 items-center justify-center border px-3 text-base font-extrabold no-underline transition-colors"
     >
-      <span>{label}</span>
-      <span aria-hidden>→</span>
+      {label}
     </Link>
   );
 }

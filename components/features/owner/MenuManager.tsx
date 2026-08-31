@@ -187,8 +187,15 @@ export function MenuManager({
                                   ...item,
                                   is_available: !item.is_available,
                                 });
-                                if (res.ok) router.refresh();
-                                else
+                                if (res.ok) {
+                                  toast(
+                                    item.is_available
+                                      ? 'Item marked not available'
+                                      : 'Item marked available',
+                                    'positive',
+                                  );
+                                  router.refresh();
+                                } else
                                   toast(
                                     res.message ?? 'Could not update item',
                                     'error',
@@ -196,7 +203,7 @@ export function MenuManager({
                               })
                             }
                           >
-                            {item.is_available ? 'Sold out' : 'Back in'}
+                            {item.is_available ? 'Not available' : 'Available'}
                           </Button>
                           <Button
                             variant="ghost"
@@ -295,7 +302,7 @@ export function MenuManager({
                 className={
                   editing.is_veg
                     ? '!border-green-600 !bg-green-600 !text-white'
-                    : undefined
+                    : '!border-green-700 !text-green-500'
                 }
                 onClick={() => setEditing({ ...editing, is_veg: true })}
               >
@@ -306,7 +313,7 @@ export function MenuManager({
                 className={
                   !editing.is_veg
                     ? '!border-red-600 !bg-red-600 !text-white'
-                    : undefined
+                    : '!border-red-700 !text-red-500'
                 }
                 onClick={() => setEditing({ ...editing, is_veg: false })}
               >

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useState } from 'react';
+import { VegMark } from '@/components/ui/VegMark';
 import styles from './restaurant.module.css';
 
 export function ProfileCoverCarousel({
@@ -180,6 +181,8 @@ type MenuItem = {
   id: string;
   name: string;
   price: number;
+  is_veg: boolean;
+  is_available: boolean;
   section_name: string;
 };
 
@@ -325,6 +328,8 @@ export function ProfileMenu({
                   name={item.name}
                   imageSrc={photoSources[index % photoSources.length]}
                   altIndex={index}
+                  isVeg={item.is_veg}
+                  available={item.is_available}
                 />
               ))
             ) : (
@@ -343,9 +348,21 @@ export function ProfileMenu({
                   <h3 className={styles.menuSectionTitle}>{section}</h3>
                   <div className={styles.menuGrid}>
                     {sectionItems.map((item) => (
-                      <article key={item.id} className={styles.menuCard}>
-                        <strong>{item.name}</strong>
-                        <span>₹{item.price}</span>
+                      <article
+                        key={item.id}
+                        className={styles.menuCard}
+                        data-unavailable={!item.is_available || undefined}
+                      >
+                        <div className={styles.menuDishName}>
+                          <VegMark isVeg={item.is_veg} />
+                          <div>
+                            <strong>{item.name}</strong>
+                            {!item.is_available ? (
+                              <small>Not available</small>
+                            ) : null}
+                          </div>
+                        </div>
+                        <span className={styles.menuPrice}>₹{item.price}</span>
                       </article>
                     ))}
                   </div>
@@ -377,15 +394,22 @@ function DishPhotoCard({
   name,
   imageSrc,
   altIndex,
+  isVeg,
+  available,
 }: {
   name: string;
   imageSrc: string;
   altIndex: number;
+  isVeg: boolean;
+  available: boolean;
 }) {
   const [failed, setFailed] = useState(false);
 
   return (
-    <article className={styles.menuPhotoCard}>
+    <article
+      className={styles.menuPhotoCard}
+      data-unavailable={!available || undefined}
+    >
       <div className={styles.menuPhotoMedia} data-failed={failed || undefined}>
         {failed ? (
           <div className={styles.menuPhotoFallback}>
@@ -402,8 +426,13 @@ function DishPhotoCard({
           />
         )}
       </div>
-      <strong>{name}</strong>
-      <small>Photo #{altIndex + 1}</small>
+      <div className={styles.menuPhotoTitle}>
+        <VegMark isVeg={isVeg} />
+        <strong>{name}</strong>
+      </div>
+      <small className={!available ? styles.menuUnavailable : undefined}>
+        {available ? `Photo #${altIndex + 1}` : 'Not available'}
+      </small>
     </article>
   );
 }

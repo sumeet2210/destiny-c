@@ -239,7 +239,11 @@ export async function upsertMenuItem(input: {
         .from('menu_items')
         .insert({ ...fields, restaurant_id: owned.id });
   if (error) return { ok: false, message: error.message };
-  revalidateOwnerAnd('/owner/menu');
+  revalidatePath('/owner', 'layout');
+  revalidatePath('/owner/menu');
+  revalidatePath(`/restaurant/${owned.id}`);
+  revalidatePath('/search');
+  revalidatePath('/');
   return { ok: true };
 }
 

@@ -737,17 +737,40 @@
   background: #080808;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
 }
+.menuCard[data-unavailable='true'] {
+  border-color: rgb(220 38 38 / 24%);
+  background: #0d0909;
+}
+.menuDishName {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+}
+.menuDishName > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
 .menuCard strong {
   color: #ffffff;
   font-size: 0.82rem;
   font-weight: 800;
   line-height: 1.35;
 }
-.menuCard span {
+.menuDishName small {
+  color: #ef6b6b;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+.menuPrice {
   color: #2fd271;
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
+}
+.menuCard[data-unavailable='true'] .menuPrice {
+  color: #8a8a8a;
 }
 .menuMoreButton {
   display: inline-flex;
@@ -794,6 +817,13 @@
   border-radius: 14px;
   background: #101010;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+.menuPhotoCard[data-unavailable='true'] {
+  border-color: rgb(220 38 38 / 22%);
+}
+.menuPhotoCard[data-unavailable='true'] .menuPhotoMedia {
+  filter: grayscale(0.75);
+  opacity: 0.58;
 }
 .menuPhotoMedia {
   position: relative;
@@ -845,6 +875,14 @@
   font-size: 0.8rem;
   font-weight: 800;
   line-height: 1.35;
+}
+.menuPhotoTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.menuUnavailable {
+  color: #ef6b6b !important;
 }
 .menuEmptyState {
   margin: 0;

@@ -192,6 +192,8 @@ export default async function RestaurantPage(
                   id: item.id,
                   name: item.name,
                   price: item.price,
+                  is_veg: item.is_veg,
+                  is_available: item.is_available,
                   section_name: item.section_name ?? 'Menu',
                 }))}
                 menuPhotos={menuPhotos}

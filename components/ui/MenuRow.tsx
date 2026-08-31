@@ -37,7 +37,7 @@ export function MenuRow({
               destiny ? 'text-[#8A8A8A]' : 'text-text-muted',
             )}
           >
-            sold out
+            Not available
           </span>
         )}
       </span>

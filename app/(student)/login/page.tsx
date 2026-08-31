@@ -59,9 +59,9 @@ function LoginForm() {
         step === 'email' ? 'Your next table starts here.' : 'Check your inbox.'
       }
       description={
-        step === 'email'
-          ? 'Use your institute email. We will send a one-time code, so there is no password to remember.'
-          : 'Enter the one-time code to continue to Destiny.'
+        step === 'code'
+          ? 'Enter the one-time code to continue to Destiny.'
+          : undefined
       }
     >
       {step === 'email' ? (

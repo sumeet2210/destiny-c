@@ -54,10 +54,6 @@ export default async function SavedPage() {
           <h1 className="font-display text-paper mt-2 text-[clamp(2.3rem,7vw,4.4rem)] leading-[0.9] font-extrabold tracking-[-0.065em]">
             Your saved scene.
           </h1>
-          <p className="text-text-muted mt-4 max-w-lg text-[13px] leading-relaxed sm:text-sm">
-            Restaurants worth returning to, live offers worth catching, and
-            every event you marked interested—all in one place.
-          </p>
         </div>
         <div className="relative mt-7 grid grid-cols-3 gap-2 sm:max-w-xl sm:gap-3">
           <SavedStat label="Places" value={saved.length} />
@@ -67,32 +63,15 @@ export default async function SavedPage() {
       </header>
 
       <section className="space-y-4" aria-labelledby="saved-places-title">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-black tracking-[0.13em] text-[#A78BFA] uppercase">
-              Your shortlist
-            </p>
-            <h2
-              id="saved-places-title"
-              className="font-display text-paper mt-1 text-2xl font-bold tracking-[-0.035em]"
-            >
-              Saved restaurants
-            </h2>
-          </div>
-          <Link
-            href="/discover"
-            className="text-accent-primary text-[13px] font-bold hover:underline"
-          >
-            Find more
-          </Link>
-        </div>
+        <h2
+          id="saved-places-title"
+          className="font-display text-paper text-2xl font-bold tracking-[-0.035em]"
+        >
+          Saved restaurants
+        </h2>
         {saved.length === 0 ? (
           <Card className="text-text-muted text-center text-sm">
-            Nothing saved yet — tap the bookmark on any place you want to come
-            back to.{' '}
-            <Link href="/" className="text-accent-primary hover:underline">
-              Start browsing
-            </Link>
+            Nothing saved yet
           </Card>
         ) : (
           <RestaurantGrid restaurants={saved} source="direct" />
@@ -143,31 +122,22 @@ export default async function SavedPage() {
           </div>
         ) : (
           <Card className="text-text-muted text-center text-sm">
-            No live offers at your saved restaurants right now. New drops will
-            appear here automatically.
+            No live offers at your saved restaurants right now.
           </Card>
         )}
       </section>
 
       <section className="space-y-4" aria-labelledby="saved-events-title">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-black tracking-[0.13em] text-[#47D7FF] uppercase">
-              The Scene
-            </p>
-            <h2
-              id="saved-events-title"
-              className="font-display text-paper mt-1 text-2xl font-bold tracking-[-0.035em]"
-            >
-              Interested events
-            </h2>
-          </div>
-          <Link
-            href="/events"
-            className="text-accent-primary text-[13px] font-bold hover:underline"
+        <div>
+          <p className="text-[10px] font-black tracking-[0.13em] text-[#47D7FF] uppercase">
+            The Scene
+          </p>
+          <h2
+            id="saved-events-title"
+            className="font-display text-paper mt-1 text-2xl font-bold tracking-[-0.035em]"
           >
-            Find events
-          </Link>
+            Interested events
+          </h2>
         </div>
         {interestedEvents.length ? (
           <div className="grid gap-3 md:grid-cols-2">

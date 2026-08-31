@@ -67,11 +67,12 @@ export function SiteHeader({
     onStudentLogin ||
     onStudentAccount ||
     onStudentReviews ||
-    onSaved
+    onSaved ||
+    onBookingsIndex
   )
     return null;
 
-  if (onHome || onBookingsIndex) {
+  if (onHome) {
     return (
       <>
         <header className="pointer-events-none fixed inset-x-0 top-0 z-40 text-black">

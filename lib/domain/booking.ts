@@ -149,13 +149,9 @@ export function resolve(
   return { action: 'none' };
 }
 
-/**
- * Rule 6 + PRD §5.8: reviews are gated to verified visits — completed AND
- * confirmed. (architecture.md §4 unlocks reviews for any completed booking;
- * the PRD's "booked and didn't no-show" wins — see docs/decisions.md.)
- */
+/** Rule 6: every completed booking can be reviewed once. */
 export function canReview(booking: BookingLike): boolean {
-  return booking.status === 'completed' && booking.confirmed_at !== null;
+  return booking.status === 'completed';
 }
 
 export function formatBookingWindow(

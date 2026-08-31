@@ -181,8 +181,8 @@ describe('resolve (rule 3: unconfirmed, never cancelled)', () => {
   });
 });
 
-describe('canReview (rule 6 + PRD §5.8: verified, non-no-show visits only)', () => {
-  it('allows completed + confirmed', () => {
+describe('canReview (rule 6: completed bookings)', () => {
+  it('allows completed bookings that were confirmed', () => {
     expect(
       canReview(
         booking({ status: 'completed', confirmed_at: NOW.toISOString() }),
@@ -190,10 +190,10 @@ describe('canReview (rule 6 + PRD §5.8: verified, non-no-show visits only)', ()
     ).toBe(true);
   });
 
-  it('blocks completed no-shows (PRD wins over architecture §4)', () => {
+  it('allows completed bookings without a confirmation timestamp', () => {
     expect(
       canReview(booking({ status: 'completed', confirmed_at: null })),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('blocks anything not completed', () => {

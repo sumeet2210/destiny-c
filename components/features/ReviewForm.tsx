@@ -31,7 +31,7 @@ export function ReviewForm({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        Leave a review
+        Review
       </Button>
       <Sheet
         open={open}

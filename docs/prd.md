@@ -56,7 +56,7 @@ interested in a platform built for this audience specifically.
 
 **Student.** Logs in via NITW student email (OTP). Browses and filters restaurants, views
 live offers and events, books a table with headcount and special requests, saves places,
-adds friends, leaves reviews gated to visits they actually booked and didn't no-show.
+adds friends, and leaves reviews gated to completed bookings.
 
 **Restaurant owner.** Mandatory login, manually approved by the platform admin at signup
 during the testing period. Manages profile, photos, menu, live offers, events, and views
@@ -188,7 +188,7 @@ framing honest. Revisit only if owners specifically ask for it.
 
 ### 5.8 Reviews
 
-Gated to verified visits — a student who booked and didn't no-show can review. Sortable by
+Gated to completed bookings — a student can review once the visit is over. Sortable by
 newest, highest, and lowest **[new in v2]**; the profile shows an aggregate rating and count.
 
 ### 5.9 Social layer **[new in v2]**

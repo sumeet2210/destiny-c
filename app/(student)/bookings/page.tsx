@@ -50,10 +50,6 @@ export default async function BookingsPage() {
           <h1 className="font-display text-paper mt-2 text-[clamp(2.3rem,7vw,4.4rem)] leading-[0.9] font-extrabold tracking-[-0.065em]">
             Your booking plans.
           </h1>
-          <p className="text-text-muted mt-4 max-w-lg text-[13px] leading-relaxed sm:text-sm">
-            Track every reservation request, restaurant response, and upcoming
-            table in one place.
-          </p>
         </div>
         <div className="relative mt-7 grid grid-cols-3 gap-2 sm:max-w-xl sm:gap-3">
           <BookingStat label="Active" value={activeBookings} />
@@ -63,25 +59,16 @@ export default async function BookingsPage() {
       </header>
 
       <section className="space-y-4" aria-labelledby="booking-history-title">
-        <div>
-          <p className="text-[10px] font-black tracking-[0.13em] text-[#A78BFA] uppercase">
-            Your tables
-          </p>
-          <h2
-            id="booking-history-title"
-            className="font-display text-paper mt-1 text-2xl font-bold tracking-[-0.035em]"
-          >
-            Reservation history
-          </h2>
-        </div>
+        <h2
+          id="booking-history-title"
+          className="font-display text-paper text-2xl font-bold tracking-[-0.035em]"
+        >
+          Reservation history
+        </h2>
 
         {bookings.length === 0 ? (
           <Card className="text-text-muted text-center text-sm">
-            Nothing yet. Find a spot on the{' '}
-            <Link href="/" className="text-accent-primary hover:underline">
-              homepage
-            </Link>{' '}
-            and let them know you&apos;re coming.
+            Nothing yet.
           </Card>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">

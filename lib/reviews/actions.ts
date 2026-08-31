@@ -1,7 +1,7 @@
 'use server';
 
-// P8-1: write a review, gated to completed + confirmed bookings owned by the
-// requester. RLS enforces the gate; this re-checks for a friendly error.
+// P8-1: write a review, gated to completed bookings owned by the requester.
+// RLS enforces the gate; this re-checks for a friendly error.
 
 import { revalidatePath } from 'next/cache';
 import { canReview, type BookingLike } from '@/lib/domain/booking';
@@ -40,8 +40,7 @@ export async function createReview(input: {
   if (!canReview(booking as BookingLike)) {
     return {
       ok: false,
-      message:
-        'Reviews unlock once the visit is over and you confirmed you went — that is what keeps them trustworthy.',
+      message: 'Reviews unlock once the visit is over.',
     };
   }
 
@@ -59,5 +58,8 @@ export async function createReview(input: {
     return { ok: false, message: error.message };
   }
   revalidatePath('/bookings');
+  revalidatePath('/reviews');
+  revalidatePath('/owner/analytics');
+  revalidatePath(`/restaurant/${booking.restaurant_id}`);
   return { ok: true };
 }

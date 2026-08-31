@@ -29,12 +29,23 @@ export async function confirmBooking(id: string): Promise<ActionResult> {
 export async function cancelBooking(id: string): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('bookings')
     .update({ status: 'cancelled' })
-    .eq('id', id);
+    .eq('id', id)
+    .in('status', ['requested', 'confirmed'])
+    .gt('booking_time', new Date().toISOString())
+    .select('id')
+    .maybeSingle();
   if (error) return { ok: false, message: error.message };
+  if (!data) {
+    return {
+      ok: false,
+      message: 'Only active upcoming bookings can be cancelled.',
+    };
+  }
   revalidatePath('/bookings');
+  revalidatePath('/owner/bookings');
   return { ok: true };
 }
 

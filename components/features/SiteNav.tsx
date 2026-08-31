@@ -549,7 +549,8 @@ function isTabActive(pathname: string, href: string) {
     '/account',
     '/bookings',
     '/friends',
-    '/account',
+    '/saved',
+    '/reviews',
     '/login',
     '/owner',
   ].some((route) => pathname === route || pathname.startsWith(`${route}/`));

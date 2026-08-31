@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { BookingRow } from '@/components/features/BookingRow';
 import { ReviewForm } from '@/components/features/ReviewForm';
-import { canReview } from '@/lib/domain/booking';
+import { canCancel, canReview } from '@/lib/domain/booking';
 import { requireStudent } from '@/lib/auth/session';
 import { listStudentBookings } from '@/lib/queries/bookings';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
@@ -29,7 +29,7 @@ export default async function BookingsPage() {
   await requireStudent('/bookings');
   const bookings = await listStudentBookings();
   const activeBookings = bookings.filter((booking) =>
-    ['requested', 'confirmed', 'unconfirmed'].includes(booking.status),
+    canCancel(booking),
   ).length;
   const completedBookings = bookings.filter(
     (booking) => booking.status === 'completed',

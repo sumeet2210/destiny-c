@@ -147,7 +147,7 @@ export function BookingRow({
                   })
                 }
               >
-                Cancel
+                Cancel booking
               </Button>
             )}
           </div>

@@ -5,8 +5,10 @@
 
 import { revalidatePath } from 'next/cache';
 import {
+  GOOGLE_MAPS_URL_HELP,
   normalizeCoordinate,
   normalizeGalleryFolder,
+  normalizeGoogleMapsUrl,
   normalizeIndianPhone,
   normalizeText,
   PHONE_HELP,
@@ -113,6 +115,14 @@ function normalizeProfilePatch(
     }
   }
 
+  if ('google_maps_url' in patch) {
+    const mapsUrl = normalizeGoogleMapsUrl(
+      patch.google_maps_url as string | null | undefined,
+    );
+    if (!mapsUrl.ok) return mapsUrl.message || GOOGLE_MAPS_URL_HELP;
+    patch.google_maps_url = mapsUrl.value;
+  }
+
   for (const axis of ['lat', 'lng'] as const) {
     if (axis in patch) {
       const result = normalizeCoordinate(
@@ -149,7 +159,7 @@ function normalizeProfilePatch(
 export async function createRestaurant(
   input: Pick<
     TablesInsert<'restaurants'>,
-    'name' | 'area' | 'address' | 'phone' | 'description'
+    'name' | 'area' | 'address' | 'phone' | 'description' | 'google_maps_url'
   > & { lat?: number | null; lng?: number | null },
 ): Promise<ActionResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;

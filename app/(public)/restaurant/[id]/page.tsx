@@ -16,6 +16,7 @@ import {
   type DayKey,
   type OpeningHours,
 } from '@/lib/domain/hours';
+import { buildRestaurantGoogleMapsHref } from '@/lib/domain/owner-profile';
 import { listStudentBookings } from '@/lib/queries/bookings';
 import { alsoLike, getRestaurantDetail } from '@/lib/queries/catalog';
 import { getSavedIds } from '@/lib/queries/social';
@@ -111,6 +112,14 @@ export default async function RestaurantPage(
       .join(' · ') ||
     'Local favourite';
   const address = row.address || row.area;
+  const googleMapsHref = buildRestaurantGoogleMapsHref({
+    googleMapsUrl: row.google_maps_url,
+    name: row.name,
+    address: row.address,
+    area: row.area,
+    lat: summary.lat,
+    lng: summary.lng,
+  });
   const reviewableBooking = isStudent
     ? bookings.find(
         (booking) =>
@@ -163,10 +172,16 @@ export default async function RestaurantPage(
                 </div>
                 <p className={styles.cuisineLine}>{cuisine}</p>
                 <p className={styles.locationLine}>
-                  <span className={styles.addressLine}>
+                  <a
+                    href={googleMapsHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.addressLine}
+                    aria-label={`Open ${row.name} in Google Maps`}
+                  >
                     <PinIcon />
                     <span>{address}</span>
-                  </span>
+                  </a>
                   <span className={styles.distancePill}>{distance}</span>
                 </p>
               </div>
@@ -319,6 +334,9 @@ export default async function RestaurantPage(
         aria-label="Restaurant quick actions"
       >
         <Link href={`/restaurant/${id}/book`}>Reserve</Link>
+        <a href={googleMapsHref} target="_blank" rel="noreferrer">
+          Directions
+        </a>
       </aside>
     </DestinyPage>
   );

@@ -512,6 +512,7 @@ export type Database = {
           description: string | null;
           dine_in: boolean;
           family_friendly: boolean;
+          google_maps_url: string | null;
           has_ac: boolean;
           id: string;
           is_veg_only: boolean;
@@ -546,6 +547,7 @@ export type Database = {
           description?: string | null;
           dine_in?: boolean;
           family_friendly?: boolean;
+          google_maps_url?: string | null;
           has_ac?: boolean;
           id?: string;
           is_veg_only?: boolean;
@@ -580,6 +582,7 @@ export type Database = {
           description?: string | null;
           dine_in?: boolean;
           family_friendly?: boolean;
+          google_maps_url?: string | null;
           has_ac?: boolean;
           id?: string;
           is_veg_only?: boolean;

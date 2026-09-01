@@ -28,6 +28,79 @@ export function normalizeIndianPhone(raw: string): string | null {
 export const PHONE_HELP =
   'Enter a 10-digit Indian mobile number, with or without +91.';
 
+export const GOOGLE_MAPS_URL_HELP =
+  'Paste a Google Maps place or share link, such as maps.app.goo.gl or google.com/maps.';
+
+/**
+ * Accept links copied from the Google Maps web app and its mobile share sheet.
+ * Restricting the host and protocol keeps the public profile href safe even
+ * when an owner pastes arbitrary text into the field.
+ */
+export function normalizeGoogleMapsUrl(
+  raw: string | null | undefined,
+): { ok: true; value: string | null } | { ok: false; message: string } {
+  const clean = raw?.trim();
+  if (!clean) return { ok: true, value: null };
+  if (clean.length > 2048) {
+    return { ok: false, message: 'Google Maps link is too long.' };
+  }
+
+  try {
+    const url = new URL(clean);
+    const host = url.hostname.toLowerCase();
+    const isGoogleMapsHost =
+      host === 'maps.google.com' ||
+      host === 'www.google.com' ||
+      host === 'google.com' ||
+      host === 'maps.google.co.in' ||
+      host === 'www.google.co.in' ||
+      host === 'google.co.in';
+    const isMapsShareHost = host === 'maps.app.goo.gl';
+    const isLegacyShareLink =
+      host === 'goo.gl' && url.pathname.startsWith('/maps');
+    const hasMapsPath =
+      url.pathname === '/maps' || url.pathname.startsWith('/maps/');
+
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      (!isMapsShareHost &&
+        !isLegacyShareLink &&
+        !(isGoogleMapsHost && hasMapsPath))
+    ) {
+      return { ok: false, message: GOOGLE_MAPS_URL_HELP };
+    }
+    return { ok: true, value: url.toString() };
+  } catch {
+    return { ok: false, message: GOOGLE_MAPS_URL_HELP };
+  }
+}
+
+/** Use an owner's exact Maps link, with a universal directions URL fallback. */
+export function buildRestaurantGoogleMapsHref(input: {
+  googleMapsUrl?: string | null;
+  name: string;
+  address?: string | null;
+  area: string;
+  lat?: number | null;
+  lng?: number | null;
+}): string {
+  const saved = normalizeGoogleMapsUrl(input.googleMapsUrl);
+  if (saved.ok && saved.value) return saved.value;
+
+  const destination = input.address
+    ? `${input.name}, ${input.address}`
+    : input.lat !== null &&
+        input.lat !== undefined &&
+        input.lng !== null &&
+        input.lng !== undefined
+      ? `${input.lat},${input.lng}`
+      : `${input.name}, ${input.area}`;
+  const params = new URLSearchParams({ api: '1', destination });
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
 export type OwnerSignupRestaurantInput = {
   restaurantName: string;
   ownerName: string;

@@ -20,8 +20,7 @@ type ProfileFields = {
   area: string;
   address: string | null;
   phone: string | null;
-  lat: number | null;
-  lng: number | null;
+  google_maps_url: string | null;
   is_veg_only: boolean;
   has_ac: boolean;
   dine_in: boolean;
@@ -61,8 +60,6 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [editing, setEditing] = useState(false);
-  const [manualLocation, setManualLocation] = useState(false);
-  const [locating, setLocating] = useState(false);
   const [pending, startTransition] = useTransition();
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
@@ -105,32 +102,6 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
     (tag) => !configuredVibes.has(tag),
   );
 
-  const useCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      toast('Location access is not available in this browser.', 'error');
-      return;
-    }
-
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setFields((current) => ({
-          ...current,
-          lat: Number(coords.latitude.toFixed(6)),
-          lng: Number(coords.longitude.toFixed(6)),
-        }));
-        setManualLocation(false);
-        setLocating(false);
-        toast('Current location added.', 'positive');
-      },
-      () => {
-        setLocating(false);
-        toast('Could not access your current location.', 'error');
-      },
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
-    );
-  };
-
   return (
     <Card>
       <form
@@ -170,7 +141,6 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
                 disabled={pending}
                 onClick={() => {
                   setFields(saved);
-                  setManualLocation(false);
                   setEditing(false);
                 }}
               >
@@ -321,70 +291,36 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           </div>
 
           <div>
-            <Label>Location on map</Label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={!editing || locating}
-                onClick={useCurrentLocation}
-              >
-                {locating ? 'Finding location…' : 'Use current location'}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={!editing}
-                onClick={() => setManualLocation((shown) => !shown)}
-              >
-                Choose your own location
-              </Button>
+            <Label htmlFor="p-google-maps">Google Maps link</Label>
+            <Input
+              id="p-google-maps"
+              type="url"
+              inputMode="url"
+              autoComplete="url"
+              placeholder="https://maps.app.goo.gl/..."
+              aria-describedby="p-google-maps-help"
+              value={fields.google_maps_url ?? ''}
+              onChange={(event) =>
+                set('google_maps_url', event.target.value || null)
+              }
+              readOnly={!editing}
+            />
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+              <p id="p-google-maps-help" className="text-text-muted text-xs">
+                In Google Maps, open your restaurant, choose Share, then copy
+                the link.
+              </p>
+              {!editing && fields.google_maps_url ? (
+                <a
+                  href={fields.google_maps_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-accent-primary text-xs font-semibold hover:underline"
+                >
+                  Open link
+                </a>
+              ) : null}
             </div>
-
-            {manualLocation ? (
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="p-lat">Latitude</Label>
-                  <Input
-                    id="p-lat"
-                    type="number"
-                    step="any"
-                    value={fields.lat ?? ''}
-                    onChange={(event) =>
-                      set(
-                        'lat',
-                        event.target.value ? Number(event.target.value) : null,
-                      )
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="p-lng">Longitude</Label>
-                  <Input
-                    id="p-lng"
-                    type="number"
-                    step="any"
-                    value={fields.lng ?? ''}
-                    onChange={(event) =>
-                      set(
-                        'lng',
-                        event.target.value ? Number(event.target.value) : null,
-                      )
-                    }
-                  />
-                </div>
-              </div>
-            ) : fields.lat !== null && fields.lng !== null ? (
-              <p className="text-text-muted mt-2 text-xs">
-                Location saved: {fields.lat.toFixed(6)}, {fields.lng.toFixed(6)}
-              </p>
-            ) : (
-              <p className="text-text-muted mt-2 text-xs">
-                No location added yet.
-              </p>
-            )}
           </div>
         </section>
 

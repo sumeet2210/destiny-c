@@ -1,16 +1,86 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildRestaurantGoogleMapsHref,
+  GOOGLE_MAPS_URL_HELP,
   MAX_FOLDER_LENGTH,
   normalizeCategory,
   normalizeCoordinate,
   normalizeCuisines,
   normalizeGalleryFolder,
+  normalizeGoogleMapsUrl,
   normalizeIndianPhone,
   normalizeOwnerSignupRestaurant,
   normalizeText,
   validateEventWindow,
   validateOfferWindow,
 } from './owner-profile';
+
+describe('normalizeGoogleMapsUrl', () => {
+  it.each([
+    'https://www.google.com/maps/place/NIT+Warangal',
+    'https://maps.google.com/maps?q=NIT+Warangal',
+    'https://maps.app.goo.gl/AbCdEf123',
+    'https://goo.gl/maps/AbCdEf123',
+  ])('accepts a Google Maps link: %s', (url) => {
+    const result = normalizeGoogleMapsUrl(url);
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.value).toContain('https://');
+  });
+
+  it('treats an empty field as optional', () => {
+    expect(normalizeGoogleMapsUrl('')).toEqual({ ok: true, value: null });
+    expect(normalizeGoogleMapsUrl(null)).toEqual({ ok: true, value: null });
+  });
+
+  it.each([
+    'http://www.google.com/maps/place/test',
+    'https://example.com/maps/place/test',
+    'javascript:alert(1)',
+    'https://user:pass@www.google.com/maps/place/test',
+  ])('rejects an unsafe or unrelated link: %s', (url) => {
+    expect(normalizeGoogleMapsUrl(url)).toEqual({
+      ok: false,
+      message: GOOGLE_MAPS_URL_HELP,
+    });
+  });
+});
+
+describe('buildRestaurantGoogleMapsHref', () => {
+  const restaurant = {
+    name: 'Campus Cafe',
+    address: 'Main Road, Warangal',
+    area: 'Nakkalagutta',
+    lat: 17.98,
+    lng: 79.59,
+  };
+
+  it('uses the owner-supplied Google Maps link unchanged', () => {
+    const href = buildRestaurantGoogleMapsHref({
+      ...restaurant,
+      googleMapsUrl: 'https://maps.app.goo.gl/AbCdEf123',
+    });
+    expect(href).toBe('https://maps.app.goo.gl/AbCdEf123');
+  });
+
+  it('falls back to a universal directions URL using the address', () => {
+    const href = new URL(buildRestaurantGoogleMapsHref(restaurant));
+    expect(`${href.origin}${href.pathname}`).toBe(
+      'https://www.google.com/maps/dir/',
+    );
+    expect(href.searchParams.get('api')).toBe('1');
+    expect(href.searchParams.get('destination')).toBe(
+      'Campus Cafe, Main Road, Warangal',
+    );
+  });
+
+  it('falls back safely when a stored link is invalid', () => {
+    const href = buildRestaurantGoogleMapsHref({
+      ...restaurant,
+      googleMapsUrl: 'https://example.com/not-maps',
+    });
+    expect(href).toMatch(/^https:\/\/www\.google\.com\/maps\/dir\//);
+  });
+});
 
 describe('normalizeOwnerSignupRestaurant', () => {
   const valid = {

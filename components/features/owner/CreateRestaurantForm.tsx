@@ -27,8 +27,7 @@ export function CreateRestaurantForm() {
               address: String(fd.get('address') || '') || null,
               phone: String(fd.get('phone') || '') || null,
               description: String(fd.get('description') || '') || null,
-              lat: fd.get('lat') ? Number(fd.get('lat')) : null,
-              lng: fd.get('lng') ? Number(fd.get('lng')) : null,
+              google_maps_url: String(fd.get('google_maps_url') || '') || null,
             });
             if (!res.ok) setError(res.message ?? 'Could not submit.');
             else router.refresh();
@@ -56,27 +55,19 @@ export function CreateRestaurantForm() {
           <Label htmlFor="phone">Phone</Label>
           <Input id="phone" name="phone" type="tel" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label htmlFor="lat">Latitude</Label>
-            <Input
-              id="lat"
-              name="lat"
-              type="number"
-              step="any"
-              placeholder="17.98"
-            />
-          </div>
-          <div>
-            <Label htmlFor="lng">Longitude</Label>
-            <Input
-              id="lng"
-              name="lng"
-              type="number"
-              step="any"
-              placeholder="79.53"
-            />
-          </div>
+        <div>
+          <Label htmlFor="google-maps-url">Google Maps link</Label>
+          <Input
+            id="google-maps-url"
+            name="google_maps_url"
+            type="url"
+            inputMode="url"
+            placeholder="https://maps.app.goo.gl/..."
+          />
+          <p className="text-text-muted mt-1 text-xs">
+            Open your restaurant in Google Maps, choose Share, and paste the
+            copied link.
+          </p>
         </div>
         <div>
           <Label htmlFor="description">Short description</Label>

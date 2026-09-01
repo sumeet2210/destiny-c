@@ -16,33 +16,16 @@ export default async function OwnerOffersEventsPage() {
   if (!bundle) redirect('/owner/dashboard');
 
   return (
-    <div className="mx-auto w-full max-w-[92rem] space-y-6">
-      <header className="border-border-hairline rounded-[1.5rem] border bg-[#101010] px-5 py-6 sm:px-7 sm:py-7">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <h1 className="font-display text-paper text-3xl font-bold tracking-[-0.035em] sm:text-4xl">
-              Offers &amp; Events
-            </h1>
-          </div>
-          <dl className="grid grid-cols-2 gap-2 sm:min-w-72">
-            <SummaryStat label="Offers" value={bundle.offers.length} />
-            <SummaryStat label="Events" value={bundle.events.length} />
-          </dl>
-        </div>
-      </header>
-
+    <div className="mx-auto w-full max-w-[92rem]">
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <section
           className="border-border-hairline rounded-[1.5rem] border bg-[#141414] p-4 sm:p-5"
           aria-labelledby="owner-offers-title"
         >
           <div className="border-border-hairline mb-5 border-b pb-4">
-            <p className="text-text-muted text-[11px] font-bold tracking-[0.1em] uppercase">
-              Offers
-            </p>
             <h2
               id="owner-offers-title"
-              className="font-display text-paper mt-1 text-xl font-bold"
+              className="font-display text-paper text-xl font-bold"
             >
               All offers
             </h2>
@@ -70,12 +53,9 @@ export default async function OwnerOffersEventsPage() {
           aria-labelledby="owner-events-title"
         >
           <div className="border-border-hairline mb-5 border-b pb-4">
-            <p className="text-text-muted text-[11px] font-bold tracking-[0.1em] uppercase">
-              Events
-            </p>
             <h2
               id="owner-events-title"
-              className="font-display text-paper mt-1 text-xl font-bold"
+              className="font-display text-paper text-xl font-bold"
             >
               All events
             </h2>
@@ -100,17 +80,6 @@ export default async function OwnerOffersEventsPage() {
           />
         </section>
       </div>
-    </div>
-  );
-}
-
-function SummaryStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="border-border-hairline rounded-[0.9rem] border bg-[#181818] px-4 py-3">
-      <dt className="text-text-muted text-[11px] font-medium">{label}</dt>
-      <dd className="text-paper mt-1 font-mono text-2xl font-semibold">
-        {value}
-      </dd>
     </div>
   );
 }

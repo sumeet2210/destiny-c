@@ -119,6 +119,7 @@ async function EventsData() {
     title: event.title,
     description: event.description,
     eventType: event.event_type,
+    customEventType: event.custom_event_type,
     startsAt: event.starts_at,
     endsAt: event.ends_at,
     restaurantId: event.restaurant_id,

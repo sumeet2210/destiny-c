@@ -2,10 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { EVENT_TYPES } from '@/config/events';
+import { getEventTypeLabel } from '@/config/events';
 import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
-import { Input, Label, Select, Textarea } from '@/components/ui/Input';
+import { Input, Label, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { resizeToWebp } from '@/components/features/owner/PhotoManager';
 import { uploadPromotionImage, upsertEvent } from '@/lib/owner/actions';
@@ -15,11 +15,11 @@ type OwnerEvent = {
   title: string;
   description: string | null;
   event_type: string;
+  custom_event_type: string | null;
   starts_at: string;
   ends_at: string | null;
   entry_fee: number | null;
   location_details: string | null;
-  ticket_url: string | null;
   is_cancelled: boolean;
   cover_image_url: string | null;
 };
@@ -30,9 +30,6 @@ const toLocalInput = (iso: string | null) => {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
-
-const localDate = (iso: string | null) => toLocalInput(iso).slice(0, 10);
-const localTime = (iso: string | null) => toLocalInput(iso).slice(11, 16);
 
 export function EventManager({ events }: { events: OwnerEvent[] }) {
   const router = useRouter();
@@ -87,7 +84,7 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-accent-primary text-[10px] font-bold tracking-[0.08em] uppercase">
-                          {eventTypeLabel(e.event_type)}
+                          {getEventTypeLabel(e.event_type, e.custom_event_type)}
                         </p>
                         <h3 className="text-paper mt-0.5 text-sm leading-5 font-bold">
                           {e.title}
@@ -134,24 +131,8 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                     </dl>
                   </div>
                 </div>
-                <div className="border-border-hairline flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2.5">
-                  <div>
-                    {e.ticket_url ? (
-                      <a
-                        href={e.ticket_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-text-muted text-[11px] font-semibold hover:text-white hover:underline"
-                      >
-                        Ticket link
-                      </a>
-                    ) : (
-                      <span className="text-text-muted text-[11px]">
-                        No ticket link
-                      </span>
-                    )}
-                  </div>
-                  {status.key === 'upcoming' || status.key === 'live' ? (
+                {status.key === 'upcoming' || status.key === 'live' ? (
+                  <div className="border-border-hairline flex justify-end border-t px-3 py-2.5">
                     <Button
                       variant="urgent-text"
                       size="sm"
@@ -163,9 +144,13 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                             id: e.id,
                             title: e.title,
                             event_type: e.event_type,
+                            custom_event_type: e.custom_event_type ?? undefined,
                             starts_at: e.starts_at,
                             ends_at: e.ends_at,
                             description: e.description ?? undefined,
+                            entry_fee: e.entry_fee,
+                            location_details: e.location_details ?? undefined,
+                            cover_image_url: e.cover_image_url,
                             is_cancelled: true,
                           });
                           toast(
@@ -180,8 +165,8 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                     >
                       Cancel event
                     </Button>
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
               </article>
             );
           })}
@@ -198,19 +183,13 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
             onSubmit={(ev) => {
               ev.preventDefault();
               const fd = new FormData(ev.currentTarget);
-              const startDate = String(fd.get('start_date'));
-              const startTime = String(fd.get('start_time'));
-              const endDate = String(fd.get('end_date'));
-              const endTime = String(fd.get('end_time'));
+              const startsLocal = String(fd.get('starts_at') || '');
+              const endsLocal = String(fd.get('ends_at') || '');
               const photo = fd.get('photo');
               const photoFile =
                 photo instanceof File && photo.size > 0 ? photo : null;
               if (!editing.id && !photoFile) {
                 toast('Add an event photo.', 'error');
-                return;
-              }
-              if (Boolean(endDate) !== Boolean(endTime)) {
-                toast('Choose both an end date and end time.', 'error');
                 return;
               }
               startTransition(async () => {
@@ -239,19 +218,14 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   id: editing.id,
                   title: String(fd.get('title')),
                   description: String(fd.get('description') || ''),
-                  event_type: String(fd.get('event_type')),
-                  starts_at: new Date(
-                    `${startDate}T${startTime}`,
-                  ).toISOString(),
-                  ends_at:
-                    endDate && endTime
-                      ? new Date(`${endDate}T${endTime}`).toISOString()
-                      : null,
+                  event_type: 'other',
+                  custom_event_type: String(fd.get('event_type') || ''),
+                  starts_at: new Date(startsLocal).toISOString(),
+                  ends_at: endsLocal ? new Date(endsLocal).toISOString() : null,
                   entry_fee: fd.get('entry_fee')
                     ? Number(fd.get('entry_fee'))
                     : null,
                   location_details: String(fd.get('location_details') || ''),
-                  ticket_url: String(fd.get('ticket_url') || ''),
                   cover_image_url: coverImageUrl,
                 });
                 toast(
@@ -279,7 +253,7 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               />
             </div>
             <div>
-              <Label htmlFor="ev-title">Title</Label>
+              <Label htmlFor="ev-title">Event title</Label>
               <Input
                 id="ev-title"
                 name="title"
@@ -288,70 +262,22 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               />
             </div>
             <div>
-              <Label htmlFor="ev-type">Type</Label>
-              <Select
+              <Label htmlFor="ev-type">Event type</Label>
+              <Input
                 id="ev-type"
                 name="event_type"
-                defaultValue={editing.event_type ?? 'other'}
-              >
-                {EVENT_TYPES.map((t) => (
-                  <option key={t.key} value={t.key}>
-                    {t.label}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="ev-start-date">Start date</Label>
-                <Input
-                  id="ev-start-date"
-                  name="start_date"
-                  type="date"
-                  required
-                  min={
-                    editing.id
-                      ? undefined
-                      : localDate(new Date(mountedAt).toISOString())
-                  }
-                  max={localDate(publishLimit.toISOString())}
-                  className="font-mono"
-                  defaultValue={localDate(editing.starts_at ?? null)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="ev-end-date">End date (optional)</Label>
-                <Input
-                  id="ev-end-date"
-                  name="end_date"
-                  type="date"
-                  className="font-mono"
-                  defaultValue={localDate(editing.ends_at ?? null)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="ev-start-time">Start time</Label>
-                <Input
-                  id="ev-start-time"
-                  name="start_time"
-                  type="time"
-                  required
-                  className="font-mono"
-                  defaultValue={localTime(editing.starts_at ?? null)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="ev-end-time">End time (optional)</Label>
-                <Input
-                  id="ev-end-time"
-                  name="end_time"
-                  type="time"
-                  className="font-mono"
-                  defaultValue={localTime(editing.ends_at ?? null)}
-                />
-              </div>
+                required
+                maxLength={60}
+                placeholder="e.g., Food events, Cultural"
+                defaultValue={
+                  editing.id
+                    ? getEventTypeLabel(
+                        editing.event_type ?? 'other',
+                        editing.custom_event_type,
+                      )
+                    : ''
+                }
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -377,21 +303,38 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               </div>
             </div>
             <div>
-              <Label htmlFor="ev-ticket">Ticket link (optional)</Label>
-              <Input
-                id="ev-ticket"
-                name="ticket_url"
-                type="url"
-                placeholder="https://"
-                defaultValue={editing.ticket_url ?? ''}
-              />
-            </div>
-            <div>
               <Label htmlFor="ev-desc">Description</Label>
               <Textarea
                 id="ev-desc"
                 name="description"
                 defaultValue={editing.description ?? ''}
+              />
+            </div>
+            <div>
+              <Label htmlFor="ev-start">Start date and time</Label>
+              <Input
+                id="ev-start"
+                name="starts_at"
+                type="datetime-local"
+                required
+                min={
+                  editing.id
+                    ? undefined
+                    : toLocalInput(new Date(mountedAt).toISOString())
+                }
+                max={toLocalInput(publishLimit.toISOString())}
+                className="font-mono"
+                defaultValue={toLocalInput(editing.starts_at ?? null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="ev-end">End date and time (optional)</Label>
+              <Input
+                id="ev-end"
+                name="ends_at"
+                type="datetime-local"
+                className="font-mono"
+                defaultValue={toLocalInput(editing.ends_at ?? null)}
               />
             </div>
             <Button type="submit" disabled={pending} className="w-full">
@@ -416,10 +359,6 @@ function EventDetail({ label, value }: { label: string; value: string }) {
 function formatEntryFee(value: number | null) {
   if (value === null) return 'Not specified';
   return value === 0 ? 'Free' : `₹${value}`;
-}
-
-function eventTypeLabel(value: string) {
-  return EVENT_TYPES.find((type) => type.key === value)?.label ?? 'Event';
 }
 
 function formatOwnerDateTime(value: string) {

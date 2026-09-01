@@ -69,11 +69,11 @@ export default async function OwnerOffersEventsPage() {
               title: e.title,
               description: e.description,
               event_type: e.event_type,
+              custom_event_type: e.custom_event_type,
               starts_at: e.starts_at,
               ends_at: e.ends_at,
               entry_fee: e.entry_fee,
               location_details: e.location_details,
-              ticket_url: e.ticket_url,
               is_cancelled: e.is_cancelled,
               cover_image_url: e.cover_image_url,
             }))}

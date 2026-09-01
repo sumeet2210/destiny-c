@@ -7,6 +7,7 @@ import { ReviewForm } from '@/components/features/ReviewForm';
 import { ReviewList } from '@/components/features/ReviewList';
 import { SaveToggle } from '@/components/features/SaveToggle';
 import { DestinyPage } from '@/components/ui/DestinyPage';
+import { getEventTypeLabel } from '@/config/events';
 import { VIBES } from '@/config/vibes';
 import { getSessionUser } from '@/lib/auth/session';
 import { canReview } from '@/lib/domain/booking';
@@ -276,7 +277,10 @@ export default async function RestaurantPage(
                   ) : null}
                   <div className={styles.eventTopline}>
                     <span className={styles.eventTypePill}>
-                      {formatEventType(event.event_type)}
+                      {getEventTypeLabel(
+                        event.event_type,
+                        event.custom_event_type,
+                      )}
                     </span>
                     <time dateTime={event.starts_at}>
                       {formatEventDate(event.starts_at)}
@@ -438,23 +442,6 @@ function formatOfferWindow(startsAt: string, expiresAt: string) {
     minute: '2-digit',
     timeZone: 'Asia/Kolkata',
   })}`;
-}
-
-function formatEventType(eventType: string) {
-  switch (eventType) {
-    case 'live_music':
-      return 'Live music';
-    case 'open_mic':
-      return 'Open mic';
-    case 'quiz':
-      return 'Quiz night';
-    case 'screening':
-      return 'Screening';
-    case 'food_festival':
-      return 'Food festival';
-    default:
-      return 'Event';
-  }
 }
 
 function StarIcon() {

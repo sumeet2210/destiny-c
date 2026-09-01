@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { RsvpButton } from '@/components/features/RsvpButton';
-import { EVENT_TYPES } from '@/config/events';
+import { getEventTypeLabel } from '@/config/events';
 import styles from './events.module.css';
 
 const IST = 'Asia/Kolkata';
@@ -13,6 +13,7 @@ export type SceneEvent = {
   title: string;
   description: string | null;
   eventType: string;
+  customEventType: string | null;
   startsAt: string;
   endsAt: string | null;
   restaurantId: string;
@@ -182,7 +183,6 @@ function SceneCard({
   event: SceneEvent;
   loggedIn: boolean;
 }) {
-  const meta = EVENT_TYPES.find((item) => item.key === event.eventType);
   const bookingHref = `/restaurant/${event.restaurantId}/book?event=${event.id}`;
   const [interestCount, setInterestCount] = useState(event.interestCount);
 
@@ -191,7 +191,9 @@ function SceneCard({
       <Link href={`/events/${event.id}`} className={styles.posterLink}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={event.artwork} alt="" />
-        <span className={styles.cardCategory}>{meta?.label ?? 'Other'}</span>
+        <span className={styles.cardCategory}>
+          {getEventTypeLabel(event.eventType, event.customEventType)}
+        </span>
         <span className={styles.cardDate}>{eventDate(event.startsAt)}</span>
       </Link>
       <div className={styles.cardBody}>

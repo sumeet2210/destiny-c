@@ -14,3 +14,14 @@ export const EVENT_TYPES = [
   { key: 'other', label: 'Other' },
 ] as const;
 export type EventTypeKey = (typeof EVENT_TYPES)[number]['key'];
+
+export function getEventTypeLabel(
+  eventType: string,
+  customEventType?: string | null,
+) {
+  if (eventType === 'other' && customEventType?.trim()) {
+    return customEventType.trim();
+  }
+
+  return EVENT_TYPES.find((type) => type.key === eventType)?.label ?? 'Event';
+}

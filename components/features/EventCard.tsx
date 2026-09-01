@@ -1,11 +1,7 @@
 import Link from 'next/link';
-import { EVENT_TYPES, type EventTypeKey } from '@/config/events';
+import { getEventTypeLabel } from '@/config/events';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/cn';
-
-const typeMeta = (key: string) =>
-  EVENT_TYPES.find((t) => t.key === (key as EventTypeKey)) ??
-  EVENT_TYPES[EVENT_TYPES.length - 1];
 
 const IST = 'Asia/Kolkata';
 
@@ -30,6 +26,7 @@ function dateParts(iso: string) {
 export function EventCard({
   title,
   eventType,
+  customEventType,
   startsAt,
   restaurantName,
   restaurantId,
@@ -39,6 +36,7 @@ export function EventCard({
 }: {
   title: string;
   eventType: string;
+  customEventType?: string | null;
   startsAt: string;
   restaurantName?: string;
   restaurantId?: string;
@@ -46,7 +44,7 @@ export function EventCard({
   rsvpSlot?: React.ReactNode;
   className?: string;
 }) {
-  const meta = typeMeta(eventType);
+  const eventTypeLabel = getEventTypeLabel(eventType, customEventType);
   const { day, month, weekday, time } = dateParts(startsAt);
 
   return (
@@ -61,7 +59,7 @@ export function EventCard({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-text-muted text-[12px]">
-          {meta.label}
+          {eventTypeLabel}
           <span aria-hidden> · </span>
           <span className="font-mono">{time}</span>
         </p>

@@ -4,6 +4,7 @@
 // actions run with the owner's session, never the secret key.
 
 import { revalidatePath } from 'next/cache';
+import { EVENT_TYPES } from '@/config/events';
 import {
   GOOGLE_MAPS_URL_HELP,
   normalizeCoordinate,
@@ -420,6 +421,7 @@ export async function upsertEvent(input: {
   title: string;
   description?: string;
   event_type: string;
+  custom_event_type?: string;
   starts_at: string;
   ends_at?: string | null;
   entry_fee?: number | null;
@@ -447,6 +449,9 @@ export async function upsertEvent(input: {
   }
   const window = validateEventWindow(input.starts_at, input.ends_at);
   if (!window.ok) return { ok: false, message: window.message };
+  const eventType = EVENT_TYPES.find((type) => type.key === input.event_type);
+  if (!eventType) return { ok: false, message: 'Choose a valid event type.' };
+  const customEventType = normalizeText(input.custom_event_type, 60);
   if (input.ticket_url) {
     try {
       const ticketUrl = new URL(input.ticket_url);
@@ -460,6 +465,8 @@ export async function upsertEvent(input: {
   const payload = {
     ...fields,
     event_type: fields.event_type as TablesInsert<'events'>['event_type'],
+    custom_event_type:
+      fields.event_type === 'other' ? customEventType || null : null,
     description: fields.description || null,
     ends_at: fields.ends_at || null,
     entry_fee: fields.entry_fee ?? null,

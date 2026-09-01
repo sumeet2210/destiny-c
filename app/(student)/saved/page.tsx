@@ -146,6 +146,7 @@ export default async function SavedPage() {
                 <EventCard
                   title={event.title}
                   eventType={event.event_type}
+                  customEventType={event.custom_event_type}
                   startsAt={event.starts_at}
                   restaurantName={event.restaurantName}
                   restaurantId={event.restaurant_id}

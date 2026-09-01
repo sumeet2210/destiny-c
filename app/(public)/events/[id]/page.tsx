@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { EVENT_TYPES } from '@/config/events';
+import { getEventTypeLabel } from '@/config/events';
 import { getSessionUser } from '@/lib/auth/session';
 import { getEventDetail, listEventInterestCounts } from '@/lib/queries/catalog';
 import { getFriendActivity, getMyRsvpIds } from '@/lib/queries/social';
@@ -61,7 +61,6 @@ export default async function EventDetailPage({
   if (!detail) notFound();
 
   const { event, restaurant, moreEvents } = detail;
-  const category = EVENT_TYPES.find((item) => item.key === event.event_type);
   const bookingHref = `/restaurant/${restaurant.id}/book?event=${event.id}`;
   const fee =
     event.entry_fee === 0
@@ -81,7 +80,9 @@ export default async function EventDetailPage({
           <div className={styles.poster}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={artwork(restaurant.name, event.cover_image_url)} alt="" />
-            <span>{category?.label ?? 'Other'}</span>
+            <span>
+              {getEventTypeLabel(event.event_type, event.custom_event_type)}
+            </span>
           </div>
 
           <div className={styles.eventCopy}>

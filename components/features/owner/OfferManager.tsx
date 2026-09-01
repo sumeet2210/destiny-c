@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Input, Label, Textarea } from '@/components/ui/Input';
+import { Input, Label } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
 import { resizeToWebp } from '@/components/features/owner/PhotoManager';
@@ -186,7 +186,6 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
 
                 const fields = {
                   title: String(fd.get('title')),
-                  description: String(fd.get('description') || ''),
                   discount_text: String(fd.get('discount_text') || ''),
                 };
                 const res = editing.id
@@ -239,31 +238,23 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
               />
             </div>
             <div>
-              <Label htmlFor="of-title">Title</Label>
+              <Label htmlFor="of-title">Offer title</Label>
               <Input
                 id="of-title"
                 name="title"
                 required
-                placeholder="Student thali at ₹99"
+                placeholder="Student lunch special"
                 defaultValue={editing.title ?? ''}
               />
             </div>
             <div>
-              <Label htmlFor="of-discount">Discount text (short)</Label>
+              <Label htmlFor="of-discount">Discount / Offer Value</Label>
               <Input
                 id="of-discount"
                 name="discount_text"
-                placeholder="₹21 off / B2G1 / 20% off"
+                required
+                placeholder="20% OFF, ₹100 OFF, or BOGO"
                 defaultValue={editing.discount_text ?? ''}
-              />
-            </div>
-            <div>
-              <Label htmlFor="of-desc">Details</Label>
-              <Textarea
-                id="of-desc"
-                name="description"
-                placeholder="Any conditions — timings, ID needed…"
-                defaultValue={editing.description ?? ''}
               />
             </div>
             <div>

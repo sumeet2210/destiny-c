@@ -171,6 +171,7 @@ export type Database = {
         Row: {
           cover_image_url: string | null;
           created_at: string;
+          custom_event_type: string | null;
           description: string | null;
           ends_at: string | null;
           entry_fee: number | null;
@@ -186,6 +187,7 @@ export type Database = {
         Insert: {
           cover_image_url?: string | null;
           created_at?: string;
+          custom_event_type?: string | null;
           description?: string | null;
           ends_at?: string | null;
           entry_fee?: number | null;
@@ -201,6 +203,7 @@ export type Database = {
         Update: {
           cover_image_url?: string | null;
           created_at?: string;
+          custom_event_type?: string | null;
           description?: string | null;
           ends_at?: string | null;
           entry_fee?: number | null;

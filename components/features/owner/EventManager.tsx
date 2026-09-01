@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { EVENT_TYPES } from '@/config/events';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Sheet } from '@/components/ui/Sheet';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
@@ -43,100 +42,120 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
   const toast = useToast();
   const publishLimit = new Date(mountedAt + 15 * 24 * 60 * 60 * 1000);
 
-  const upcoming = events.filter(
-    (e) =>
-      !e.is_cancelled &&
-      new Date(e.starts_at).getTime() > mountedAt - 4 * 3_600_000,
-  );
-  const rest = events.filter((e) => !upcoming.includes(e));
-
   return (
-    <div className="space-y-5">
-      <Button onClick={() => setEditing({})}>+ Post an event</Button>
-      <p className="text-text-muted text-[13px]">
-        Events can be scheduled up to 15 days ahead.
-      </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-text-muted text-sm">
+          <span className="text-paper font-mono font-semibold">
+            {events.length}
+          </span>{' '}
+          total
+        </p>
+        <Button className="min-h-11" onClick={() => setEditing({})}>
+          New event
+        </Button>
+      </div>
 
-      {upcoming.length === 0 && (
-        <p className="text-text-muted text-sm">No upcoming events.</p>
+      {events.length === 0 && (
+        <div className="border-border-hairline rounded-card border border-dashed px-4 py-8 text-center">
+          <p className="text-paper text-sm font-semibold">No events yet</p>
+          <p className="text-text-muted mx-auto mt-1 max-w-xs text-[13px] leading-5">
+            Add the next screening, open mic, or special night when it is ready.
+          </p>
+        </div>
       )}
 
-      {upcoming.length > 0 && (
-        <div className="grid gap-3 xl:grid-cols-2">
-          {upcoming.map((e) => (
-            <Card key={e.id} className="p-3">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                {e.cover_image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
-                  <img
-                    src={e.cover_image_url}
-                    alt=""
-                    className="rounded-control h-28 w-full shrink-0 object-cover sm:w-32"
-                  />
-                ) : null}
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div>
-                    <p className="text-accent-primary text-[10px] font-extrabold tracking-[0.08em] uppercase">
-                      {eventTypeLabel(e.event_type)}
-                    </p>
-                    <h3 className="text-paper mt-0.5 text-sm font-bold">
-                      {e.title}
-                    </h3>
+      {events.length > 0 && (
+        <div className="grid gap-3">
+          {events.map((e) => {
+            const status = getEventStatus(e, mountedAt);
+            return (
+              <article
+                key={e.id}
+                className="border-border-hairline rounded-card overflow-hidden border bg-[#1a1a1a]"
+              >
+                <div className="flex min-w-0 flex-col gap-3 p-3 sm:flex-row">
+                  {e.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- owner uploads are resized before storage.
+                    <img
+                      src={e.cover_image_url}
+                      alt=""
+                      className="rounded-control h-32 w-full shrink-0 object-cover sm:h-28 sm:w-28"
+                    />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-accent-primary text-[10px] font-bold tracking-[0.08em] uppercase">
+                          {eventTypeLabel(e.event_type)}
+                        </p>
+                        <h3 className="text-paper mt-0.5 text-sm leading-5 font-bold">
+                          {e.title}
+                        </h3>
+                      </div>
+                      <div className="-mt-2 -mr-2 flex shrink-0 items-center gap-1">
+                        <span className={status.className}>{status.label}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="min-h-11"
+                          onClick={() => setEditing(e)}
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                    {e.description && (
+                      <p className="text-text-muted mt-2 line-clamp-2 text-[12px] leading-5">
+                        {e.description}
+                      </p>
+                    )}
+                    <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                      <EventDetail
+                        label="When"
+                        value={formatOwnerDateTime(e.starts_at)}
+                      />
+                      <EventDetail
+                        label="Entry"
+                        value={formatEntryFee(e.entry_fee)}
+                      />
+                      {e.location_details ? (
+                        <EventDetail
+                          label="Location"
+                          value={e.location_details}
+                        />
+                      ) : null}
+                      {e.ends_at ? (
+                        <EventDetail
+                          label="Ends"
+                          value={formatOwnerDateTime(e.ends_at)}
+                        />
+                      ) : null}
+                    </dl>
                   </div>
-                  {e.description && (
-                    <p className="text-text-muted text-[12px] leading-relaxed">
-                      {e.description}
-                    </p>
-                  )}
-                  <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-white/8 pt-2 text-[11px]">
-                    <EventDetail
-                      label="Starts"
-                      value={formatOwnerDateTime(e.starts_at)}
-                    />
-                    <EventDetail
-                      label="Ends"
-                      value={
-                        e.ends_at
-                          ? formatOwnerDateTime(e.ends_at)
-                          : 'Not specified'
-                      }
-                    />
-                    <EventDetail
-                      label="Entry"
-                      value={
-                        e.entry_fee === null
-                          ? 'Not specified'
-                          : e.entry_fee === 0
-                            ? 'Free'
-                            : `₹${e.entry_fee}`
-                      }
-                    />
-                    <EventDetail
-                      label="Location"
-                      value={e.location_details || 'Not specified'}
-                    />
-                  </dl>
-                  {e.ticket_url && (
-                    <a
-                      href={e.ticket_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-accent-primary inline-flex text-[11px] font-bold hover:underline"
-                    >
-                      Open ticket link
-                    </a>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditing(e)}
-                    >
-                      Edit
-                    </Button>
+                </div>
+                <div className="border-border-hairline flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2.5">
+                  <div>
+                    {e.ticket_url ? (
+                      <a
+                        href={e.ticket_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-text-muted text-[11px] font-semibold hover:text-white hover:underline"
+                      >
+                        Ticket link
+                      </a>
+                    ) : (
+                      <span className="text-text-muted text-[11px]">
+                        No ticket link
+                      </span>
+                    )}
+                  </div>
+                  {status.key === 'upcoming' || status.key === 'live' ? (
                     <Button
                       variant="urgent-text"
                       size="sm"
+                      className="min-h-11"
                       disabled={pending}
                       onClick={() =>
                         startTransition(async () => {
@@ -161,28 +180,12 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                     >
                       Cancel event
                     </Button>
-                  </div>
+                  ) : null}
                 </div>
-              </div>
-            </Card>
-          ))}
+              </article>
+            );
+          })}
         </div>
-      )}
-
-      {rest.length > 0 && (
-        <details className="text-text-muted text-sm">
-          <summary className="cursor-pointer">
-            Past &amp; cancelled ({rest.length})
-          </summary>
-          <ul className="mt-2 space-y-1 text-[13px]">
-            {rest.map((e) => (
-              <li key={e.id}>
-                {e.title} — {new Date(e.starts_at).toLocaleDateString('en-IN')}
-                {e.is_cancelled && ' (cancelled)'}
-              </li>
-            ))}
-          </ul>
-        </details>
       )}
 
       <Sheet
@@ -306,7 +309,11 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   name="start_date"
                   type="date"
                   required
-                  min={localDate(new Date(mountedAt).toISOString())}
+                  min={
+                    editing.id
+                      ? undefined
+                      : localDate(new Date(mountedAt).toISOString())
+                  }
                   max={localDate(publishLimit.toISOString())}
                   className="font-mono"
                   defaultValue={localDate(editing.starts_at ?? null)}
@@ -406,6 +413,11 @@ function EventDetail({ label, value }: { label: string; value: string }) {
   );
 }
 
+function formatEntryFee(value: number | null) {
+  if (value === null) return 'Not specified';
+  return value === 0 ? 'Free' : `₹${value}`;
+}
+
 function eventTypeLabel(value: string) {
   return EVENT_TYPES.find((type) => type.key === value)?.label ?? 'Event';
 }
@@ -418,4 +430,40 @@ function formatOwnerDateTime(value: string) {
     minute: '2-digit',
     timeZone: 'Asia/Kolkata',
   });
+}
+
+function getEventStatus(event: OwnerEvent, now: number) {
+  const startsAt = new Date(event.starts_at).getTime();
+  const endsAt = event.ends_at
+    ? new Date(event.ends_at).getTime()
+    : startsAt + 4 * 60 * 60 * 1000;
+  const baseClass =
+    'rounded-full border px-2 py-1 text-[10px] font-bold tracking-[0.08em] uppercase';
+
+  if (event.is_cancelled) {
+    return {
+      key: 'cancelled' as const,
+      label: 'Cancelled',
+      className: `${baseClass} border-border-hairline text-text-muted`,
+    };
+  }
+  if (endsAt <= now) {
+    return {
+      key: 'past' as const,
+      label: 'Past',
+      className: `${baseClass} border-border-hairline text-text-muted`,
+    };
+  }
+  if (startsAt <= now) {
+    return {
+      key: 'live' as const,
+      label: 'Live',
+      className: `${baseClass} border-accent-primary/40 bg-accent-primary/8 text-accent-primary`,
+    };
+  }
+  return {
+    key: 'upcoming' as const,
+    label: 'Upcoming',
+    className: `${baseClass} border-border-hairline text-paper`,
+  };
 }

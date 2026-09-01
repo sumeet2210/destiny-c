@@ -1,0 +1,408 @@
+.dashboard {
+  display: grid;
+  gap: 2rem;
+}
+
+.rangeBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.eyebrow,
+.sectionHeading > p {
+  color: var(--color-accent-primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rangeCopy,
+.sectionHeading > span {
+  color: var(--color-text-muted);
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.rangeControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.funnel {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 35%, #505050);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(
+      circle at 88% 0%,
+      color-mix(in srgb, var(--color-accent-primary) 16%, transparent),
+      transparent 34%
+    ),
+    #141414;
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.funnelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.funnelHeader h2,
+.offerCard h2,
+.sectionHeading h2 {
+  color: var(--color-paper);
+  margin-top: 0.25rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.periodBadge {
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-hairline);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  padding: 0.35rem 0.7rem;
+  font-family: monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.journey {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
+  border: 1px solid var(--color-border-hairline);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface-muted) 72%, transparent);
+}
+
+.journeyStep {
+  position: relative;
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.journeyStep + .journeyStep {
+  border-left: 1px solid var(--color-border-hairline);
+}
+
+.journeyStep[data-accent] {
+  background: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+}
+
+.stepNumber {
+  color: var(--color-text-muted);
+  font-family: monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+}
+
+.journeyStep > p {
+  color: var(--color-text-muted);
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.journeyStep > strong {
+  display: block;
+  color: var(--color-paper);
+  margin-top: 0.3rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.journeyStep[data-accent] > strong {
+  color: var(--color-accent-primary);
+}
+
+.journeyStep > small {
+  display: block;
+  color: var(--color-text-muted);
+  margin-top: 0.65rem;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.formulaNote {
+  color: var(--color-text-muted);
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.sectionHeading {
+  margin-bottom: 1rem;
+}
+
+.customerGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.metricCard,
+.offerCard,
+.chartCard {
+  border: 1px solid var(--color-border-hairline);
+  border-radius: 1rem;
+  background: #161616;
+}
+
+.metricCard {
+  min-height: 10.5rem;
+  padding: 1rem;
+}
+
+.metricCard[data-accent] {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 42%, #505050);
+}
+
+.metricTopline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.metricTopline h3,
+.chartCard h3 {
+  color: var(--color-paper);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.metricTopline span {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.metricCard > strong {
+  display: block;
+  color: var(--color-paper);
+  margin-top: 1.35rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricCard[data-accent] > strong {
+  color: var(--color-accent-primary);
+}
+
+.metricCard > p,
+.offerCard > div:first-child > p:last-child {
+  color: var(--color-text-muted);
+  margin-top: 0.75rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.splitSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.offerCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.offerValues {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(6.2rem, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--color-border-hairline);
+  border-radius: 0.85rem;
+}
+
+.offerValues > div {
+  padding: 1rem;
+}
+
+.offerValues > div + div {
+  border-left: 1px solid var(--color-border-hairline);
+}
+
+.offerValues strong {
+  display: block;
+  color: var(--color-paper);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.9rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.offerValues span {
+  display: block;
+  color: var(--color-text-muted);
+  margin-top: 0.45rem;
+  font-size: 0.68rem;
+}
+
+.ratingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.chartCard {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.barList {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 24rem;
+  margin-top: 1.1rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: minmax(4.8rem, 6.8rem) minmax(4rem, 1fr) 2rem;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.barRow > span {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barRow > strong {
+  color: var(--color-text-muted);
+  font-family: monospace;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.barTrack {
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+}
+
+.primaryBar,
+.secondaryBar {
+  height: 100%;
+  min-width: 0.2rem;
+  border-radius: inherit;
+}
+
+.primaryBar {
+  background: var(--color-accent-primary);
+}
+
+.secondaryBar {
+  background: color-mix(in srgb, var(--color-accent-primary) 58%, #ededed);
+}
+
+.emptyChart {
+  min-height: 7.5rem;
+  display: grid;
+  place-content: center;
+  margin-top: 1rem;
+  border: 1px dashed var(--color-border-hairline);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.emptyChart p {
+  color: var(--color-paper);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.emptyChart span {
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
+}
+
+@media (max-width: 900px) {
+  .splitSection,
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .dashboard {
+    gap: 1.5rem;
+  }
+
+  .rangeBar,
+  .funnelHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .journey,
+  .customerGrid,
+  .ratingGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .journeyStep + .journeyStep {
+    border-top: 1px solid var(--color-border-hairline);
+    border-left: 0;
+  }
+
+  .journeyStep > strong {
+    font-size: 2.4rem;
+  }
+
+  .metricCard {
+    min-height: 0;
+  }
+
+  .offerCard {
+    grid-template-columns: 1fr;
+  }
+
+  .offerValues {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .barRow {
+    grid-template-columns: 4.75rem minmax(3rem, 1fr) 1.7rem;
+    gap: 0.45rem;
+  }
+}

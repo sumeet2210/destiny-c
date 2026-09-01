@@ -15,7 +15,7 @@ const items = [
   { href: '/owner/menu', label: 'Menu' },
   { href: '/owner/offers-events', label: 'Offers & Events' },
   { href: '/owner/bookings', label: 'Bookings' },
-  { href: '/owner/analytics', label: 'Analytics' },
+  { href: '/owner/analytics', label: 'Restaurant Analytics' },
 ] as const;
 
 export function OwnerNav({

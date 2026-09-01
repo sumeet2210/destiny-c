@@ -829,6 +829,10 @@ export type Database = {
         Returns: boolean;
       };
       owns_restaurant: { Args: { rid: string }; Returns: boolean };
+      owner_saved_restaurant_count: {
+        Args: { target_restaurant_id: string };
+        Returns: number;
+      };
       restaurant_is_active: { Args: { rid: string }; Returns: boolean };
       shares_activity: { Args: { u: string }; Returns: boolean };
       trending_restaurants: {

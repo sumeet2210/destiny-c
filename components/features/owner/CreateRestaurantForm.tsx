@@ -2,10 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { AREAS } from '@/config/areas';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Input, Label, Select, Textarea } from '@/components/ui/Input';
+import { Input, Label, Textarea } from '@/components/ui/Input';
 import { createRestaurant } from '@/lib/owner/actions';
 
 export function CreateRestaurantForm() {
@@ -19,12 +18,13 @@ export function CreateRestaurantForm() {
         onSubmit={(e) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
+          const address = String(fd.get('address') || '');
           startTransition(async () => {
             setError(null);
             const res = await createRestaurant({
               name: String(fd.get('name')),
-              area: String(fd.get('area')),
-              address: String(fd.get('address') || '') || null,
+              area: address,
+              address,
               phone: String(fd.get('phone') || '') || null,
               description: String(fd.get('description') || '') || null,
               google_maps_url: String(fd.get('google_maps_url') || '') || null,
@@ -40,16 +40,8 @@ export function CreateRestaurantForm() {
           <Input id="name" name="name" required />
         </div>
         <div>
-          <Label htmlFor="area">Area</Label>
-          <Select id="area" name="area" required defaultValue={AREAS[0]}>
-            {AREAS.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </Select>
-        </div>
-        <div>
           <Label htmlFor="address">Address</Label>
-          <Input id="address" name="address" />
+          <Input id="address" name="address" required />
         </div>
         <div>
           <Label htmlFor="phone">Phone</Label>

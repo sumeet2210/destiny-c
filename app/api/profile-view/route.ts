@@ -9,6 +9,7 @@ const KNOWN_SOURCES = new Set([
   'quiz',
   'events',
   'friend_activity',
+  'offer',
   'direct',
 ]);
 

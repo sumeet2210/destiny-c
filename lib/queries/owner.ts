@@ -2,6 +2,10 @@
 import 'server-only';
 import { cache } from 'react';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
+import {
+  buildOwnerAnalyticsSummary,
+  type OwnerAnalyticsSummary,
+} from '@/lib/domain/owner-analytics';
 import { averageRating } from '@/lib/domain/reviews';
 import type { Tables } from '@/types/db';
 
@@ -203,11 +207,7 @@ export const getOwnerReviews = cache(
   },
 );
 
-export type AnalyticsBundle = {
-  totals: { last7: number; last30: number };
-  byDay: { day: string; views: number }[];
-  bySource: { source_filter: string; views: number }[];
-};
+export type AnalyticsBundle = OwnerAnalyticsSummary;
 
 export async function getOwnerAnalytics(): Promise<AnalyticsBundle | null> {
   if (!isSupabaseConfigured()) return null;
@@ -215,38 +215,28 @@ export async function getOwnerAnalytics(): Promise<AnalyticsBundle | null> {
   if (!bundle) return null;
   const supabase = await createClient();
 
-  const [byDay, bySource] = await Promise.all([
+  const cutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const [views, bookings, savedCount] = await Promise.all([
     supabase
-      .from('restaurant_views_by_day')
-      .select('day, views')
+      .from('profile_views')
+      .select('created_at, source_filter')
       .eq('restaurant_id', bundle.restaurant.id)
-      .order('day', { ascending: false })
-      .limit(30),
+      .gte('created_at', cutoff),
     supabase
-      .from('restaurant_views_by_source')
-      .select('source_filter, views')
+      .from('bookings')
+      .select('student_id, created_at, offer_id, status')
       .eq('restaurant_id', bundle.restaurant.id)
-      .order('views', { ascending: false }),
+      .order('created_at', { ascending: false }),
+    supabase.rpc('owner_saved_restaurant_count', {
+      target_restaurant_id: bundle.restaurant.id,
+    }),
   ]);
 
-  // View columns are nullable in the generated types (Postgres views drop
-  // NOT NULL), but the underlying columns never are — filter defensively.
-  const days = (byDay.data ?? []).flatMap((d) =>
-    d.day === null ? [] : [{ day: d.day, views: Number(d.views) }],
-  );
-  const cutoff7 = Date.now() - 7 * 86_400_000;
-  return {
-    totals: {
-      last7: days
-        .filter((d) => new Date(d.day).getTime() >= cutoff7)
-        .reduce((a, d) => a + d.views, 0),
-      last30: days.reduce((a, d) => a + d.views, 0),
-    },
-    byDay: days,
-    bySource: (bySource.data ?? []).flatMap((s) =>
-      s.source_filter === null
-        ? []
-        : [{ source_filter: s.source_filter, views: Number(s.views) }],
-    ),
-  };
+  if (views.error || bookings.error || savedCount.error) return null;
+
+  return buildOwnerAnalyticsSummary({
+    views: views.data ?? [],
+    bookings: bookings.data ?? [],
+    saved: Number(savedCount.data ?? 0),
+  });
 }

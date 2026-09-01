@@ -426,7 +426,7 @@ function OfferTile({
         detail: offer.discount_text ?? 'Limited-time special',
         image: offer.image,
         kind: 'offer',
-        detailsHref: `/restaurant/${offer.restaurant_id}?from=homepage_feed`,
+        detailsHref: `/restaurant/${offer.restaurant_id}?from=offer`,
       }}
       duplicate={duplicate}
       {...shared}

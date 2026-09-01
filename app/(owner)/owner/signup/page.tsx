@@ -18,7 +18,6 @@ export default function OwnerSignupPage() {
   const [ownerName, setOwnerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [area, setArea] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +43,7 @@ export default function OwnerSignupPage() {
                 ownerName,
                 phone,
                 address,
-                area,
+                area: address,
               });
               if (!res.ok) setError(res.message ?? 'Signup failed.');
               else if (res.message) setNotice(res.message);
@@ -104,20 +103,6 @@ export default function OwnerSignupPage() {
           </div>
 
           <div className={styles.fieldGroup}>
-            <Label htmlFor="area" className={styles.label}>
-              Area
-            </Label>
-            <Input
-              id="area"
-              autoComplete="address-level2"
-              required
-              className={styles.field}
-              value={area}
-              onChange={(event) => setArea(event.target.value)}
-            />
-          </div>
-
-          <div className={`${styles.fieldGroup} ${styles.signupFullRow}`}>
             <Label htmlFor="address" className={styles.label}>
               Address
             </Label>

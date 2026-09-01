@@ -266,28 +266,16 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
 
         <section className="border-border-hairline space-y-4 border-t pt-6">
           <h2 className="font-display text-paper text-lg font-bold">
-            Locality
+            Location
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="p-area">Area/Locality</Label>
-              <Input
-                id="p-area"
-                value={fields.area}
-                onChange={(event) => set('area', event.target.value)}
-                readOnly={!editing}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="p-address">Full address</Label>
-              <Input
-                id="p-address"
-                value={fields.address ?? ''}
-                onChange={(event) => set('address', event.target.value || null)}
-                readOnly={!editing}
-              />
-            </div>
+          <div>
+            <Label htmlFor="p-address">Full address</Label>
+            <Input
+              id="p-address"
+              value={fields.address ?? ''}
+              onChange={(event) => set('address', event.target.value || null)}
+              readOnly={!editing}
+            />
           </div>
 
           <div>

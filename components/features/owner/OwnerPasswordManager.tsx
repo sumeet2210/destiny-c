@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/Toast';
 import {
   requestOwnerPasswordCode,
   updateOwnerPassword,
+  verifyOwnerPasswordCode,
 } from '@/lib/auth/actions';
 
 type Step = 'confirm' | 'code' | 'password';
@@ -107,11 +108,19 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
             className="space-y-5"
             onSubmit={(event) => {
               event.preventDefault();
-              if (!/^\d{6,8}$/.test(code)) {
-                toast('Enter the 6–8 digit code from your email.', 'error');
-                return;
-              }
-              setStep('password');
+              startTransition(async () => {
+                const result = await verifyOwnerPasswordCode(code);
+                toast(
+                  result.ok
+                    ? 'Email code verified'
+                    : (result.message ?? 'Could not verify the code.'),
+                  result.ok ? 'positive' : 'error',
+                );
+                if (result.ok) {
+                  setCode('');
+                  setStep('password');
+                }
+              });
             }}
           >
             <div>
@@ -149,7 +158,7 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
                 Send a new code
               </Button>
               <Button type="submit" disabled={pending}>
-                Continue
+                {pending ? 'Verifying…' : 'Verify code'}
               </Button>
             </div>
           </form>
@@ -162,7 +171,6 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
               event.preventDefault();
               startTransition(async () => {
                 const result = await updateOwnerPassword({
-                  code,
                   password,
                   confirmPassword,
                 });
@@ -176,8 +184,11 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
                   setOpen(false);
                   reset();
                 }
-                if (!result.ok && result.codeRejected) {
-                  setStep('code');
+                if (
+                  !result.ok &&
+                  result.message?.startsWith('Verify a new email code')
+                ) {
+                  setStep('confirm');
                 }
               });
             }}
@@ -187,8 +198,7 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
                 Choose a new password
               </h3>
               <p className="text-text-muted mt-1 text-sm leading-6">
-                Use at least 8 characters. Your email code will be verified
-                securely when you save.
+                Your email is verified. Use at least 8 characters.
               </p>
             </div>
             <div>
@@ -218,15 +228,7 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
                 required
               />
             </div>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={pending}
-                onClick={() => setStep('code')}
-              >
-                Change code
-              </Button>
+            <div className="flex justify-end">
               <Button type="submit" disabled={pending}>
                 {pending ? 'Saving…' : 'Confirm & save password'}
               </Button>
@@ -241,7 +243,7 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
 function PasswordSteps({ current }: { current: Step }) {
   const steps: Array<{ key: Step; label: string }> = [
     { key: 'confirm', label: 'Send' },
-    { key: 'code', label: 'Code' },
+    { key: 'code', label: 'Verify' },
     { key: 'password', label: 'Password' },
   ];
   const activeIndex = steps.findIndex((step) => step.key === current);

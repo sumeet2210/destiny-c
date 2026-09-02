@@ -1,4 +1,5 @@
 export const OWNER_PASSWORD_MIN_LENGTH = 8;
+export const OWNER_PASSWORD_OTP_MAX_AGE_SECONDS = 15 * 60;
 
 type PasswordResult =
   { ok: true; password: string } | { ok: false; message: string };
@@ -42,18 +43,32 @@ export function validateNewOwnerPassword(input: {
   return { ok: true, password };
 }
 
-export function isOwnerPasswordCodeError(error: {
-  message: string;
-  code?: string;
-}): boolean {
-  const raw = error.message.toLowerCase();
-  return (
-    error.code === 'reauthentication_not_valid' ||
-    error.code === 'otp_expired' ||
-    (raw.includes('reauthentication') && raw.includes('invalid')) ||
-    (raw.includes('token') &&
-      (raw.includes('invalid') || raw.includes('expired')))
-  );
+type AuthenticationMethod = string | { method: string; timestamp: number };
+
+/**
+ * A password change is unlocked only by a freshly verified email OTP session.
+ * Object AMR entries carry their own timestamp; string-only AMR entries use
+ * the signed token's issued-at time as a conservative fallback.
+ */
+export function hasRecentOwnerEmailOtp(
+  methods: AuthenticationMethod[] | undefined,
+  issuedAt: number,
+  now = Math.floor(Date.now() / 1000),
+): boolean {
+  if (!methods?.length) return false;
+  const isEmailOtp = (method: string) => method === 'otp' || method === 'email';
+
+  return methods.some((entry) => {
+    const method = typeof entry === 'string' ? entry : entry.method;
+    const timestamp = typeof entry === 'string' ? issuedAt : entry.timestamp;
+    const age = now - timestamp;
+    return (
+      isEmailOtp(method) &&
+      Number.isFinite(timestamp) &&
+      age >= 0 &&
+      age <= OWNER_PASSWORD_OTP_MAX_AGE_SECONDS
+    );
+  });
 }
 
 export function maskAccountEmail(email: string): string {

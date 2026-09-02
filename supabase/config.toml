@@ -260,14 +260,8 @@ otp_expiry = 3600
 # project only via `supabase config push` (read the warning at the top of
 # [auth] before running that).
 [auth.email.template.magic_link]
-subject = "Your Destiny login code"
+subject = '{{ if eq .Data.role "owner" }}Your Destiny password code{{ else }}Your Destiny login code{{ end }}'
 content_path = "./supabase/templates/magic_link.html"
-
-# Signed-in restaurant owners use reauthentication for password changes. This
-# template is intentionally separate from the student Magic Link / OTP email.
-[auth.email.template.reauthentication]
-subject = "{{ .Token }} is your Destiny password-change code"
-content_path = "./supabase/templates/reauthentication.html"
 
 # signInWithOtp creates a Supabase Auth user on a student's first request, so
 # GoTrue uses the confirmation template rather than the magic-link template for

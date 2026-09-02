@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  isOwnerPasswordCodeError,
+  hasRecentOwnerEmailOtp,
   maskAccountEmail,
   normalizeOwnerPasswordCode,
+  OWNER_PASSWORD_OTP_MAX_AGE_SECONDS,
   validateNewOwnerPassword,
 } from './owner-password';
 
@@ -43,22 +44,42 @@ describe('validateNewOwnerPassword', () => {
   });
 });
 
-describe('isOwnerPasswordCodeError', () => {
-  it.each([
-    { code: 'reauthentication_not_valid', message: 'Invalid nonce' },
-    { code: 'otp_expired', message: 'Expired' },
-    { message: 'Reauthentication nonce is invalid' },
-    { message: 'Token has expired or is invalid' },
-  ])('recognizes a rejected reauthentication code', (error) => {
-    expect(isOwnerPasswordCodeError(error)).toBe(true);
+describe('hasRecentOwnerEmailOtp', () => {
+  const now = 2_000_000;
+
+  it('accepts a recent OTP authentication entry', () => {
+    expect(
+      hasRecentOwnerEmailOtp(
+        [{ method: 'otp', timestamp: now - 60 }],
+        now - 60,
+        now,
+      ),
+    ).toBe(true);
   });
 
-  it('does not treat a password-policy error as a rejected code', () => {
+  it('uses the signed token issue time for string AMR entries', () => {
+    expect(hasRecentOwnerEmailOtp(['email'], now - 60, now)).toBe(true);
+  });
+
+  it('rejects password auth and stale OTP sessions', () => {
     expect(
-      isOwnerPasswordCodeError({
-        code: 'weak_password',
-        message: 'Password is too weak',
-      }),
+      hasRecentOwnerEmailOtp(
+        [{ method: 'password', timestamp: now - 10 }],
+        now - 10,
+        now,
+      ),
+    ).toBe(false);
+    expect(
+      hasRecentOwnerEmailOtp(
+        [
+          {
+            method: 'otp',
+            timestamp: now - OWNER_PASSWORD_OTP_MAX_AGE_SECONDS - 1,
+          },
+        ],
+        now - OWNER_PASSWORD_OTP_MAX_AGE_SECONDS - 1,
+        now,
+      ),
     ).toBe(false);
   });
 });

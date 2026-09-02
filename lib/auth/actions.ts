@@ -14,7 +14,7 @@ import {
   type OwnerSignupRestaurantInput,
 } from '@/lib/domain/owner-profile';
 import {
-  isOwnerPasswordCodeError,
+  hasRecentOwnerEmailOtp,
   maskAccountEmail,
   normalizeOwnerPasswordCode,
   validateNewOwnerPassword,
@@ -27,10 +27,6 @@ export type AuthResult = { ok: boolean; message?: string };
 
 export type OwnerPasswordCodeResult = AuthResult & {
   maskedEmail?: string;
-};
-
-export type OwnerPasswordUpdateResult = AuthResult & {
-  codeRejected?: boolean;
 };
 
 export type StudentOtpInput = {
@@ -332,10 +328,13 @@ export async function requestOwnerPasswordCode(): Promise<OwnerPasswordCodeResul
     };
   }
 
-  // Reauthentication has its own Supabase email template and nonce lifecycle.
-  // Keeping it separate prevents owner password changes from consuming the
-  // Magic Link / OTP template used by student sign-in.
-  const { error } = await supabase.auth.reauthenticate();
+  // Supabase skips reauthentication nonce checks for sessions created within
+  // the last 24 hours. Use a real email OTP instead so every password change
+  // is forced through code verification, regardless of session age.
+  const { error } = await supabase.auth.signInWithOtp({
+    email: access.user.email,
+    options: { shouldCreateUser: false },
+  });
   if (error) return { ok: false, message: friendlyAuthError(error) };
   return {
     ok: true,
@@ -343,16 +342,49 @@ export async function requestOwnerPasswordCode(): Promise<OwnerPasswordCodeResul
   };
 }
 
+export async function verifyOwnerPasswordCode(
+  value: string,
+): Promise<AuthResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const normalized = normalizeOwnerPasswordCode(value);
+  if (!normalized.ok) return normalized;
+
+  const supabase = await createClient();
+  const access = await getOwnerAuthAccess(supabase);
+  if (!access.ok) return access.result;
+  if (!access.user.email) {
+    return {
+      ok: false,
+      message: 'This restaurant account does not have an email address.',
+    };
+  }
+
+  const expectedUserId = access.user.id;
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: access.user.email,
+    token: normalized.code,
+    type: 'email',
+  });
+  if (error) return { ok: false, message: friendlyAuthError(error) };
+  if (!data.user || data.user.id !== expectedUserId) {
+    await supabase.auth.signOut();
+    return {
+      ok: false,
+      message: 'That code does not belong to this restaurant account.',
+    };
+  }
+
+  // verifyOtp replaces the password session with a signed OTP session. The
+  // password action checks that authentication method and its age again.
+  revalidatePath('/', 'layout');
+  return { ok: true };
+}
+
 export async function updateOwnerPassword(input: {
-  code: string;
   password: string;
   confirmPassword: string;
-}): Promise<OwnerPasswordUpdateResult> {
+}): Promise<AuthResult> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
-  const normalizedCode = normalizeOwnerPasswordCode(input.code);
-  if (!normalizedCode.ok) {
-    return { ...normalizedCode, codeRejected: true };
-  }
   const normalized = validateNewOwnerPassword(input);
   if (!normalized.ok) return normalized;
 
@@ -360,17 +392,27 @@ export async function updateOwnerPassword(input: {
   const access = await getOwnerAuthAccess(supabase);
   if (!access.ok) return access.result;
 
-  const { error } = await supabase.auth.updateUser({
-    password: normalized.password,
-    nonce: normalizedCode.code,
-  });
-  if (error) {
+  const { data: claimData, error: claimError } =
+    await supabase.auth.getClaims();
+  if (
+    claimError ||
+    !claimData ||
+    claimData.claims.sub !== access.user.id ||
+    !hasRecentOwnerEmailOtp(claimData.claims.amr, claimData.claims.iat)
+  ) {
+    if (claimError) {
+      console.error('[owner-password]', claimError.message);
+    }
     return {
       ok: false,
-      message: friendlyAuthError(error),
-      codeRejected: isOwnerPasswordCodeError(error),
+      message: 'Verify a new email code before changing the password.',
     };
   }
+
+  const { error } = await supabase.auth.updateUser({
+    password: normalized.password,
+  });
+  if (error) return { ok: false, message: friendlyAuthError(error) };
   revalidatePath('/owner', 'layout');
   return { ok: true };
 }

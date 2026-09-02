@@ -1,13 +1,15 @@
 <!--
-  Student login email. Code-only by design — see docs/decisions.md.
+  Shared student-login and owner password-verification email. Code-only by
+  design — see docs/decisions.md.
 
   Supabase sends this template for signInWithOtp (lib/auth/actions.ts
-  #requestStudentOtp). The stock version ships ConfirmationURL and no Token,
-  which is why students used to receive a link and never a code.
+  #requestStudentOtp and #requestOwnerPasswordCode). The stock version ships
+  ConfirmationURL and no Token, which is why the app used to receive a link
+  rather than the code its forms expect.
 
   Deliberately omits ConfirmationURL entirely: the app has no route that can
   exchange a magic-link code for a session, and clicking such a link CONSUMES
-  the token, so a student who tapped it could no longer use the code either.
+  the token, so someone who tapped it could no longer use the code either.
   Do not add a link back without also adding that route.
 
   Variable names above are written bare, WITHOUT the surrounding braces, on
@@ -71,7 +73,8 @@
                 color: #17150f;
               "
             >
-              Your login code
+              {{ if eq .Data.role "owner" }} Verify your password change {{ else
+              }} Your login code {{ end }}
             </h1>
             <p
               style="
@@ -81,8 +84,10 @@
                 color: #6b6459;
               "
             >
-              Enter this code on the login screen to continue. It expires in an
-              hour and works once.
+              {{ if eq .Data.role "owner" }} Enter this code in your restaurant
+              portal to verify your account before choosing a new password. {{
+              else }} Enter this code on the login screen to continue. {{ end }}
+              It expires in an hour and works once.
             </p>
 
             <p
@@ -112,9 +117,11 @@
                 color: #6b6459;
               "
             >
-              Didn't ask for this? Someone probably mistyped their roll number —
-              you can ignore this email, and nothing will happen to your
-              account.
+              {{ if eq .Data.role "owner" }} Didn't ask to change your password?
+              You can ignore this email, and your password will stay the same.
+              {{ else }} Didn't ask for this? Someone probably mistyped their
+              roll number — you can ignore this email, and nothing will happen
+              to your account. {{ end }}
             </p>
           </td>
         </tr>

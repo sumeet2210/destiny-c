@@ -1,20 +1,25 @@
 import { redirect } from 'next/navigation';
+import { OwnerPasswordManager } from '@/components/features/owner/OwnerPasswordManager';
 import { ProfileForm } from '@/components/features/owner/ProfileForm';
 import { PhotoManager } from '@/components/features/owner/PhotoManager';
+import { getSessionUser } from '@/lib/auth/session';
+import { maskAccountEmail } from '@/lib/domain/owner-password';
 import { getOwnerBundle, getOwnerGalleryFolders } from '@/lib/queries/owner';
 
 export const metadata = { title: 'Profile' };
 
 export default async function OwnerProfilePage() {
-  const [bundle, folders] = await Promise.all([
+  const [bundle, folders, user] = await Promise.all([
     getOwnerBundle(),
     getOwnerGalleryFolders(),
+    getSessionUser(),
   ]);
   if (!bundle) redirect('/owner/dashboard');
   const r = bundle.restaurant;
 
   return (
     <div className="w-full space-y-8">
+      <OwnerPasswordManager maskedEmail={maskAccountEmail(user?.email ?? '')} />
       <ProfileForm
         initial={{
           name: r.name,

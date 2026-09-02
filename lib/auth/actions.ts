@@ -13,11 +13,25 @@ import {
   type OwnerSignupRestaurant,
   type OwnerSignupRestaurantInput,
 } from '@/lib/domain/owner-profile';
+import {
+  isOwnerPasswordCodeError,
+  maskAccountEmail,
+  normalizeOwnerPasswordCode,
+  validateNewOwnerPassword,
+} from '@/lib/domain/owner-password';
 import { normalizeStudentPatch } from '@/lib/domain/student-preferences';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import type { User } from '@supabase/supabase-js';
 
 export type AuthResult = { ok: boolean; message?: string };
+
+export type OwnerPasswordCodeResult = AuthResult & {
+  maskedEmail?: string;
+};
+
+export type OwnerPasswordUpdateResult = AuthResult & {
+  codeRejected?: boolean;
+};
 
 export type StudentOtpInput = {
   email: string;
@@ -76,6 +90,15 @@ function friendlyAuthError(error: { message: string; code?: string }): string {
   if (code === 'user_already_exists' || raw.includes('already registered')) {
     return 'An account with that email already exists — log in instead.';
   }
+  if (code === 'same_password') {
+    return 'Choose a password that is different from your current password.';
+  }
+  if (code === 'weak_password') {
+    return 'That password is too easy to guess. Try a longer, less common password.';
+  }
+  if (code === 'reauthentication_not_valid' || code === 'otp_expired') {
+    return "That code didn't match, or it has expired. Request a new one.";
+  }
   // GoTrue collapses a stale code and a mistyped one into a single
   // "Token has expired or is invalid", so we genuinely cannot tell them
   // apart — name both rather than blaming the wrong one.
@@ -94,6 +117,57 @@ function friendlyAuthError(error: { message: string; code?: string }): string {
 
   console.error('[auth]', error.code ?? '', error.message);
   return 'Something went wrong on our side. Try again in a moment.';
+}
+
+type OwnerAuthAccess =
+  { ok: true; user: User } | { ok: false; result: AuthResult };
+
+/**
+ * Password actions are callable network endpoints even though only the owner
+ * portal renders them. Re-read both the Auth identity and the application role
+ * on every call instead of trusting client state or editable user metadata.
+ */
+async function getOwnerAuthAccess(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<OwnerAuthAccess> {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return {
+      ok: false,
+      result: {
+        ok: false,
+        message:
+          'Your session has expired. Log in again to change the password.',
+      },
+    };
+  }
+
+  const { data: owner, error: roleError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', user.id)
+    .eq('role', 'owner')
+    .maybeSingle();
+  if (roleError) {
+    console.error('[owner-password]', roleError.message);
+    return {
+      ok: false,
+      result: {
+        ok: false,
+        message: 'Could not verify your restaurant account. Try again.',
+      },
+    };
+  }
+  if (!owner) {
+    return {
+      ok: false,
+      result: { ok: false, message: 'Only restaurant owners can use this.' },
+    };
+  }
+  return { ok: true, user };
 }
 
 function restaurantFromMetadata(user: User): OwnerSignupRestaurant | null {
@@ -243,6 +317,61 @@ export async function ownerLogin(
   const onboardingError = await ensureOwnerRestaurant(supabase, data.user);
   if (onboardingError) return onboardingError;
   revalidatePath('/', 'layout');
+  return { ok: true };
+}
+
+export async function requestOwnerPasswordCode(): Promise<OwnerPasswordCodeResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const supabase = await createClient();
+  const access = await getOwnerAuthAccess(supabase);
+  if (!access.ok) return access.result;
+  if (!access.user.email) {
+    return {
+      ok: false,
+      message: 'This restaurant account does not have an email address.',
+    };
+  }
+
+  // Reauthentication has its own Supabase email template and nonce lifecycle.
+  // Keeping it separate prevents owner password changes from consuming the
+  // Magic Link / OTP template used by student sign-in.
+  const { error } = await supabase.auth.reauthenticate();
+  if (error) return { ok: false, message: friendlyAuthError(error) };
+  return {
+    ok: true,
+    maskedEmail: maskAccountEmail(access.user.email),
+  };
+}
+
+export async function updateOwnerPassword(input: {
+  code: string;
+  password: string;
+  confirmPassword: string;
+}): Promise<OwnerPasswordUpdateResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const normalizedCode = normalizeOwnerPasswordCode(input.code);
+  if (!normalizedCode.ok) {
+    return { ...normalizedCode, codeRejected: true };
+  }
+  const normalized = validateNewOwnerPassword(input);
+  if (!normalized.ok) return normalized;
+
+  const supabase = await createClient();
+  const access = await getOwnerAuthAccess(supabase);
+  if (!access.ok) return access.result;
+
+  const { error } = await supabase.auth.updateUser({
+    password: normalized.password,
+    nonce: normalizedCode.code,
+  });
+  if (error) {
+    return {
+      ok: false,
+      message: friendlyAuthError(error),
+      codeRejected: isOwnerPasswordCodeError(error),
+    };
+  }
+  revalidatePath('/owner', 'layout');
   return { ok: true };
 }
 

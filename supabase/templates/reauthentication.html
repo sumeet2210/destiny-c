@@ -1,0 +1,103 @@
+<!--
+  Signed-in restaurant password-change email. Supabase sends this template for
+  auth.reauthenticate(); the Token value is later submitted as updateUser's
+  nonce. Keep this separate from the student Magic Link / OTP template.
+-->
+<table
+  role="presentation"
+  width="100%"
+  cellpadding="0"
+  cellspacing="0"
+  style="
+    background: #faf8f5;
+    padding: 32px 16px;
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+      sans-serif;
+  "
+>
+  <tr>
+    <td align="center">
+      <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        style="
+          max-width: 420px;
+          background: #ffffff;
+          border: 1px solid #eae4dc;
+          border-radius: 16px;
+          padding: 32px;
+        "
+      >
+        <tr>
+          <td>
+            <p
+              style="
+                margin: 0;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: #f0603a;
+              "
+            >
+              Destiny
+            </p>
+            <h1
+              style="
+                margin: 8px 0 0;
+                font-size: 22px;
+                font-weight: 800;
+                color: #17150f;
+              "
+            >
+              Verify your password change
+            </h1>
+            <p
+              style="
+                margin: 8px 0 0;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #6b6459;
+              "
+            >
+              Enter this code in your restaurant portal before choosing a new
+              password.
+            </p>
+            <p
+              style="
+                margin: 24px 0;
+                padding: 18px;
+                background: #faf8f5;
+                border: 1px solid #eae4dc;
+                border-radius: 12px;
+                text-align: center;
+                font-family:
+                  ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                font-size: 32px;
+                font-weight: 700;
+                letter-spacing: 0.18em;
+                color: #17150f;
+              "
+            >
+              {{ .Token }}
+            </p>
+            <p
+              style="
+                margin: 0;
+                font-size: 13px;
+                line-height: 1.5;
+                color: #6b6459;
+              "
+            >
+              Didn't ask to change your password? Ignore this email and your
+              password will stay the same.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
-import {
-  AMENITIES,
-  CUISINES,
-  type AmenityKey,
-} from '@/config/restaurant-profile';
+import { useRouter } from 'next/navigation';
+import { CUISINES, type AmenityKey } from '@/config/restaurant-profile';
 import { VIBES } from '@/config/vibes';
+import { OwnerPasswordManager } from '@/components/features/owner/OwnerPasswordManager';
+import {
+  ProfilePhotoEditor,
+  type ProfilePhoto,
+  type ProfilePhotoEditorHandle,
+} from '@/components/features/owner/ProfilePhotoEditor';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -34,12 +37,6 @@ type ProfileFields = {
   custom_facilities: string[];
 } & Record<AmenityKey, boolean>;
 
-const PRIMARY_FACILITIES = [
-  { key: 'has_ac', label: 'AC' },
-  { key: 'dine_in', label: 'Dine-in' },
-  { key: 'takeaway', label: 'Takeaway' },
-] as const;
-
 const phoneDigitsFrom = (phone: string | null) => {
   const national = phone?.startsWith('+91') ? phone.slice(3) : (phone ?? '');
   return national.replace(/\D/g, '').slice(0, 10);
@@ -56,14 +53,28 @@ const addOption = (values: string[], value: string) => {
 const removeOption = (values: string[], value: string) =>
   values.filter((item) => item.toLowerCase() !== value.toLowerCase());
 
-export function ProfileForm({ initial }: { initial: ProfileFields }) {
+export function ProfileForm({
+  initial,
+  maskedEmail,
+  coverUrl,
+  photos,
+}: {
+  initial: ProfileFields;
+  maskedEmail: string;
+  coverUrl: string | null;
+  photos: ProfilePhoto[];
+}) {
+  const router = useRouter();
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [editing, setEditing] = useState(false);
+  const [photoDirty, setPhotoDirty] = useState(false);
   const [pending, startTransition] = useTransition();
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const photoEditorRef = useRef<ProfilePhotoEditorHandle>(null);
   const toast = useToast();
-  const dirty = JSON.stringify(fields) !== JSON.stringify(saved);
+  const profileDirty = JSON.stringify(fields) !== JSON.stringify(saved);
+  const dirty = profileDirty || photoDirty;
   const phoneDigits = phoneDigitsFrom(fields.phone);
 
   useEffect(() => {
@@ -104,6 +115,39 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
 
   return (
     <Card>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-paper text-lg font-bold">
+          Basic information
+        </h2>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          <OwnerPasswordManager maskedEmail={maskedEmail} />
+          {editing ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={pending}
+              onClick={() => {
+                setFields(saved);
+                photoEditorRef.current?.reset();
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditing(true)}
+            >
+              Edit
+            </Button>
+          )}
+        </div>
+      </div>
+
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -113,51 +157,38 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             return;
           }
           startTransition(async () => {
-            const result = await updateRestaurant(fields);
-            toast(
-              result.ok
-                ? 'Profile saved'
-                : (result.message ?? 'Could not save'),
-              result.ok ? 'positive' : 'error',
-            );
-            if (result.ok) {
+            if (profileDirty) {
+              const profileResult = await updateRestaurant(fields);
+              if (!profileResult.ok) {
+                toast(
+                  profileResult.message ?? 'Could not save the profile.',
+                  'error',
+                );
+                return;
+              }
               setSaved(fields);
-              setEditing(false);
             }
+
+            if (photoDirty) {
+              const photoResult = await photoEditorRef.current?.save();
+              if (!photoResult?.ok) {
+                toast(
+                  photoResult?.message ?? 'Could not save the photos.',
+                  'error',
+                );
+                return;
+              }
+            }
+
+            toast('Profile saved', 'positive');
+            setSaved(fields);
+            setEditing(false);
+            router.refresh();
           });
         }}
-        className="space-y-7"
+        className="mt-4 space-y-7"
       >
         <section className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-paper text-lg font-bold">
-              Basic information
-            </h2>
-            {editing ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={pending}
-                onClick={() => {
-                  setFields(saved);
-                  setEditing(false);
-                }}
-              >
-                Cancel
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setEditing(true)}
-              >
-                Edit
-              </Button>
-            )}
-          </div>
-
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="p-name">Restaurant name</Label>
@@ -350,67 +381,6 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
 
         <section className="border-border-hairline space-y-3 border-t pt-6">
           <h2 className="font-display text-paper text-lg font-bold">
-            Facilities
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {PRIMARY_FACILITIES.map((facility) => (
-              <Chip
-                key={facility.key}
-                active={fields[facility.key]}
-                disabled={!editing}
-                onClick={() => set(facility.key, !fields[facility.key])}
-              >
-                {facility.label}
-              </Chip>
-            ))}
-            {AMENITIES.map((amenity) => (
-              <Chip
-                key={amenity.key}
-                active={fields[amenity.key]}
-                disabled={!editing}
-                onClick={() => set(amenity.key, !fields[amenity.key])}
-              >
-                {amenity.label}
-              </Chip>
-            ))}
-            <Chip
-              active={fields.student_discount}
-              disabled={!editing}
-              onClick={() => set('student_discount', !fields.student_discount)}
-            >
-              Student Discount
-            </Chip>
-            {fields.custom_facilities.map((facility) => (
-              <Chip
-                key={facility}
-                active
-                disabled={!editing}
-                onClick={() =>
-                  set(
-                    'custom_facilities',
-                    removeOption(fields.custom_facilities, facility),
-                  )
-                }
-              >
-                {facility}
-              </Chip>
-            ))}
-            <OptionAdder
-              key={`facility-${editing}`}
-              label="facility"
-              disabled={!editing}
-              onAdd={(facility) =>
-                set(
-                  'custom_facilities',
-                  addOption(fields.custom_facilities, facility),
-                )
-              }
-            />
-          </div>
-        </section>
-
-        <section className="border-border-hairline space-y-3 border-t pt-6">
-          <h2 className="font-display text-paper text-lg font-bold">
             Vibe / Purpose
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -480,6 +450,15 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
             </div>
           </div>
         </section>
+
+        <ProfilePhotoEditor
+          ref={photoEditorRef}
+          coverUrl={coverUrl}
+          photos={photos}
+          editing={editing}
+          saving={pending}
+          onDirtyChange={setPhotoDirty}
+        />
 
         {editing && dirty ? (
           <Button type="submit" disabled={pending}>

@@ -295,6 +295,7 @@
 }
 
 .dateRail button small {
+  font-family: var(--font-numeric);
   font-size: 0.68rem;
   font-variant-numeric: tabular-nums;
 }

@@ -756,7 +756,7 @@
 }
 
 .page .codeField {
-  font-family: var(--font-body);
+  font-family: var(--font-numeric);
   font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
   font-weight: 750;

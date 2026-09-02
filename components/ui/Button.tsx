@@ -1,12 +1,14 @@
 import { cn } from '@/lib/cn';
 
-type Variant = 'primary' | 'outline' | 'ghost' | 'urgent-text';
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'urgent-text';
 type Size = 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
   // The active page world supplies the semantic primary color.
   primary:
     'bg-accent-primary text-ink-on-primary font-semibold hover:brightness-105 disabled:hover:brightness-100',
+  secondary:
+    'bg-border-hairline text-paper font-semibold hover:brightness-110 disabled:hover:brightness-100',
   outline:
     'border border-border-hairline bg-transparent text-paper hover:bg-surface-raised',
   ghost: 'bg-transparent text-paper hover:bg-surface-raised',

@@ -19,7 +19,12 @@ import {
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import type { TablesInsert, TablesUpdate } from '@/types/db';
 
-export type ActionResult = { ok: boolean; message?: string; url?: string };
+export type ActionResult = {
+  ok: boolean;
+  message?: string;
+  url?: string;
+  id?: string;
+};
 
 const NOT_CONFIGURED: ActionResult = {
   ok: false,
@@ -570,17 +575,24 @@ export async function uploadPhoto(formData: FormData): Promise<ActionResult> {
       .eq('id', owned.id);
     if (error) return { ok: false, message: error.message };
   } else {
-    const { error } = await supabase.from('restaurant_photos').insert({
-      restaurant_id: owned.id,
-      url: publicUrl,
-      kind,
-      gallery_category: folder,
-    });
+    const { data, error } = await supabase
+      .from('restaurant_photos')
+      .insert({
+        restaurant_id: owned.id,
+        url: publicUrl,
+        kind,
+        gallery_category: folder,
+      })
+      .select('id')
+      .single();
     if (error) return { ok: false, message: error.message };
+    revalidateOwnerAnd('/owner/profile');
+    revalidatePath('/owner/menu');
+    return { ok: true, id: data.id, url: publicUrl };
   }
   revalidateOwnerAnd('/owner/profile');
   revalidatePath('/owner/menu');
-  return { ok: true };
+  return { ok: true, url: publicUrl };
 }
 
 export async function deletePhoto(id: string): Promise<ActionResult> {

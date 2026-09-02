@@ -140,6 +140,7 @@
 
 .details dd {
   margin: 0.3rem 0 0;
+  font-family: var(--font-numeric);
   font-size: 0.82rem;
   font-weight: 750;
   line-height: 1.4;
@@ -161,6 +162,7 @@
 
 .interestCount strong {
   color: #1db954;
+  font-family: var(--font-numeric);
 }
 
 .actions {

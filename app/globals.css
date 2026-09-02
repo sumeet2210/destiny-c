@@ -25,7 +25,8 @@
   --font-display: 'Roboto Slab', Georgia, serif;
   --font-body:
     Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-numeric: var(--font-manrope), Manrope, sans-serif;
+  --font-mono: var(--font-numeric);
 
   --radius-chip: 999px;
   --radius-card: 14px;
@@ -36,6 +37,7 @@
   --font-display: 'Roboto Slab', Georgia, serif;
   --font-body:
     Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-numeric: var(--font-manrope), Manrope, sans-serif;
   --chili: #d94b3d;
   --event-yellow: #f2c94c;
 }
@@ -54,6 +56,21 @@ body {
 
 .font-display {
   font-family: var(--font-display);
+}
+
+/* Numeric UI uses one proportional, highly legible face everywhere. Existing
+   font-mono hooks are numeric/date/price hooks in this codebase. */
+.font-mono,
+.tabular-nums,
+:where(
+  input[type='number'],
+  input[type='tel'],
+  input[type='date'],
+  input[type='time'],
+  input[inputmode='numeric']
+) {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Horizontal rails (ticker, chip rows) scroll without a visible bar. */

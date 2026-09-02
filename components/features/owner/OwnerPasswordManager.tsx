@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import { PasswordInput } from '@/components/features/PasswordInput';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input, Label } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
@@ -57,28 +56,14 @@ export function OwnerPasswordManager({ maskedEmail }: { maskedEmail: string }) {
 
   return (
     <>
-      <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="bg-accent-primary/10 text-accent-primary grid h-11 w-11 shrink-0 place-items-center rounded-full">
-          <LockIcon />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="font-display text-paper text-lg font-bold">
-            Account security
-          </h2>
-          <p className="text-text-muted mt-1 text-[13px] leading-5">
-            Change the password for {maskedEmail} using an email verification
-            code.
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 shrink-0"
-          onClick={() => setOpen(true)}
-        >
-          Forgot password
-        </Button>
-      </Card>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={() => setOpen(true)}
+      >
+        Forgot password
+      </Button>
 
       <Sheet open={open} onClose={close} title="Change password">
         <PasswordSteps current={step} />
@@ -270,24 +255,5 @@ function PasswordSteps({ current }: { current: Step }) {
         </li>
       ))}
     </ol>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="5" y="10" width="14" height="10" rx="2" />
-      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-    </svg>
   );
 }

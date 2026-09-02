@@ -34,7 +34,6 @@ export default async function OwnerMenuPage() {
             id: photo.id,
             url: photo.url,
             kind: photo.kind,
-            gallery_category: photo.gallery_category,
           }))}
       />
     </div>

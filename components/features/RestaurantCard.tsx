@@ -103,7 +103,7 @@ export function RestaurantCard({
             <span className="inline-flex items-center gap-1">
               <StarIcon />
               <span className="font-mono">{r.rating.toFixed(1)}</span>{' '}
-              <span className="text-[11px]">({r.reviewCount})</span>
+              <span className="font-mono text-[11px]">({r.reviewCount})</span>
             </span>
           </>
         )}

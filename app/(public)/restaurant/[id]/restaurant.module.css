@@ -316,6 +316,7 @@
   align-items: center;
   gap: 0.3rem;
   color: var(--paper);
+  font-family: var(--font-numeric);
   font-size: 0.82rem;
   font-weight: 800;
   line-height: 1.2;
@@ -996,6 +997,7 @@
 }
 .galleryCount {
   color: var(--muted);
+  font-family: var(--font-numeric);
   font-size: 0.7rem;
   font-weight: 700;
   white-space: nowrap;

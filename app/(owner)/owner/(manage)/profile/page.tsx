@@ -1,17 +1,14 @@
 import { redirect } from 'next/navigation';
-import { OwnerPasswordManager } from '@/components/features/owner/OwnerPasswordManager';
 import { ProfileForm } from '@/components/features/owner/ProfileForm';
-import { PhotoManager } from '@/components/features/owner/PhotoManager';
 import { getSessionUser } from '@/lib/auth/session';
 import { maskAccountEmail } from '@/lib/domain/owner-password';
-import { getOwnerBundle, getOwnerGalleryFolders } from '@/lib/queries/owner';
+import { getOwnerBundle } from '@/lib/queries/owner';
 
 export const metadata = { title: 'Profile' };
 
 export default async function OwnerProfilePage() {
-  const [bundle, folders, user] = await Promise.all([
+  const [bundle, user] = await Promise.all([
     getOwnerBundle(),
-    getOwnerGalleryFolders(),
     getSessionUser(),
   ]);
   if (!bundle) redirect('/owner/dashboard');
@@ -19,8 +16,12 @@ export default async function OwnerProfilePage() {
 
   return (
     <div className="w-full space-y-8">
-      <OwnerPasswordManager maskedEmail={maskAccountEmail(user?.email ?? '')} />
       <ProfileForm
+        maskedEmail={maskAccountEmail(user?.email ?? '')}
+        coverUrl={r.cover_image_url}
+        photos={bundle.photos
+          .filter((photo) => photo.kind === 'gallery')
+          .map((photo) => ({ id: photo.id, url: photo.url }))}
         initial={{
           name: r.name,
           description: r.description,
@@ -52,16 +53,6 @@ export default async function OwnerProfilePage() {
           wheelchair_accessible: r.wheelchair_accessible,
           family_friendly: r.family_friendly,
         }}
-      />
-      <PhotoManager
-        coverUrl={r.cover_image_url}
-        folderNames={folders.map((folder) => folder.name)}
-        photos={bundle.photos.map((photo) => ({
-          id: photo.id,
-          url: photo.url,
-          kind: photo.kind,
-          gallery_category: photo.gallery_category,
-        }))}
       />
     </div>
   );

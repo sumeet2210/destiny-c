@@ -86,6 +86,7 @@
   justify-content: space-between;
   margin-bottom: 0.55rem;
   color: #8a8a8a;
+  font-family: var(--font-numeric);
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;

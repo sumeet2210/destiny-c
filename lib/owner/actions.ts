@@ -5,6 +5,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { EVENT_TYPES } from '@/config/events';
+import { normalizeOfferDescription } from '@/lib/domain/offer';
 import {
   GOOGLE_MAPS_URL_HELP,
   normalizeCoordinate,
@@ -311,7 +312,7 @@ export async function deleteMenuItem(id: string): Promise<ActionResult> {
 
 export async function createOffer(input: {
   title: string;
-  description?: string;
+  description: string;
   discount_text?: string;
   starts_at?: string | null;
   expires_at?: string; // defaults to end of day IST (PRD §5.5)
@@ -325,6 +326,10 @@ export async function createOffer(input: {
   if (!title) return { ok: false, message: 'Give the offer a title.' };
   const imageUrl = normalizeText(input.image_url, 500);
   if (!imageUrl) return { ok: false, message: 'Add an offer photo.' };
+  const description = normalizeOfferDescription(input.description);
+  if (!description.ok) {
+    return { ok: false, message: description.message };
+  }
 
   let expires = input.expires_at;
   if (!expires) {
@@ -341,7 +346,7 @@ export async function createOffer(input: {
   const { error } = await supabase.from('offers').insert({
     restaurant_id: owned.id,
     title,
-    description: normalizeText(input.description, 400),
+    description: description.value,
     discount_text: normalizeText(input.discount_text, 60),
     // Leaving starts_at unset lets the column default stand (offer is live
     // immediately), which is what the baseline form has always done.
@@ -398,8 +403,12 @@ export async function updateOffer(
     if (!title) return { ok: false, message: 'Give the offer a title.' };
     patch.title = title;
   }
-  if (typeof patch.description === 'string') {
-    patch.description = normalizeText(patch.description, 400);
+  if (patch.description !== undefined) {
+    const description = normalizeOfferDescription(patch.description);
+    if (!description.ok) {
+      return { ok: false, message: description.message };
+    }
+    patch.description = description.value;
   }
   if (typeof patch.discount_text === 'string') {
     patch.discount_text = normalizeText(patch.discount_text, 60);
@@ -411,6 +420,49 @@ export async function updateOffer(
     .eq('id', id)
     .eq('restaurant_id', owned.id);
   if (error) return { ok: false, message: error.message };
+  revalidateOwnerAnd('/owner/offers-events');
+  revalidatePath('/');
+  revalidatePath(`/restaurant/${owned.id}`);
+  return { ok: true };
+}
+
+export async function deleteOffer(id: string): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const owned = await ownedRestaurantId();
+  if (!owned.ok) return owned;
+  const supabase = await createClient();
+  const { data: offer, error: lookupError } = await supabase
+    .from('offers')
+    .select('expires_at, is_active, image_url')
+    .eq('id', id)
+    .eq('restaurant_id', owned.id)
+    .maybeSingle();
+  if (lookupError) return { ok: false, message: lookupError.message };
+  if (!offer) return { ok: false, message: 'Offer not found.' };
+
+  const expiresAt = new Date(offer.expires_at).getTime();
+  const hasEnded = Number.isFinite(expiresAt) && expiresAt <= Date.now();
+  if (offer.is_active && !hasEnded) {
+    return { ok: false, message: 'Take down the offer before deleting it.' };
+  }
+
+  const { error } = await supabase
+    .from('offers')
+    .delete()
+    .eq('id', id)
+    .eq('restaurant_id', owned.id);
+  if (error) return { ok: false, message: error.message };
+
+  if (offer.image_url) {
+    const marker = '/restaurant-images/';
+    const markerIndex = offer.image_url.indexOf(marker);
+    if (markerIndex !== -1) {
+      await supabase.storage
+        .from('restaurant-images')
+        .remove([offer.image_url.slice(markerIndex + marker.length)]);
+    }
+  }
+
   revalidateOwnerAnd('/owner/offers-events');
   revalidatePath('/');
   revalidatePath(`/restaurant/${owned.id}`);
@@ -445,6 +497,9 @@ export async function upsertEvent(input: {
   const publishLimit = Date.now() + 15 * 24 * 60 * 60 * 1000;
   if (!Number.isFinite(startsAt.getTime())) {
     return { ok: false, message: 'Choose a valid event date and time.' };
+  }
+  if (!input.is_cancelled && !input.ends_at) {
+    return { ok: false, message: 'Choose an end date and time.' };
   }
   if (startsAt.getTime() > publishLimit) {
     return {
@@ -488,6 +543,53 @@ export async function upsertEvent(input: {
         .insert({ ...payload, restaurant_id: owned.id });
   if (error) return { ok: false, message: error.message };
   revalidateOwnerAnd('/owner/offers-events');
+  return { ok: true };
+}
+
+export async function deleteEvent(id: string): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const owned = await ownedRestaurantId();
+  if (!owned.ok) return owned;
+  const supabase = await createClient();
+  const { data: event, error: lookupError } = await supabase
+    .from('events')
+    .select('starts_at, ends_at, is_cancelled, cover_image_url')
+    .eq('id', id)
+    .eq('restaurant_id', owned.id)
+    .maybeSingle();
+  if (lookupError) return { ok: false, message: lookupError.message };
+  if (!event) return { ok: false, message: 'Event not found.' };
+
+  const endsAt = event.ends_at
+    ? new Date(event.ends_at).getTime()
+    : new Date(event.starts_at).getTime() + 4 * 60 * 60 * 1000;
+  const hasEnded = Number.isFinite(endsAt) && endsAt <= Date.now();
+  if (!event.is_cancelled && !hasEnded) {
+    return { ok: false, message: 'Take down the event before deleting it.' };
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', id)
+    .eq('restaurant_id', owned.id);
+  if (error) return { ok: false, message: error.message };
+
+  // Event promotion images are unique uploads, so remove the unused file too.
+  if (event.cover_image_url) {
+    const marker = '/restaurant-images/';
+    const markerIndex = event.cover_image_url.indexOf(marker);
+    if (markerIndex !== -1) {
+      await supabase.storage
+        .from('restaurant-images')
+        .remove([event.cover_image_url.slice(markerIndex + marker.length)]);
+    }
+  }
+
+  revalidateOwnerAnd('/owner/offers-events');
+  revalidatePath('/');
+  revalidatePath('/events');
+  revalidatePath(`/restaurant/${owned.id}`);
   return { ok: true };
 }
 

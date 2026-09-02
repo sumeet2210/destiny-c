@@ -8,7 +8,11 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Input, Label, Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { resizeToWebp } from '@/components/features/owner/PhotoManager';
-import { uploadPromotionImage, upsertEvent } from '@/lib/owner/actions';
+import {
+  deleteEvent,
+  uploadPromotionImage,
+  upsertEvent,
+} from '@/lib/owner/actions';
 
 type OwnerEvent = {
   id: string;
@@ -112,10 +116,6 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                         label="When"
                         value={formatOwnerDateTime(e.starts_at)}
                       />
-                      <EventDetail
-                        label="Entry"
-                        value={formatEntryFee(e.entry_fee)}
-                      />
                       {e.location_details ? (
                         <EventDetail
                           label="Location"
@@ -155,7 +155,7 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                           });
                           toast(
                             res.ok
-                              ? 'Event cancelled'
+                              ? 'Event taken down'
                               : (res.message ?? 'Failed'),
                             res.ok ? 'positive' : 'error',
                           );
@@ -163,7 +163,37 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                         })
                       }
                     >
-                      Cancel event
+                      Take down
+                    </Button>
+                  </div>
+                ) : status.key === 'cancelled' || status.key === 'past' ? (
+                  <div className="border-border-hairline flex justify-end border-t px-3 py-2.5">
+                    <Button
+                      variant="urgent-text"
+                      size="sm"
+                      className="min-h-11"
+                      disabled={pending}
+                      onClick={() => {
+                        if (
+                          !window.confirm(
+                            `Delete “${e.title}” permanently? This cannot be undone.`,
+                          )
+                        ) {
+                          return;
+                        }
+                        startTransition(async () => {
+                          const res = await deleteEvent(e.id);
+                          toast(
+                            res.ok
+                              ? 'Event deleted'
+                              : (res.message ?? 'Failed'),
+                            res.ok ? 'positive' : 'error',
+                          );
+                          if (res.ok) router.refresh();
+                        });
+                      }}
+                    >
+                      Delete
                     </Button>
                   </div>
                 ) : null}
@@ -185,6 +215,10 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               const fd = new FormData(ev.currentTarget);
               const startsLocal = String(fd.get('starts_at') || '');
               const endsLocal = String(fd.get('ends_at') || '');
+              if (!startsLocal || !endsLocal) {
+                toast('Choose the start and end date and time.', 'error');
+                return;
+              }
               const photo = fd.get('photo');
               const photoFile =
                 photo instanceof File && photo.size > 0 ? photo : null;
@@ -218,13 +252,11 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                   id: editing.id,
                   title: String(fd.get('title')),
                   description: String(fd.get('description') || ''),
-                  event_type: 'other',
-                  custom_event_type: String(fd.get('event_type') || ''),
+                  event_type: editing.event_type ?? 'other',
+                  custom_event_type: editing.custom_event_type ?? undefined,
                   starts_at: new Date(startsLocal).toISOString(),
-                  ends_at: endsLocal ? new Date(endsLocal).toISOString() : null,
-                  entry_fee: fd.get('entry_fee')
-                    ? Number(fd.get('entry_fee'))
-                    : null,
+                  ends_at: new Date(endsLocal).toISOString(),
+                  entry_fee: editing.entry_fee ?? null,
                   location_details: String(fd.get('location_details') || ''),
                   cover_image_url: coverImageUrl,
                 });
@@ -252,44 +284,14 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
                 required={!editing.id}
               />
             </div>
-            <div>
-              <Label htmlFor="ev-title">Event title</Label>
-              <Input
-                id="ev-title"
-                name="title"
-                required
-                defaultValue={editing.title ?? ''}
-              />
-            </div>
-            <div>
-              <Label htmlFor="ev-type">Event type</Label>
-              <Input
-                id="ev-type"
-                name="event_type"
-                required
-                maxLength={60}
-                placeholder="e.g., Food events, Cultural"
-                defaultValue={
-                  editing.id
-                    ? getEventTypeLabel(
-                        editing.event_type ?? 'other',
-                        editing.custom_event_type,
-                      )
-                    : ''
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <Label htmlFor="ev-fee">Entry fee</Label>
+                <Label htmlFor="ev-title">Event title</Label>
                 <Input
-                  id="ev-fee"
-                  name="entry_fee"
-                  type="number"
-                  min="0"
-                  inputMode="numeric"
-                  placeholder="0 for free"
-                  defaultValue={editing.entry_fee ?? ''}
+                  id="ev-title"
+                  name="title"
+                  required
+                  defaultValue={editing.title ?? ''}
                 />
               </div>
               <div>
@@ -307,35 +309,41 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
               <Textarea
                 id="ev-desc"
                 name="description"
+                rows={4}
                 defaultValue={editing.description ?? ''}
               />
             </div>
-            <div>
-              <Label htmlFor="ev-start">Start date and time</Label>
-              <Input
-                id="ev-start"
-                name="starts_at"
-                type="datetime-local"
-                required
-                min={
-                  editing.id
-                    ? undefined
-                    : toLocalInput(new Date(mountedAt).toISOString())
-                }
-                max={toLocalInput(publishLimit.toISOString())}
-                className="font-mono"
-                defaultValue={toLocalInput(editing.starts_at ?? null)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="ev-end">End date and time (optional)</Label>
-              <Input
-                id="ev-end"
-                name="ends_at"
-                type="datetime-local"
-                className="font-mono"
-                defaultValue={toLocalInput(editing.ends_at ?? null)}
-              />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="ev-start">Start date and time</Label>
+                <Input
+                  id="ev-start"
+                  name="starts_at"
+                  type="datetime-local"
+                  required
+                  min={
+                    editing.id
+                      ? undefined
+                      : toLocalInput(new Date(mountedAt).toISOString())
+                  }
+                  max={toLocalInput(publishLimit.toISOString())}
+                  className="font-mono"
+                  onChange={closeDateTimePicker}
+                  defaultValue={toLocalInput(editing.starts_at ?? null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="ev-end">End date and time</Label>
+                <Input
+                  id="ev-end"
+                  name="ends_at"
+                  type="datetime-local"
+                  required
+                  className="font-mono"
+                  onChange={closeDateTimePicker}
+                  defaultValue={toLocalInput(editing.ends_at ?? null)}
+                />
+              </div>
             </div>
             <Button type="submit" disabled={pending} className="w-full">
               {pending ? 'Saving…' : editing.id ? 'Save' : 'Publish event'}
@@ -347,6 +355,10 @@ export function EventManager({ events }: { events: OwnerEvent[] }) {
   );
 }
 
+function closeDateTimePicker(event: React.ChangeEvent<HTMLInputElement>) {
+  if (event.currentTarget.value) event.currentTarget.blur();
+}
+
 function EventDetail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
@@ -354,11 +366,6 @@ function EventDetail({ label, value }: { label: string; value: string }) {
       <dd className="text-paper break-words">{value}</dd>
     </div>
   );
-}
-
-function formatEntryFee(value: number | null) {
-  if (value === null) return 'Not specified';
-  return value === 0 ? 'Free' : `₹${value}`;
 }
 
 function formatOwnerDateTime(value: string) {

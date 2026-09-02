@@ -3,12 +3,19 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Input, Label } from '@/components/ui/Input';
+import { Input, Label, Textarea } from '@/components/ui/Input';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
 import { resizeToWebp } from '@/components/features/owner/PhotoManager';
 import {
+  countOfferDescriptionWords,
+  normalizeOfferDescription,
+  OFFER_DESCRIPTION_MAX_CHARACTERS,
+  OFFER_DESCRIPTION_MAX_WORDS,
+} from '@/lib/domain/offer';
+import {
   createOffer,
+  deleteOffer,
   updateOffer,
   uploadPromotionImage,
 } from '@/lib/owner/actions';
@@ -31,6 +38,10 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
   const [mountedAt] = useState(() => Date.now());
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  const descriptionValue = editing
+    ? (editing.description ?? editing.discount_text ?? '')
+    : '';
+  const descriptionWordCount = countOfferDescriptionWords(descriptionValue);
 
   return (
     <div className="space-y-4">
@@ -90,12 +101,9 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-accent-primary mt-1 text-[12px] font-semibold">
-                      {o.discount_text || 'Offer details in description'}
-                    </p>
-                    {o.description && (
+                    {(o.description || o.discount_text) && (
                       <p className="text-text-muted mt-2 line-clamp-2 text-[12px] leading-5">
-                        {o.description}
+                        {o.description || o.discount_text}
                       </p>
                     )}
                     <p className="text-text-muted mt-2 font-mono text-[11px]">
@@ -134,7 +142,35 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
                     >
                       Take down
                     </Button>
-                  ) : null}
+                  ) : (
+                    <Button
+                      variant="urgent-text"
+                      size="sm"
+                      className="min-h-11"
+                      disabled={pending}
+                      onClick={() => {
+                        if (
+                          !window.confirm(
+                            `Delete “${o.title}” permanently? This cannot be undone.`,
+                          )
+                        ) {
+                          return;
+                        }
+                        startTransition(async () => {
+                          const res = await deleteOffer(o.id);
+                          toast(
+                            res.ok
+                              ? 'Offer deleted'
+                              : (res.message ?? 'Failed'),
+                            res.ok ? 'positive' : 'error',
+                          );
+                          if (res.ok) router.refresh();
+                        });
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </article>
             );
@@ -155,6 +191,13 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
               const photo = fd.get('photo');
               const photoFile =
                 photo instanceof File && photo.size > 0 ? photo : null;
+              const description = normalizeOfferDescription(
+                fd.get('description'),
+              );
+              if (!description.ok) {
+                toast(description.message, 'error');
+                return;
+              }
               if (!editing.id && !photoFile) {
                 toast('Add an offer photo.', 'error');
                 return;
@@ -186,11 +229,12 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
 
                 const fields = {
                   title: String(fd.get('title')),
-                  discount_text: String(fd.get('discount_text') || ''),
+                  description: description.value,
                 };
                 const res = editing.id
                   ? await updateOffer(editing.id, {
                       ...fields,
+                      discount_text: null,
                       ...(startsLocal
                         ? { starts_at: new Date(startsLocal).toISOString() }
                         : {}),
@@ -248,14 +292,30 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
               />
             </div>
             <div>
-              <Label htmlFor="of-discount">Discount / Offer Value</Label>
-              <Input
-                id="of-discount"
-                name="discount_text"
+              <Label htmlFor="of-description">Description about offer</Label>
+              <Textarea
+                id="of-description"
+                name="description"
                 required
-                placeholder="20% OFF, ₹100 OFF, or BOGO"
-                defaultValue={editing.discount_text ?? ''}
+                rows={5}
+                maxLength={OFFER_DESCRIPTION_MAX_CHARACTERS}
+                aria-describedby="of-description-limit"
+                placeholder="Describe the offer, who it is for, and any important conditions."
+                value={descriptionValue}
+                onChange={(event) =>
+                  setEditing({ ...editing, description: event.target.value })
+                }
               />
+              <p
+                id="of-description-limit"
+                className={`mt-1 text-xs ${
+                  descriptionWordCount > OFFER_DESCRIPTION_MAX_WORDS
+                    ? 'text-accent-urgent-text'
+                    : 'text-text-muted'
+                }`}
+              >
+                {descriptionWordCount}/{OFFER_DESCRIPTION_MAX_WORDS} words
+              </p>
             </div>
             <div>
               <Label htmlFor="of-start">
@@ -266,6 +326,7 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
                 name="starts_at"
                 type="datetime-local"
                 className="font-mono"
+                onChange={closeDateTimePicker}
                 defaultValue={toLocalInput(editing.starts_at ?? null)}
               />
             </div>
@@ -278,6 +339,7 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
                 name="expires_at"
                 type="datetime-local"
                 className="font-mono"
+                onChange={closeDateTimePicker}
                 defaultValue={toLocalInput(editing.expires_at ?? null)}
               />
             </div>
@@ -295,6 +357,10 @@ export function OfferManager({ offers }: { offers: Offer[] }) {
       </Sheet>
     </div>
   );
+}
+
+function closeDateTimePicker(event: React.ChangeEvent<HTMLInputElement>) {
+  if (event.currentTarget.value) event.currentTarget.blur();
 }
 
 function toLocalInput(iso: string | null) {

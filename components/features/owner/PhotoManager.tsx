@@ -1,9 +1,9 @@
 'use client';
 
-// P5-5 / P5-6: upload with client-side resize to ≤1600px WebP, plus gallery
-// and menu-photo management (reorder, delete).
+// P5-5 / P5-6: client-side resize to ≤1600px WebP plus staged menu-photo
+// management. The resize helper is also shared by offer/event photo uploads.
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -13,10 +13,16 @@ import { deletePhoto, reorderPhotos, uploadPhoto } from '@/lib/owner/actions';
 type Photo = {
   id: string;
   url: string;
-  kind: 'gallery' | 'menu_photo';
 };
 
-const MAX_PHOTOS_PER_UPLOAD = 6;
+type DraftPhoto = Photo & {
+  file?: File;
+};
+
+const MAX_PHOTOS_PER_SELECTION = 6;
+
+const toDraftPhotos = (photos: Photo[]): DraftPhoto[] =>
+  photos.map((photo) => ({ ...photo }));
 
 export async function resizeToWebp(file: File, maxDim = 1600): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
@@ -27,270 +33,282 @@ export async function resizeToWebp(file: File, maxDim = 1600): Promise<Blob> {
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve, reject) =>
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('Could not encode image'))),
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error('Could not encode image')),
       'image/webp',
       0.82,
     ),
   );
 }
 
-export function PhotoManager({
-  coverUrl,
-  photos,
-  mode = 'gallery',
-}: {
-  coverUrl?: string | null;
-  photos: Photo[];
-  mode?: 'gallery' | 'menu';
-}) {
+export function PhotoManager({ photos }: { photos: Photo[] }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [uploading, setUploading] = useState(false);
   const toast = useToast();
-  const coverFileRef = useRef<HTMLInputElement>(null);
-  const photosFileRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [pending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(photos.length === 0);
+  const [items, setItems] = useState<DraftPhoto[]>(() => toDraftPhotos(photos));
+  const [savedOrder, setSavedOrder] = useState(() =>
+    photos.map((photo) => photo.id),
+  );
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const draftUrlsRef = useRef(new Set<string>());
 
-  const gallery = photos.filter((p) => p.kind === 'gallery');
-  const menuPhotos = photos.filter((p) => p.kind === 'menu_photo');
+  const currentOrder = items
+    .map((photo) => photo.id)
+    .filter((id) => !id.startsWith('draft-'));
+  const orderChanged =
+    currentOrder.length !== savedOrder.length ||
+    currentOrder.some((id, index) => id !== savedOrder[index]);
+  const dirty =
+    deletedIds.length > 0 || items.some((photo) => photo.file) || orderChanged;
 
-  const onFiles = async (
-    files: File[],
-    target: { kind: 'gallery' | 'menu_photo'; asCover: boolean },
-  ) => {
-    if (files.length === 0) return;
-    if (!target.asCover && files.length > MAX_PHOTOS_PER_UPLOAD) {
-      toast(`Select up to ${MAX_PHOTOS_PER_UPLOAD} photos at a time.`, 'error');
-      if (photosFileRef.current) photosFileRef.current.value = '';
-      return;
-    }
-
-    const selectedFiles = target.asCover ? files.slice(0, 1) : files;
-    setUploading(true);
-    let uploaded = 0;
-    let failureMessage = '';
-
-    for (const file of selectedFiles) {
-      try {
-        const blob = await resizeToWebp(file);
-        const fd = new FormData();
-        fd.set('file', new File([blob], 'photo.webp', { type: 'image/webp' }));
-        fd.set('kind', target.kind);
-        if (target.asCover) fd.set('as_cover', '1');
-        const result = await uploadPhoto(fd);
-        if (result.ok) uploaded += 1;
-        else if (!failureMessage) {
-          failureMessage = result.message ?? 'Upload failed';
-        }
-      } catch {
-        if (!failureMessage) failureMessage = 'Could not process an image';
+  useEffect(
+    () => () => {
+      for (const url of draftUrlsRef.current) {
+        URL.revokeObjectURL(url);
       }
-    }
+    },
+    [],
+  );
 
-    if (uploaded > 0) router.refresh();
-    if (uploaded === selectedFiles.length) {
-      toast(
-        target.asCover
-          ? 'Cover photo uploaded'
-          : `${uploaded} ${uploaded === 1 ? 'photo' : 'photos'} uploaded`,
-        'positive',
-      );
-    } else {
-      toast(
-        uploaded > 0
-          ? `${uploaded} of ${selectedFiles.length} photos uploaded. ${failureMessage}`
-          : failureMessage,
-        'error',
-      );
-    }
-
-    setUploading(false);
-    if (coverFileRef.current) coverFileRef.current.value = '';
-    if (photosFileRef.current) photosFileRef.current.value = '';
+  const releaseDraftUrl = (url: string) => {
+    URL.revokeObjectURL(url);
+    draftUrlsRef.current.delete(url);
   };
 
-  const move = (list: Photo[], index: number, dir: -1 | 1) => {
-    const next = [...list];
-    const j = index + dir;
-    if (j < 0 || j >= next.length) return;
-    [next[index], next[j]] = [next[j], next[index]];
-    startTransition(async () => {
-      const res = await reorderPhotos(next.map((p) => p.id));
-      if (res.ok) router.refresh();
-      else toast(res.message ?? 'Could not reorder photos', 'error');
-    });
+  const reset = () => {
+    for (const photo of items) {
+      if (photo.file) releaseDraftUrl(photo.url);
+    }
+    setItems(toDraftPhotos(photos));
+    setSavedOrder(photos.map((photo) => photo.id));
+    setDeletedIds([]);
+    setEditing(photos.length === 0);
+    if (inputRef.current) inputRef.current.value = '';
   };
 
-  const remove = (id: string) =>
+  const save = () => {
     startTransition(async () => {
-      const res = await deletePhoto(id);
-      if (res.ok) router.refresh();
-      else toast(res.message ?? 'Could not delete', 'error');
+      const workingItems = [...items];
+
+      for (let index = 0; index < workingItems.length; index += 1) {
+        const photo = workingItems[index];
+        if (!photo.file) continue;
+        try {
+          const blob = await resizeToWebp(photo.file);
+          const formData = new FormData();
+          formData.set(
+            'file',
+            new File([blob], 'menu-photo.webp', { type: 'image/webp' }),
+          );
+          formData.set('kind', 'menu_photo');
+          const result = await uploadPhoto(formData);
+          if (!result.ok || !result.id || !result.url) {
+            setItems(workingItems);
+            toast(result.message ?? 'Could not save a menu photo.', 'error');
+            return;
+          }
+          releaseDraftUrl(photo.url);
+          workingItems[index] = { id: result.id, url: result.url };
+          setItems([...workingItems]);
+        } catch {
+          setItems(workingItems);
+          toast('Could not process a menu photo.', 'error');
+          return;
+        }
+      }
+
+      let remainingDeletedIds = [...deletedIds];
+      for (const id of deletedIds) {
+        const result = await deletePhoto(id);
+        if (!result.ok) {
+          setDeletedIds(remainingDeletedIds);
+          toast(result.message ?? 'Could not delete a menu photo.', 'error');
+          return;
+        }
+        remainingDeletedIds = remainingDeletedIds.filter(
+          (deletedId) => deletedId !== id,
+        );
+        setDeletedIds(remainingDeletedIds);
+      }
+
+      const finalOrder = workingItems.map((photo) => photo.id);
+      const reorderResult = await reorderPhotos(finalOrder);
+      if (!reorderResult.ok) {
+        toast(
+          reorderResult.message ?? 'Could not reorder menu photos.',
+          'error',
+        );
+        return;
+      }
+
+      setItems(workingItems);
+      setSavedOrder(finalOrder);
+      setDeletedIds([]);
+      setEditing(finalOrder.length === 0);
+      toast('Menu photos saved', 'positive');
+      router.refresh();
     });
+  };
 
   return (
-    <div className="space-y-6">
+    <Card className="space-y-4">
       <input
-        ref={coverFileRef}
+        ref={inputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
-        onChange={(event) =>
-          void onFiles(Array.from(event.target.files ?? []), {
-            kind: 'gallery',
-            asCover: true,
-          })
-        }
-      />
-      <input
-        ref={photosFileRef}
-        type="file"
-        accept="image/*"
-        multiple={mode === 'gallery'}
-        className="hidden"
-        onChange={(event) =>
-          void onFiles(Array.from(event.target.files ?? []), {
-            kind: mode === 'gallery' ? 'gallery' : 'menu_photo',
-            asCover: false,
-          })
-        }
+        onChange={(event) => {
+          const files = Array.from(event.target.files ?? []);
+          if (files.length === 0) return;
+          if (files.length > MAX_PHOTOS_PER_SELECTION) {
+            toast(
+              `Select up to ${MAX_PHOTOS_PER_SELECTION} photos at a time.`,
+              'error',
+            );
+            event.target.value = '';
+            return;
+          }
+          const drafts = files.map((file) => {
+            const url = URL.createObjectURL(file);
+            draftUrlsRef.current.add(url);
+            return {
+              id: `draft-${crypto.randomUUID()}`,
+              url,
+              file,
+            };
+          });
+          setItems((current) => [...current, ...drafts]);
+          event.target.value = '';
+        }}
       />
 
-      {mode === 'gallery' ? (
-        <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
-          <Card className="w-full max-w-sm space-y-3 lg:max-w-none">
-            <h2 className="text-paper text-sm font-semibold">Cover photo</h2>
-            {coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- storage URL, pre-resized
-              <img
-                src={coverUrl}
-                alt="Cover"
-                className="rounded-control aspect-[8/5] w-full max-w-xs object-cover"
-              />
-            ) : (
-              <p className="text-text-muted text-[13px]">
-                No cover yet — this is the first thing students see.
-              </p>
-            )}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-paper text-sm font-semibold">Menu photos</h2>
+          <p className="text-text-muted mt-1 text-[12px]">
+            {editing
+              ? `Select up to ${MAX_PHOTOS_PER_SELECTION} photos at a time. Changes are applied when you save.`
+              : 'Click Edit to add, remove, or reorder menu photos.'}
+          </p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          {editing ? (
+            <>
+              {dirty || savedOrder.length > 0 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={pending}
+                  onClick={reset}
+                >
+                  Cancel
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => inputRef.current?.click()}
+              >
+                + Add photos
+              </Button>
+            </>
+          ) : (
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              disabled={uploading}
-              onClick={() => coverFileRef.current?.click()}
+              onClick={() => setEditing(true)}
             >
-              {uploading
-                ? 'Uploading…'
-                : coverUrl
-                  ? 'Replace cover'
-                  : 'Upload cover'}
+              Edit
             </Button>
-          </Card>
-
-          <PhotoSection
-            title="Gallery"
-            description={`Select up to ${MAX_PHOTOS_PER_UPLOAD} photos at a time.`}
-            addLabel={uploading ? 'Uploading…' : '+ Add photos'}
-            emptyMessage="No gallery photos yet. Add photos to get started."
-            photos={gallery}
-            onAdd={() => photosFileRef.current?.click()}
-            onMove={(i, d) => move(gallery, i, d)}
-            onRemove={remove}
-            disabled={uploading || pending}
-          />
+          )}
         </div>
-      ) : (
-        <PhotoSection
-          title="Menu photos"
-          photos={menuPhotos}
-          onAdd={() => photosFileRef.current?.click()}
-          onMove={(i, d) => move(menuPhotos, i, d)}
-          onRemove={remove}
-          disabled={uploading || pending}
-        />
-      )}
-    </div>
-  );
-}
-
-function PhotoSection({
-  title,
-  description,
-  addLabel = '+ Add',
-  emptyMessage = 'Nothing here yet.',
-  photos,
-  onAdd,
-  onMove,
-  onRemove,
-  disabled,
-}: {
-  title: string;
-  description?: string;
-  addLabel?: string;
-  emptyMessage?: string;
-  photos: Photo[];
-  onAdd: () => void;
-  onMove: (index: number, dir: -1 | 1) => void;
-  onRemove: (id: string) => void;
-  disabled: boolean;
-}) {
-  return (
-    <Card className="space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-paper text-sm font-semibold">{title}</h2>
-          {description ? (
-            <p className="text-text-muted mt-1 text-[12px]">{description}</p>
-          ) : null}
-        </div>
-        <Button variant="outline" size="sm" disabled={disabled} onClick={onAdd}>
-          {addLabel}
-        </Button>
       </div>
-      {photos.length === 0 ? (
-        <p className="text-text-muted text-[13px]">{emptyMessage}</p>
+
+      {items.length === 0 ? (
+        <p className="text-text-muted text-[13px]">
+          No menu photos yet. Add photos to get started.
+        </p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {photos.map((p, i) => (
-            <div key={p.id} className="space-y-1">
-              {/* eslint-disable-next-line @next/next/no-img-element -- storage URL, pre-resized */}
+          {items.map((photo, index) => (
+            <div key={photo.id} className="space-y-1">
+              {/* eslint-disable-next-line @next/next/no-img-element -- local preview or pre-resized storage URL */}
               <img
-                src={p.url}
+                src={photo.url}
                 alt=""
                 className="rounded-control aspect-[8/5] w-full object-cover"
               />
-              <div className="flex justify-between text-[13px]">
-                <span>
+              {editing ? (
+                <div className="flex justify-between text-[13px]">
+                  <span>
+                    <button
+                      type="button"
+                      aria-label="Move earlier"
+                      disabled={pending || index === 0}
+                      onClick={() => {
+                        const next = [...items];
+                        [next[index - 1], next[index]] = [
+                          next[index],
+                          next[index - 1],
+                        ];
+                        setItems(next);
+                      }}
+                      className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Move later"
+                      disabled={pending || index === items.length - 1}
+                      onClick={() => {
+                        const next = [...items];
+                        [next[index], next[index + 1]] = [
+                          next[index + 1],
+                          next[index],
+                        ];
+                        setItems(next);
+                      }}
+                      className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
+                    >
+                      →
+                    </button>
+                  </span>
                   <button
                     type="button"
-                    aria-label="Move earlier"
-                    disabled={disabled || i === 0}
-                    onClick={() => onMove(i, -1)}
-                    className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
+                    disabled={pending}
+                    onClick={() => {
+                      if (photo.file) releaseDraftUrl(photo.url);
+                      else {
+                        setDeletedIds((current) => [...current, photo.id]);
+                      }
+                      setItems((current) =>
+                        current.filter((item) => item.id !== photo.id),
+                      );
+                    }}
+                    className="text-accent-urgent-text px-1"
                   >
-                    ←
+                    delete
                   </button>
-                  <button
-                    type="button"
-                    aria-label="Move later"
-                    disabled={disabled || i === photos.length - 1}
-                    onClick={() => onMove(i, 1)}
-                    className="text-text-muted hover:text-paper px-1 disabled:opacity-30"
-                  >
-                    →
-                  </button>
-                </span>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onRemove(p.id)}
-                  className="text-accent-urgent-text px-1"
-                >
-                  delete
-                </button>
-              </div>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
       )}
+
+      {editing && dirty ? (
+        <Button type="button" disabled={pending} onClick={save}>
+          {pending ? 'Saving…' : 'Save'}
+        </Button>
+      ) : null}
     </Card>
   );
 }

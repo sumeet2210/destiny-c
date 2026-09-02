@@ -11,6 +11,9 @@ export default async function OwnerMenuPage() {
     getOwnerMenuSections(),
   ]);
   if (!bundle) redirect('/owner/dashboard');
+  const menuPhotos = bundle.photos
+    .filter((photo) => photo.kind === 'menu_photo')
+    .map((photo) => ({ id: photo.id, url: photo.url }));
 
   return (
     <div className="w-full space-y-6">
@@ -27,14 +30,11 @@ export default async function OwnerMenuPage() {
         }))}
       />
       <PhotoManager
-        mode="menu"
-        photos={bundle.photos
-          .filter((photo) => photo.kind === 'menu_photo')
-          .map((photo) => ({
-            id: photo.id,
-            url: photo.url,
-            kind: photo.kind,
-          }))}
+        key={
+          menuPhotos.map((photo) => `${photo.id}:${photo.url}`).join('|') ||
+          'empty-menu-photos'
+        }
+        photos={menuPhotos}
       />
     </div>
   );

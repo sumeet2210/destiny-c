@@ -47,6 +47,9 @@ export function MenuManager({
   const [beforeEdit, setBeforeEdit] = useState<Item | null>(null);
   const [addingSection, setAddingSection] = useState(false);
   const [sectionName, setSectionName] = useState('');
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [pending, startTransition] = useTransition();
   const toast = useToast();
   const dirty =
@@ -61,6 +64,7 @@ export function MenuManager({
 
   const save = () => {
     if (!editing) return;
+    const savedSection = editing.section_name;
     startTransition(async () => {
       const res = await upsertMenuItem(editing);
       toast(
@@ -68,6 +72,7 @@ export function MenuManager({
         res.ok ? 'positive' : 'error',
       );
       if (res.ok) {
+        setExpandedSections((current) => new Set(current).add(savedSection));
         closeEditor();
         router.refresh();
       }
@@ -137,106 +142,145 @@ export function MenuManager({
         </Card>
       ) : (
         <div className="space-y-4">
-          {availableSections.map((section) => {
+          {availableSections.map((section, sectionIndex) => {
             const sectionItems = items.filter(
               (item) => item.section_name === section,
             );
+            const expanded = expandedSections.has(section);
+            const contentId = `menu-subsection-${sectionIndex}-items`;
             return (
               <Card key={section} className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-paper text-base font-semibold">
                     {section}
                   </h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setBeforeEdit(null);
-                      setEditing(blank(section));
-                    }}
-                  >
-                    + Add item
-                  </Button>
-                </div>
-                {sectionItems.length === 0 ? (
-                  <p className="text-text-muted text-[13px]">
-                    No items in this subsection yet.
-                  </p>
-                ) : (
-                  <div className="grid gap-x-6 sm:grid-cols-2">
-                    {sectionItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="group flex items-center gap-2"
-                      >
-                        <div className="flex-1">
-                          <MenuRow
-                            name={item.name}
-                            price={item.price}
-                            isVeg={item.is_veg}
-                            unavailable={!item.is_available}
-                          />
-                        </div>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              startTransition(async () => {
-                                const res = await upsertMenuItem({
-                                  ...item,
-                                  is_available: !item.is_available,
-                                });
-                                if (res.ok) {
-                                  toast(
-                                    item.is_available
-                                      ? 'Item marked not available'
-                                      : 'Item marked available',
-                                    'positive',
-                                  );
-                                  router.refresh();
-                                } else
-                                  toast(
-                                    res.message ?? 'Could not update item',
-                                    'error',
-                                  );
-                              })
-                            }
-                          >
-                            {item.is_available ? 'Not available' : 'Available'}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setBeforeEdit(item);
-                              setEditing(item);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="urgent-text"
-                            size="sm"
-                            onClick={() =>
-                              startTransition(async () => {
-                                const res = await deleteMenuItem(item.id!);
-                                if (res.ok) router.refresh();
-                                else
-                                  toast(
-                                    res.message ?? 'Could not delete',
-                                    'error',
-                                  );
-                              })
-                            }
-                          >
-                            ✕
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="ml-auto flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      aria-expanded={expanded}
+                      aria-controls={contentId}
+                      onClick={() =>
+                        setExpandedSections((current) => {
+                          const next = new Set(current);
+                          if (next.has(section)) next.delete(section);
+                          else next.add(section);
+                          return next;
+                        })
+                      }
+                    >
+                      {expanded
+                        ? 'Hide items'
+                        : `Show items (${sectionItems.length})`}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setBeforeEdit(null);
+                        setEditing(blank(section));
+                      }}
+                    >
+                      + Add item
+                    </Button>
                   </div>
-                )}
+                </div>
+                {expanded ? (
+                  <div id={contentId}>
+                    {sectionItems.length === 0 ? (
+                      <p className="text-text-muted text-[13px]">
+                        No items in this subsection yet.
+                      </p>
+                    ) : (
+                      <div className="grid gap-x-6 sm:grid-cols-2">
+                        {sectionItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="group flex items-center gap-2"
+                          >
+                            <div className="flex-1">
+                              <MenuRow
+                                name={item.name}
+                                price={item.price}
+                                isVeg={item.is_veg}
+                                unavailable={!item.is_available}
+                              />
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              <Button
+                                type="button"
+                                variant={
+                                  item.is_available ? 'primary' : 'secondary'
+                                }
+                                size="sm"
+                                disabled={pending}
+                                aria-pressed={item.is_available}
+                                onClick={() =>
+                                  startTransition(async () => {
+                                    const res = await upsertMenuItem({
+                                      ...item,
+                                      is_available: !item.is_available,
+                                    });
+                                    if (res.ok) {
+                                      toast(
+                                        item.is_available
+                                          ? 'Item marked not available'
+                                          : 'Item marked available',
+                                        'positive',
+                                      );
+                                      router.refresh();
+                                    } else
+                                      toast(
+                                        res.message ?? 'Could not update item',
+                                        'error',
+                                      );
+                                  })
+                                }
+                              >
+                                {item.is_available
+                                  ? 'Available'
+                                  : 'Not available'}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={pending}
+                                onClick={() => {
+                                  setBeforeEdit(item);
+                                  setEditing(item);
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="urgent-text"
+                                size="sm"
+                                disabled={pending}
+                                onClick={() =>
+                                  startTransition(async () => {
+                                    const res = await deleteMenuItem(item.id!);
+                                    if (res.ok) router.refresh();
+                                    else
+                                      toast(
+                                        res.message ?? 'Could not delete',
+                                        'error',
+                                      );
+                                  })
+                                }
+                              >
+                                ✕
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
               </Card>
             );
           })}

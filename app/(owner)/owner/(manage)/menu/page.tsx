@@ -16,7 +16,13 @@ export default async function OwnerMenuPage() {
     .map((photo) => ({ id: photo.id, url: photo.url }));
 
   return (
-    <div className="w-full space-y-6">
+    <div className="mx-auto w-full max-w-[92rem] space-y-6">
+      <header className="border-border-hairline border-b pb-5">
+        <h1 className="font-display text-paper text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
+          Menu
+        </h1>
+      </header>
+
       <MenuManager
         sections={sections.map((section) => section.name)}
         items={bundle.menu.map((m) => ({

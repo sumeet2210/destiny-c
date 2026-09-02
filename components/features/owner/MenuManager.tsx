@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Input, Label, Select } from '@/components/ui/Input';
-import { MenuRow } from '@/components/ui/MenuRow';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
+import { VegMark } from '@/components/ui/VegMark';
+import { cn } from '@/lib/cn';
 import {
   createMenuSection,
   deleteMenuItem,
@@ -73,6 +74,29 @@ export function MenuManager({
       );
       if (res.ok) {
         setExpandedSections((current) => new Set(current).add(savedSection));
+        closeEditor();
+        router.refresh();
+      }
+    });
+  };
+
+  const deleteEditingItem = () => {
+    if (!editing?.id) return;
+    if (
+      !window.confirm(
+        `Delete “${editing.name}” permanently? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    const itemId = editing.id;
+    startTransition(async () => {
+      const res = await deleteMenuItem(itemId);
+      toast(
+        res.ok ? 'Item deleted' : (res.message ?? 'Could not delete'),
+        res.ok ? 'positive' : 'error',
+      );
+      if (res.ok) {
         closeEditor();
         router.refresh();
       }
@@ -198,25 +222,53 @@ export function MenuManager({
                         {sectionItems.map((item) => (
                           <div
                             key={item.id}
-                            className="group flex items-center gap-2"
+                            className="group flex min-w-0 items-start gap-1 sm:gap-2"
                           >
-                            <div className="flex-1">
-                              <MenuRow
-                                name={item.name}
-                                price={item.price}
-                                isVeg={item.is_veg}
-                                unavailable={!item.is_available}
-                              />
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              <Button
+                            <VegMark
+                              isVeg={item.is_veg}
+                              className={cn(
+                                'mt-2.5',
+                                !item.is_available && 'opacity-40',
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                'text-paper min-w-0 flex-1 py-1.5 text-xs leading-5 break-words sm:text-sm',
+                                !item.is_available && 'text-text-muted',
+                              )}
+                            >
+                              {item.name}
+                            </span>
+                            <div className="flex h-8 shrink-0 items-center gap-1">
+                              <span
+                                className={cn(
+                                  'text-paper font-mono text-xs font-bold tabular-nums sm:text-sm',
+                                  !item.is_available && 'text-text-muted',
+                                )}
+                              >
+                                ₹{item.price}
+                              </span>
+                              <button
                                 type="button"
-                                variant={
-                                  item.is_available ? 'primary' : 'secondary'
+                                role="switch"
+                                aria-checked={item.is_available}
+                                aria-label={
+                                  item.is_available
+                                    ? `Mark ${item.name} unavailable`
+                                    : `Mark ${item.name} available`
                                 }
-                                size="sm"
+                                title={
+                                  item.is_available
+                                    ? 'Available'
+                                    : 'Not available'
+                                }
                                 disabled={pending}
-                                aria-pressed={item.is_available}
+                                className={cn(
+                                  'relative h-5 w-9 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-40',
+                                  item.is_available
+                                    ? 'border-green-500 bg-green-600'
+                                    : 'border-[#666] bg-[#4b4b4b]',
+                                )}
                                 onClick={() =>
                                   startTransition(async () => {
                                     const res = await upsertMenuItem({
@@ -239,14 +291,21 @@ export function MenuManager({
                                   })
                                 }
                               >
-                                {item.is_available
-                                  ? 'Available'
-                                  : 'Not available'}
-                              </Button>
+                                <span
+                                  aria-hidden
+                                  className={cn(
+                                    'bg-paper absolute top-0.5 left-0.5 size-4 rounded-full shadow-sm transition-transform',
+                                    item.is_available
+                                      ? 'translate-x-4'
+                                      : 'translate-x-0',
+                                  )}
+                                />
+                              </button>
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
+                                className="shrink-0 !px-2 !text-xs"
                                 disabled={pending}
                                 onClick={() => {
                                   setBeforeEdit(item);
@@ -254,25 +313,6 @@ export function MenuManager({
                                 }}
                               >
                                 Edit
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="urgent-text"
-                                size="sm"
-                                disabled={pending}
-                                onClick={() =>
-                                  startTransition(async () => {
-                                    const res = await deleteMenuItem(item.id!);
-                                    if (res.ok) router.refresh();
-                                    else
-                                      toast(
-                                        res.message ?? 'Could not delete',
-                                        'error',
-                                      );
-                                  })
-                                }
-                              >
-                                ✕
                               </Button>
                             </div>
                           </div>
@@ -291,6 +331,20 @@ export function MenuManager({
         open={editing !== null}
         onClose={closeEditor}
         title={editing?.id ? 'Edit item' : 'Add item'}
+        headerAction={
+          editing?.id ? (
+            <Button
+              type="button"
+              variant="urgent-text"
+              size="sm"
+              className="min-h-11"
+              disabled={pending}
+              onClick={deleteEditingItem}
+            >
+              Delete item
+            </Button>
+          ) : undefined
+        }
       >
         {editing && (
           <form

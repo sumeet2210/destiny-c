@@ -49,28 +49,19 @@ export function AnalyticsView({
   return (
     <div className={styles.dashboard}>
       <div className={styles.rangeBar}>
-        <div>
-          <p className={styles.eyebrow}>Performance window</p>
-          <p className={styles.rangeCopy}>
-            Compare the last week with the broader monthly picture.
-          </p>
-        </div>
         <div className={styles.rangeControls} aria-label="Analytics date range">
           <Chip active={range === 7} onClick={() => setRange(7)}>
-            Last 7 days
+            7 days
           </Chip>
           <Chip active={range === 30} onClick={() => setRange(30)}>
-            Last 30 days
+            30 days
           </Chip>
         </div>
       </div>
 
       <section className={styles.funnel} aria-labelledby="conversion-title">
         <div className={styles.funnelHeader}>
-          <div>
-            <h2 id="conversion-title">Your conversion journey</h2>
-          </div>
-          <p className={styles.periodBadge}>{range}-day pulse</p>
+          <h2 id="conversion-title">Your conversion journey</h2>
         </div>
 
         <div className={styles.journey}>

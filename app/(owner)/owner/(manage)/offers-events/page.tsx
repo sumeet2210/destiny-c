@@ -16,7 +16,13 @@ export default async function OwnerOffersEventsPage() {
   if (!bundle) redirect('/owner/dashboard');
 
   return (
-    <div className="mx-auto w-full max-w-[92rem]">
+    <div className="mx-auto w-full max-w-[92rem] space-y-6">
+      <header className="border-border-hairline border-b pb-5">
+        <h1 className="font-display text-paper text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
+          Offers &amp; Events
+        </h1>
+      </header>
+
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <section
           className="border-border-hairline rounded-[1.5rem] border bg-[#141414] p-4 sm:p-5"

@@ -8,12 +8,14 @@ export function Sheet({
   open,
   onClose,
   title,
+  headerAction,
   children,
   className,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -43,14 +45,17 @@ export function Sheet({
         {title && (
           <div className="mb-4 flex items-center justify-between gap-4">
             <h2 className="font-display text-lg font-bold">{title}</h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="rounded-control text-text-muted hover:bg-surface-muted grid h-11 w-11 place-items-center"
-            >
-              <CloseIcon />
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              {headerAction}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="rounded-control text-text-muted hover:bg-surface-muted grid h-11 w-11 place-items-center"
+              >
+                <CloseIcon />
+              </button>
+            </div>
           </div>
         )}
         {children}

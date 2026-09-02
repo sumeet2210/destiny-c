@@ -35,7 +35,13 @@ export default async function OwnerBookingsPage(
       : `${bookings.length} of ${all.length} shown`;
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto w-full max-w-[92rem] space-y-5">
+      <header className="border-border-hairline border-b pb-5">
+        <h1 className="font-display text-paper text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
+          Bookings
+        </h1>
+      </header>
+
       {all.length === 0 ? (
         <p className="text-text-muted text-sm">
           No reservations yet. New requests will appear here.

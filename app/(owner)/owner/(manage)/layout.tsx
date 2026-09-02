@@ -14,18 +14,11 @@ export default async function OwnerManageLayout({
   }
 
   return (
-    <div className="flex min-h-full w-full bg-[#101010]">
-      <aside className="hidden w-60 shrink-0 self-start overflow-y-auto sm:sticky sm:top-0 sm:flex sm:h-screen">
-        <OwnerNav signOutAction={signOut} />
-      </aside>
-      <div className="min-w-0 flex-1">
-        <div className="sm:hidden">
-          <OwnerNav horizontal signOutAction={signOut} />
-        </div>
-        <main className="bg-surface-muted min-h-full p-4 sm:rounded-tl-[1.75rem] sm:p-6 lg:p-8">
-          {children}
-        </main>
-      </div>
+    <div className="bg-surface-muted min-h-full w-full">
+      <OwnerNav signOutAction={signOut} />
+      <main className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">
+        {children}
+      </main>
     </div>
   );
 }

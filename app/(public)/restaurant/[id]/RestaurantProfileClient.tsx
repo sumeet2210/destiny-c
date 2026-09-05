@@ -332,7 +332,6 @@ export function ProfileMenuButton({
           <div className={styles.menuOverlaySheet}>
             <div className={styles.menuOverlayHeader}>
               <div>
-                <p>Explore the menu</p>
                 <h2 id={titleId}>{restaurantName}</h2>
               </div>
               <button
@@ -361,7 +360,24 @@ export function ProfileMenu({
   const [query, setQuery] = useState('');
   const [showPhotos, setShowPhotos] = useState(false);
   const [showAllItems, setShowAllItems] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<{
+    src: string;
+    index: number;
+  } | null>(null);
   const normalizedQuery = query.trim().toLowerCase();
+
+  useEffect(() => {
+    if (!selectedPhoto) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.stopImmediatePropagation();
+      setSelectedPhoto(null);
+    };
+
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [selectedPhoto]);
 
   if (items.length === 0) {
     return (
@@ -391,16 +407,18 @@ export function ProfileMenu({
           <h2>Menu</h2>
         </div>
         <div className={styles.menuToolbar}>
-          <label className={styles.menuSearch}>
-            <SearchIcon />
-            <input
-              type="search"
-              value={query}
-              placeholder="Search dish"
-              aria-label="Search dish"
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </label>
+          {!showPhotos ? (
+            <label className={styles.menuSearch}>
+              <SearchIcon />
+              <input
+                type="search"
+                value={query}
+                placeholder="Search dish"
+                aria-label="Search dish"
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </label>
+          ) : null}
           <button
             type="button"
             className={styles.menuToggle}
@@ -414,22 +432,19 @@ export function ProfileMenu({
       {showPhotos ? (
         <div className={styles.menuPhotoShell}>
           <div className={styles.menuPhotoGrid}>
-            {filteredItems.length ? (
-              filteredItems.map((item, index) => (
-                <DishPhotoCard
-                  key={item.id}
-                  name={item.name}
-                  imageSrc={photoSources[index % photoSources.length]}
-                  altIndex={index}
-                  isVeg={item.is_veg}
-                  available={item.is_available}
-                />
-              ))
-            ) : (
-              <p className={styles.menuEmptyState}>
-                No dishes match “{query.trim()}”.
-              </p>
-            )}
+            {photoSources.map((photo, index) => (
+              <MenuPhotoCard
+                key={`${photo}-${index}`}
+                imageSrc={photo}
+                index={index}
+                onSelect={() =>
+                  setSelectedPhoto({
+                    src: photo,
+                    index,
+                  })
+                }
+              />
+            ))}
           </div>
         </div>
       ) : (
@@ -479,54 +494,67 @@ export function ProfileMenu({
           ) : null}
         </div>
       )}
+      {selectedPhoto ? (
+        <div
+          className={styles.menuPhotoLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Menu photo ${selectedPhoto.index + 1}`}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelectedPhoto(null);
+          }}
+        >
+          <button
+            type="button"
+            className={styles.menuPhotoLightboxClose}
+            aria-label="Close full-size menu photo"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            ×
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element -- menu images can use restaurant storage or remote placeholders. */}
+          <img src={selectedPhoto.src} alt="" />
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function DishPhotoCard({
-  name,
+function MenuPhotoCard({
   imageSrc,
-  altIndex,
-  isVeg,
-  available,
+  index,
+  onSelect,
 }: {
-  name: string;
   imageSrc: string;
-  altIndex: number;
-  isVeg: boolean;
-  available: boolean;
+  index: number;
+  onSelect: () => void;
 }) {
   const [failed, setFailed] = useState(false);
 
   return (
-    <article
+    <button
+      type="button"
       className={styles.menuPhotoCard}
-      data-unavailable={!available || undefined}
+      aria-label={`Open menu photo ${index + 1} full size`}
+      disabled={failed}
+      onClick={onSelect}
     >
-      <div className={styles.menuPhotoMedia} data-failed={failed || undefined}>
+      <span className={styles.menuPhotoMedia} data-failed={failed || undefined}>
         {failed ? (
-          <div className={styles.menuPhotoFallback}>
-            <span>{name.slice(0, 1)}</span>
-            <small>Photo unavailable</small>
-          </div>
+          <span className={styles.menuPhotoFallback} aria-hidden>
+            <GalleryIcon />
+          </span>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- restaurant menu images are uploaded or remote placeholders.
           <img
             src={imageSrc}
-            alt={name}
+            alt=""
             loading="lazy"
             onError={() => setFailed(true)}
           />
         )}
-      </div>
-      <div className={styles.menuPhotoTitle}>
-        <VegMark isVeg={isVeg} />
-        <strong>{name}</strong>
-      </div>
-      <small className={!available ? styles.menuUnavailable : undefined}>
-        {available ? `Photo #${altIndex + 1}` : 'Not available'}
-      </small>
-    </article>
+      </span>
+    </button>
   );
 }
 

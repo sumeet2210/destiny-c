@@ -424,21 +424,11 @@
   border-bottom: 1px solid var(--line);
 }
 
-.menuOverlayHeader p,
 .menuOverlayHeader h2 {
   margin: 0;
 }
 
-.menuOverlayHeader p {
-  color: var(--muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .menuOverlayHeader h2 {
-  margin-top: 0.2rem;
   font-family: var(--font-display);
   font-size: 1.15rem;
 }
@@ -957,26 +947,35 @@
   gap: 10px;
 }
 .menuPhotoCard {
-  display: grid;
-  gap: 0.55rem;
-  padding: 0.7rem;
+  display: block;
+  overflow: hidden;
+  padding: 0;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 14px;
   background: #101010;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+  color: inherit;
+  cursor: zoom-in;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
 }
-.menuPhotoCard[data-unavailable='true'] {
-  border-color: rgb(220 38 38 / 22%);
+.menuPhotoCard:hover {
+  border-color: rgb(255 255 255 / 24%);
+  transform: translateY(-2px);
 }
-.menuPhotoCard[data-unavailable='true'] .menuPhotoMedia {
-  filter: grayscale(0.75);
-  opacity: 0.58;
+.menuPhotoCard:focus-visible {
+  outline: 2px solid var(--marigold);
+  outline-offset: 3px;
+}
+.menuPhotoCard:disabled {
+  cursor: default;
 }
 .menuPhotoMedia {
   position: relative;
+  display: block;
   overflow: hidden;
   aspect-ratio: 4 / 3;
-  border-radius: 12px;
   background: linear-gradient(
     135deg,
     rgb(242 169 0 / 16%),
@@ -993,43 +992,53 @@
   place-items: center;
   width: 100%;
   height: 100%;
-  gap: 0.3rem;
   background:
     radial-gradient(circle at top, rgb(255 255 255 / 25%), transparent 30%),
     linear-gradient(160deg, rgb(245 241 230), rgb(232 224 206));
-  text-align: center;
 }
-.menuPhotoFallback span {
+.menuPhotoFallback svg {
+  width: 2rem;
+  height: 2rem;
+  fill: none;
+  stroke: #756d60;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+.menuPhotoLightbox {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
   display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
   place-items: center;
+  padding: 4.5rem 1rem 1rem;
+  background: rgb(0 0 0 / 94%);
+  backdrop-filter: blur(18px);
+  animation: menu-fade-in 180ms ease both;
+}
+.menuPhotoLightbox > img {
+  display: block;
+  max-width: min(100%, 80rem);
+  max-height: calc(100dvh - 5.5rem);
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 1.25rem 4rem rgb(0 0 0 / 60%);
+}
+.menuPhotoLightboxClose {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 22%);
   border-radius: 50%;
-  background: var(--marigold);
-  color: #17120a;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 800;
-}
-.menuPhotoFallback small,
-.menuPhotoCard small {
-  color: #9d9485;
-  font-size: 0.62rem;
-  font-weight: 700;
-}
-.menuPhotoCard strong {
-  color: #ffffff;
-  font-size: 0.8rem;
-  font-weight: 800;
-  line-height: 1.35;
-}
-.menuPhotoTitle {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-.menuUnavailable {
-  color: #ef6b6b !important;
+  background: rgb(24 24 24 / 88%);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
 }
 .menuEmptyState {
   margin: 0;

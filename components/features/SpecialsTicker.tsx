@@ -44,7 +44,7 @@ type TickerCard = {
   title: string;
   description: string | null;
   detail: string | null;
-  startDate: string;
+  startsAt: string;
   image: string;
   kind: CardKind;
   detailsHref: string;
@@ -394,7 +394,7 @@ function EventTile({
         title: event.title,
         description: null,
         detail: null,
-        startDate: formatStartDate(event.starts_at),
+        startsAt: event.starts_at,
         image: event.image,
         kind: 'event',
         detailsHref: `/restaurant/${event.restaurant_id}?from=homepage_feed`,
@@ -423,7 +423,7 @@ function OfferTile({
         title: offer.title,
         description: offer.description,
         detail: offer.discount_text,
-        startDate: formatStartDate(offer.starts_at),
+        startsAt: offer.starts_at,
         image: offer.image,
         kind: 'offer',
         detailsHref: `/restaurant/${offer.restaurant_id}?from=offer`,
@@ -445,6 +445,10 @@ function TickerTile({
 }: { card: TickerCard } & SharedTileProps) {
   const contentKey = card.key.replace(/^duplicate-/, '');
   const isFlipped = flippedCard === card.key;
+  const isLiveNow = hasStarted(card.startsAt);
+  const startStatus = isLiveNow
+    ? 'Live now'
+    : `Starts on ${formatStartDate(card.startsAt)}`;
   const distance =
     isFlipped && card.restaurantLat !== null && card.restaurantLng !== null
       ? formatDistance(
@@ -488,7 +492,12 @@ function TickerTile({
           <span className="specials-kind">
             {rotatingBadge(card.kind, contentKey, badgeTick)}
           </span>
-          <span className="specials-start-date">Starts {card.startDate}</span>
+          <span
+            className="specials-start-date"
+            data-live={isLiveNow || undefined}
+          >
+            {startStatus}
+          </span>
           <span className="specials-card-copy">
             <strong>{card.title}</strong>
             {card.detail ? (
@@ -516,7 +525,6 @@ function TickerTile({
             ×
           </button>
           <div className="specials-back-copy">
-            <span>Quick pick</span>
             <strong>{card.restaurantName}</strong>
           </div>
           {isFlipped ? (
@@ -581,6 +589,11 @@ function formatStartDate(value: string) {
     month: 'short',
     timeZone: 'Asia/Kolkata',
   }).format(new Date(value));
+}
+
+function hasStarted(value: string) {
+  const startsAt = new Date(value).getTime();
+  return Number.isFinite(startsAt) && startsAt <= Date.now();
 }
 
 function mockHash(value: string) {

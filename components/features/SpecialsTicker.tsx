@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formatDistance, haversineKm } from '@/lib/domain/distance';
 
 type TickerOffer = {
@@ -12,7 +12,9 @@ type TickerOffer = {
   restaurantLat: number | null;
   restaurantLng: number | null;
   title: string;
+  description: string | null;
   discount_text: string | null;
+  starts_at: string;
   expires_at: string;
   image: string;
 };
@@ -40,7 +42,9 @@ type TickerCard = {
   restaurantLat: number | null;
   restaurantLng: number | null;
   title: string;
-  detail: string;
+  description: string | null;
+  detail: string | null;
+  startDate: string;
   image: string;
   kind: CardKind;
   detailsHref: string;
@@ -377,14 +381,6 @@ function EventTile({
   duplicate = false,
   ...shared
 }: { event: TickerEvent } & SharedTileProps) {
-  const when = new Date(event.starts_at).toLocaleDateString('en-IN', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: 'Asia/Kolkata',
-  });
   const key = `${duplicate ? 'duplicate-' : ''}event-${event.id}`;
   return (
     <TickerTile
@@ -396,7 +392,9 @@ function EventTile({
         restaurantLat: event.restaurantLat,
         restaurantLng: event.restaurantLng,
         title: event.title,
-        detail: when,
+        description: null,
+        detail: null,
+        startDate: formatStartDate(event.starts_at),
         image: event.image,
         kind: 'event',
         detailsHref: `/restaurant/${event.restaurant_id}?from=homepage_feed`,
@@ -423,7 +421,9 @@ function OfferTile({
         restaurantLat: offer.restaurantLat,
         restaurantLng: offer.restaurantLng,
         title: offer.title,
-        detail: offer.discount_text ?? 'Limited-time special',
+        description: offer.description,
+        detail: offer.discount_text,
+        startDate: formatStartDate(offer.starts_at),
         image: offer.image,
         kind: 'offer',
         detailsHref: `/restaurant/${offer.restaurant_id}?from=offer`,
@@ -444,7 +444,6 @@ function TickerTile({
   onOpenDetail,
 }: { card: TickerCard } & SharedTileProps) {
   const contentKey = card.key.replace(/^duplicate-/, '');
-  const heat = mockHeat(contentKey);
   const isFlipped = flippedCard === card.key;
   const distance =
     isFlipped && card.restaurantLat !== null && card.restaurantLng !== null
@@ -489,26 +488,14 @@ function TickerTile({
           <span className="specials-kind">
             {rotatingBadge(card.kind, contentKey, badgeTick)}
           </span>
-          {heat > 1 && (
-            <span
-              className="specials-heat"
-              aria-label="Popular right now"
-              data-heat={heat}
-              style={
-                {
-                  '--heat-scale': 0.82 + heat * 0.12,
-                  '--heat-speed': `${1.75 - heat * 0.22}s`,
-                } as CSSProperties
-              }
-            >
-              <FlameIcon />
-            </span>
-          )}
+          <span className="specials-start-date">Starts {card.startDate}</span>
           <span className="specials-card-copy">
-            <span className="specials-place">{card.restaurantName}</span>
             <strong>{card.title}</strong>
-            <span className="specials-detail">{card.detail}</span>
+            {card.detail ? (
+              <span className="specials-detail">{card.detail}</span>
+            ) : null}
           </span>
+          <span className="specials-place">{card.restaurantName}</span>
         </button>
 
         <div
@@ -546,6 +533,9 @@ function TickerTile({
                 </span>
                 {distance ? <b>{distance}</b> : null}
               </div>
+              {card.kind === 'offer' && card.description ? (
+                <p className="specials-back-description">{card.description}</p>
+              ) : null}
             </>
           ) : null}
           <div className="specials-back-actions" aria-label="Quick actions">
@@ -585,8 +575,12 @@ function rotatingBadge(kind: CardKind, key: string, tick: number) {
   return choices[(mockHash(key) + tick) % choices.length];
 }
 
-function mockHeat(key: string) {
-  return (mockHash(key) % 3) + 1;
+function formatStartDate(value: string) {
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'Asia/Kolkata',
+  }).format(new Date(value));
 }
 
 function mockHash(value: string) {
@@ -595,18 +589,6 @@ function mockHash(value: string) {
     hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
   }
   return hash;
-}
-
-function FlameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <path d="M13.4 2.8c.5 3.4-1.5 4.7-3 6.3-1.4 1.4-2.5 2.8-2.5 5.1 0 1.2.4 2.3 1.2 3.1-.1-2.2 1-3.6 2.6-4.9.1 2.1 1.4 3.1 2.2 4.2.6.8.9 1.7.7 2.8 1.8-1 3-2.9 3-5.2 0-3.9-2.2-7.4-4.2-10.4Z" />
-      <path
-        className="specials-flame-core"
-        d="M12.1 14.2c.2 1.1-.4 1.8-1 2.5-.5.6-.8 1.1-.8 1.9 0 1.1.8 2 1.9 2s1.9-.9 1.9-2c0-1.5-1-2.9-2-4.4Z"
-      />
-    </svg>
-  );
 }
 
 function ViewIcon() {

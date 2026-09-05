@@ -281,6 +281,7 @@
 }
 .addressLine {
   display: inline-flex;
+  min-width: 0;
   align-items: flex-start;
   gap: 0.4rem;
   margin: 0;
@@ -302,6 +303,9 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.addressLine span {
+  overflow-wrap: anywhere;
 }
 .ratingStack {
   display: flex;
@@ -335,6 +339,7 @@
 }
 .locationLine {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
@@ -515,11 +520,21 @@
 }
 .openingTime {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
   margin: 0;
   color: var(--muted);
+  cursor: pointer;
+  font: inherit;
   font-size: 0.72rem;
+  transition: color 160ms ease;
+}
+.openingTime:hover {
+  color: var(--paper);
 }
 .openingTime svg {
   width: 0.95rem;
@@ -537,15 +552,141 @@
   text-transform: uppercase;
 }
 .openingTime strong {
+  min-width: 0;
   color: var(--paper);
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
-.headFooter {
+.openingTime svg:last-child {
+  width: 0.75rem;
+  height: 0.75rem;
+  stroke: currentColor;
+  transition: transform 160ms ease;
+}
+.openingTime[aria-expanded='true'] svg:last-child {
+  transform: rotate(180deg);
+}
+.hoursOverlay {
+  position: fixed;
+  z-index: 65;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(8 8 8 / 78%);
+  backdrop-filter: blur(12px);
+  animation: menu-fade-in 180ms ease both;
+}
+.hoursDialog {
+  width: min(100%, 26rem);
+  max-height: min(86dvh, 42rem);
+  overflow-y: auto;
+  padding: 1.1rem;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 18px;
+  background: linear-gradient(160deg, #242424, #141414);
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 58%);
+  animation: menu-sheet-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hoursHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.hoursHeader p,
+.hoursHeader h2 {
+  margin: 0;
+}
+.hoursHeader p {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hoursHeader h2 {
+  margin-top: 0.2rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+.hoursHeader > button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #181818;
+  color: var(--paper);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.25rem;
+}
+.hoursList {
+  display: grid;
+  gap: 0;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.hoursList li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(5.5rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 1rem;
+  padding: 0.75rem 0.65rem;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+.hoursList li:last-child {
+  border-bottom: 0;
+}
+.hoursList li[data-today='true'] {
+  border-radius: 10px;
+  background: rgb(242 169 0 / 9%);
+  color: var(--marigold);
+}
+.hoursList strong {
+  min-width: 0;
+  color: var(--paper);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.hoursList li[data-closed='true'] strong {
+  color: var(--muted);
+}
+.headDetails {
+  display: grid;
+  min-width: 0;
+  height: auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-auto-rows: auto;
+  align-items: start;
+  gap: 0.55rem 1rem;
+  margin-top: 0.85rem;
+}
+.headDetails .openingTime {
+  max-width: min(22rem, 42vw);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  justify-self: end;
+  text-align: right;
+}
+.headDetails .description {
+  grid-row: 2;
+  grid-column: 1;
+}
+.headDetails > .menuButton {
+  grid-row: 2;
+  grid-column: 2;
+  align-self: start;
+  justify-self: end;
 }
 
 .section {
@@ -1045,11 +1186,15 @@
 }
 
 .description {
-  max-width: 72ch;
-  margin: 0.7rem 0 0;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 .infoGrid {
   display: grid;

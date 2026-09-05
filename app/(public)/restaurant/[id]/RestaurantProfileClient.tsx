@@ -177,6 +177,99 @@ export function ProfileGalleryButton({
   );
 }
 
+type WeeklyHoursRow = {
+  day: string;
+  hours: string;
+  isToday: boolean;
+};
+
+export function ProfileHoursButton({
+  restaurantName,
+  todayHours,
+  weeklyHours,
+}: {
+  restaurantName: string;
+  todayHours: string;
+  weeklyHours: WeeklyHoursRow[];
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dialogId = useId();
+  const titleId = `${dialogId}-title`;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.openingTime}
+        aria-expanded={isOpen}
+        aria-controls={dialogId}
+        aria-label={`View opening hours. Today: ${todayHours}`}
+        onClick={() => setIsOpen(true)}
+      >
+        <HoursClockIcon />
+        <span>Today</span>
+        <strong>{todayHours}</strong>
+        <ChevronDownIcon />
+      </button>
+
+      {isOpen ? (
+        <div
+          id={dialogId}
+          className={styles.hoursOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setIsOpen(false);
+          }}
+        >
+          <div className={styles.hoursDialog}>
+            <div className={styles.hoursHeader}>
+              <div>
+                <p>Opening hours</p>
+                <h2 id={titleId}>{restaurantName}</h2>
+              </div>
+              <button
+                type="button"
+                aria-label="Close opening hours"
+                onClick={() => setIsOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <ul className={styles.hoursList}>
+              {weeklyHours.map((row) => (
+                <li
+                  key={row.day}
+                  data-today={row.isToday || undefined}
+                  data-closed={row.hours === 'Closed' || undefined}
+                >
+                  <span>{row.day}</span>
+                  <strong>{row.hours}</strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 type MenuItem = {
   id: string;
   name: string;
@@ -469,6 +562,23 @@ function MenuIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
       <path d="M5 6h14M5 12h14M5 18h9" />
+    </svg>
+  );
+}
+
+function HoursClockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path d="m7 9.5 5 5 5-5" />
     </svg>
   );
 }

@@ -127,7 +127,9 @@ async function TickerSection() {
           restaurantLat: offer.restaurantLat,
           restaurantLng: offer.restaurantLng,
           title: offer.title,
+          description: offer.description,
           discount_text: offer.discount_text,
+          starts_at: offer.starts_at,
           expires_at: offer.expires_at,
           image:
             offer.image_url ??

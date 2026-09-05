@@ -15,6 +15,7 @@ import type { NextConfig } from 'next';
 // hostnames rotating on every run. Anything else goes in DEV_ORIGINS in
 // .env.local rather than being hardcoded here.
 const devOrigins = [
+  '127.0.0.1',
   '10.*.*.*',
   '172.16.*.*',
   '192.168.*.*',

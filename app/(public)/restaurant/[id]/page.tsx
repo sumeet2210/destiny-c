@@ -24,6 +24,7 @@ import { getSavedIds } from '@/lib/queries/social';
 import {
   ProfileCoverCarousel,
   ProfileGalleryButton,
+  ProfileHoursButton,
   ProfileMenuButton,
 } from './RestaurantProfileClient';
 import styles from './restaurant.module.css';
@@ -37,6 +38,15 @@ const DETAIL_ARTWORK: Record<string, string> = {
   'Scoops & Stories': '/home/scoops-stories.webp',
 };
 const PHOTO_LABELS = ['Cover', 'Food', 'Interior', 'Ambience', 'Kitchen'];
+const PROFILE_WEEK: { key: DayKey; label: string }[] = [
+  { key: 'mon', label: 'Monday' },
+  { key: 'tue', label: 'Tuesday' },
+  { key: 'wed', label: 'Wednesday' },
+  { key: 'thu', label: 'Thursday' },
+  { key: 'fri', label: 'Friday' },
+  { key: 'sat', label: 'Saturday' },
+  { key: 'sun', label: 'Sunday' },
+];
 
 /**
  * Caption each gallery photo with the folder its owner filed it under, falling
@@ -95,12 +105,17 @@ export default async function RestaurantPage(
             summary.lng,
           ),
         )
-      : row.area;
+      : null;
   const hours = row.opening_hours as OpeningHours | null;
   const todayKey = new Date()
     .toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Kolkata' })
     .toLowerCase() as DayKey;
   const todayHours = hours ? formatDayShifts(hours[todayKey]) : 'Not listed';
+  const weeklyHours = PROFILE_WEEK.map(({ key, label }) => ({
+    day: label,
+    hours: hours ? formatDayShifts(hours[key]) : 'Not listed',
+    isToday: key === todayKey,
+  }));
   // Owner-declared cuisines are the best answer when the owner has filled them
   // in; craving tags and vibes stay as the fallback so a profile that predates
   // the cuisine field reads exactly as it did before.
@@ -172,19 +187,6 @@ export default async function RestaurantPage(
                   <h1>{row.name}</h1>
                 </div>
                 <p className={styles.cuisineLine}>{cuisine}</p>
-                <p className={styles.locationLine}>
-                  <a
-                    href={googleMapsHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={styles.addressLine}
-                    aria-label={`Open ${row.name} in Google Maps`}
-                  >
-                    <PinIcon />
-                    <span>{address}</span>
-                  </a>
-                  <span className={styles.distancePill}>{distance}</span>
-                </p>
               </div>
               <div className={styles.ratingStack}>
                 <strong
@@ -196,12 +198,30 @@ export default async function RestaurantPage(
                 </strong>
               </div>
             </div>
-            <div className={styles.headFooter}>
-              <p className={styles.openingTime}>
-                <ClockIcon />
-                <span>Today</span>
-                <strong>{todayHours}</strong>
+            <div className={styles.headDetails}>
+              <p className={styles.locationLine}>
+                <a
+                  href={googleMapsHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.addressLine}
+                  aria-label={`Open ${row.name} in Google Maps`}
+                >
+                  <PinIcon />
+                  <span>{address}</span>
+                </a>
+                {distance ? (
+                  <span className={styles.distancePill}>{distance}</span>
+                ) : null}
               </p>
+              <ProfileHoursButton
+                restaurantName={row.name}
+                todayHours={todayHours}
+                weeklyHours={weeklyHours}
+              />
+              {row.description ? (
+                <p className={styles.description}>{row.description}</p>
+              ) : null}
               <ProfileMenuButton
                 restaurantName={row.name}
                 items={menu.map((item) => ({
@@ -448,14 +468,6 @@ function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
       <path d="m12 2.8 2.75 5.58 6.16.9-4.46 4.34 1.05 6.13L12 16.86l-5.5 2.89 1.05-6.13L3.1 9.28l6.15-.9L12 2.8Z" />
-    </svg>
-  );
-}
-function ClockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
     </svg>
   );
 }

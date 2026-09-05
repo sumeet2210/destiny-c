@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { CreateRestaurantForm } from '@/components/features/owner/CreateRestaurantForm';
@@ -39,32 +38,32 @@ export default async function OwnerDashboard() {
   // P4-4: the awaiting-approval holding screen.
   if (restaurant.status === 'pending_approval') {
     return (
-      <Notice title="Awaiting approval">
-        <span className="text-paper">{restaurant.name}</span> is submitted and
-        waiting on a quick manual check — usually within a day. You can already
-        set up your{' '}
-        <Link
-          href="/owner/menu"
-          className="text-accent-primary hover:underline"
+      <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center py-6">
+        <Card
+          role="status"
+          className="bg-surface-raised flex min-h-80 w-full max-w-2xl flex-col items-center justify-center px-6 py-10 text-center shadow-xl sm:min-h-96 sm:px-12"
         >
-          menu
-        </Link>
-        ,{' '}
-        <Link
-          href="/owner/photos"
-          className="text-accent-primary hover:underline"
-        >
-          photos
-        </Link>{' '}
-        and{' '}
-        <Link
-          href="/owner/profile"
-          className="text-accent-primary hover:underline"
-        >
-          hours
-        </Link>{' '}
-        so everything goes live at once.
-      </Notice>
+          <span
+            className="bg-accent-primary mb-6 block h-1 w-12 rounded-full"
+            aria-hidden
+          />
+          <h1 className="font-display text-paper text-2xl font-extrabold sm:text-3xl">
+            Awaiting approval
+          </h1>
+          <p className="text-text-muted mt-4 max-w-xl text-sm leading-6 sm:text-base sm:leading-7">
+            <span className="text-paper font-semibold">{restaurant.name}</span>{' '}
+            is submitted and waiting on a quick manual check — usually within a
+            day.
+          </p>
+          <p className="text-text-muted mt-3 max-w-xl text-sm leading-6 sm:text-base sm:leading-7">
+            You can already set up your{' '}
+            <span className="text-paper font-semibold">menu</span>,{' '}
+            <span className="text-paper font-semibold">photos</span> and{' '}
+            <span className="text-paper font-semibold">hours</span> so
+            everything goes live at once.
+          </p>
+        </Card>
+      </div>
     );
   }
 
